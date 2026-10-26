@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Box, ChevronDown, LogOut, Receipt, Users, Wallet } from 'lucide-react'
+import { Box, ChevronDown, CircleUserRound, Menu, Receipt, Users, Wallet } from 'lucide-react'
 import { DonationIllustration, Logo } from './brand'
+import { ConfirmModal } from './ui'
 import { useDB } from '../lib/store'
 import { IDLE_MS_DEFAULT, logout, touchSession } from '../lib/actions'
 
@@ -37,6 +38,10 @@ export function DashboardLayout() {
   const user = db.session ? db.users.find((u) => u.id === db.session!.userId) : null
   const fundraiser = user?.fundraiserId ? db.fundraisers.find((f) => f.id === user.fundraiserId) : null
   const [menu, setMenu] = useState(false)
+  const [confirmLogout, setConfirmLogout] = useState(false)
+  // Fungsi ikon ☰ belum dijelaskan di desain → asumsi: menyembunyikan/menampilkan sidebar
+  const [sideHidden, setSideHidden] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const timer = useRef<number>()
   const here = loc.pathname + loc.search
   // Lokasi versi router (tanpa base path GitHub Pages) untuk dipakai di dalam timer
@@ -62,6 +67,13 @@ export function DashboardLayout() {
     }
   }, [user?.id, nav]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    if (!menu) return
+    const close = (e: MouseEvent) => { if (!menuRef.current?.contains(e.target as Node)) setMenu(false) }
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [menu])
+
   if (!user) return <Navigate to={`/masuk?next=${encodeURIComponent(here)}`} replace />
 
   const locked = user.role === 'fundraiser' && fundraiser?.status !== 'Terverifikasi'
@@ -73,7 +85,7 @@ export function DashboardLayout() {
   ]
 
   return (
-    <div className="dash">
+    <div className={'dash' + (sideHidden ? ' side-hidden' : '')}>
       <aside className="side">
         <Logo small />
         <nav className="nav">
@@ -87,21 +99,34 @@ export function DashboardLayout() {
       </aside>
       <div className="main">
         <header className="topbar">
-          <div className="usermenu">
-            <button className="usermenu-btn" onClick={() => setMenu((m) => !m)}>
-              <span className="avatar">{user.name.slice(0, 1).toUpperCase()}</span>
-              <span className="usermenu-meta"><b>{user.name}</b><span>{user.role === 'admin' ? 'Admin' : 'Fundraiser'}</span></span>
+          <button className="menu-toggle" aria-label={sideHidden ? 'Tampilkan menu' : 'Sembunyikan menu'} onClick={() => setSideHidden((s) => !s)}>
+            <Menu size={22} strokeWidth={1.6} />
+          </button>
+          <div className="usermenu" ref={menuRef}>
+            <button className="usermenu-btn" aria-expanded={menu} onClick={() => setMenu((m) => !m)}>
+              <CircleUserRound size={22} strokeWidth={1.4} />
+              <span className="usermenu-name">{user.name}</span>
               <ChevronDown size={16} />
             </button>
             {menu && (
-              <div className="dropdown" onMouseLeave={() => setMenu(false)}>
-                <button onClick={() => { logout(); nav('/masuk', { replace: true }) }}><LogOut size={16} /> Keluar</button>
+              <div className="usercard" role="menu">
+                <span className="usercard-role">{user.role === 'admin' ? 'Admin' : 'Fundraiser'}</span>
+                <CircleUserRound size={44} strokeWidth={1.1} />
+                <div className="usercard-name">{user.name}</div>
+                <div className="usercard-email">{user.email}</div>
+                <hr />
+                <button className="btn btn-primary btn-xs usercard-logout" onClick={() => { setMenu(false); setConfirmLogout(true) }}>Keluar</button>
               </div>
             )}
           </div>
         </header>
         <main className="content"><Outlet /></main>
       </div>
+      {confirmLogout && (
+        <ConfirmModal icon="logout" title="Keluar" text="Apakah Anda yakin ingin keluar dari akun Anda?"
+          onNo={() => setConfirmLogout(false)}
+          onYes={() => { setConfirmLogout(false); logout(); nav('/masuk', { replace: true }) }} />
+      )}
     </div>
   )
 }

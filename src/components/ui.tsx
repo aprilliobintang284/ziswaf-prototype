@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { InputHTMLAttributes, ReactNode } from 'react'
 import {
-  AlertTriangle, Check, CheckCircle2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, EyeOff, Mail, XCircle,
+  AlertTriangle, Check, CheckCircle2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, EyeOff, LogOut, Mail, XCircle,
 } from 'lucide-react'
 import { checkPassword } from '../lib/validation'
 import type { FundraiserStatus, ProgramStatus } from '../lib/types'
@@ -80,13 +80,14 @@ export function StatusBadge({ status, small = false }: { status: FundraiserStatu
 }
 
 // ---------------- Modal ----------------
-type ModalIcon = 'warn' | 'ok' | 'bad' | 'mail'
+type ModalIcon = 'warn' | 'ok' | 'bad' | 'mail' | 'logout'
 
 const ICONS: Record<ModalIcon, ReactNode> = {
   warn: <AlertTriangle size={24} />,
   ok: <CheckCircle2 size={26} strokeDasharray="3 2" />,
   bad: <XCircle size={26} />,
   mail: <Mail size={24} />,
+  logout: <LogOut size={24} />,
 }
 
 export function Modal({ icon, title, children, actions }: { icon: ModalIcon; title: string; children?: ReactNode; actions: ReactNode }) {

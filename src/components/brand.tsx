@@ -106,17 +106,16 @@ export function DonationIllustration() {
 
 export function EmptyDocIcon({ variant }: { variant: 'blocked' | 'empty' }) {
   return (
-    <svg width="120" height="104" viewBox="0 0 120 104" aria-hidden="true">
-      <ellipse cx="60" cy="96" rx="40" ry="5" fill="#d8ebe8" />
-      <path d="M20 42c0-22 20-36 42-34 20 2 38 16 36 38-2 20-22 34-44 32C34 76 20 62 20 42Z" fill="#e3f1ef" />
-      <path d="M42 18h28l14 14v46a4 4 0 0 1-4 4H42a4 4 0 0 1-4-4V22a4 4 0 0 1 4-4Z" fill="#fff" stroke="#8c8c8c" strokeWidth="2.5" />
-      <path d="M70 18v14h14" fill="none" stroke="#8c8c8c" strokeWidth="2.5" />
-      <path d="M48 40h22M48 48h16" stroke="#8c8c8c" strokeWidth="2.5" strokeLinecap="round" />
-      <path d="M86 16c4 0 6 3 6 6v10" stroke="#8c8c8c" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-      <circle cx="78" cy="70" r="13" fill="#fff" stroke="#8c8c8c" strokeWidth="2.5" />
+    // Mengikuti desain Hifi 665-40876 (X di tengah) dan 665-41008 (dua garis)
+    <svg width="140" height="110" viewBox="0 0 140 110" aria-hidden="true">
+      <ellipse cx="70" cy="104" rx="34" ry="2.5" fill="#e2e2e2" />
+      <path d="M30 62c-8-14 6-28 22-26 8-12 30-14 40-2 14-6 30 4 26 20 10 10 2 30-16 32-12 10-36 10-48 2-16 2-30-10-24-26Z" fill="#d6ebe8" />
+      <path d="M52 16h28l16 16v56a4 4 0 0 1-4 4H52a4 4 0 0 1-4-4V20a4 4 0 0 1 4-4Z" fill="#f5f5f5" stroke="#8c8c8c" strokeWidth="2.5" strokeLinejoin="round" />
+      <path d="M80 16v12a4 4 0 0 0 4 4h12" fill="#d9d9d9" stroke="#8c8c8c" strokeWidth="2.5" strokeLinejoin="round" />
+      <path d="M100 18c3 2 4 5 4 8M105 12c5 3 7 8 7 13" stroke="#8c8c8c" strokeWidth="2.2" fill="none" strokeLinecap="round" />
       {variant === 'blocked'
-        ? <path d="M73 65l10 10M83 65L73 75" stroke="#8c8c8c" strokeWidth="2.5" strokeLinecap="round" />
-        : <path d="M72 70h12" stroke="#8c8c8c" strokeWidth="2.5" strokeLinecap="round" />}
+        ? <path d="M63 49l18 18M81 49L63 67" stroke="#8c8c8c" strokeWidth="3" strokeLinecap="round" />
+        : <path d="M61 53h22M61 62h14" stroke="#8c8c8c" strokeWidth="3" strokeLinecap="round" />}
     </svg>
   )
 }

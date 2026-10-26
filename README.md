@@ -64,6 +64,7 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
   - Detail program dengan "Tanggal Persetujuan".
   - Buat/Edit program dengan date picker, upload foto, dan peringatan keluar halaman.
   - Admin bisa menyetujui atau menolak program.
+- **Topbar**: ikon ☰ dan menu pengguna (peran, nama, email, tombol "Keluar" dengan konfirmasi).
 - **Transaksi & Penarikan**: masih placeholder (desain Hifi belum ada).
 
 ## Asumsi yang dipakai (perlu konfirmasi PM/Designer)
@@ -81,3 +82,5 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
   - Tombol **Batal** di halaman lihat Fundraiser = kembali ke halaman sebelumnya.
   - "Lupa Password" menampilkan "Email tidak terdaftar" sesuai desain, padahal AC PRD meminta pesan yang sama untuk email terdaftar/tidak.
   - Kolom "Nama Fundraiser" di tabel Program hanya untuk Admin. Di desain, kolom ini muncul bersama tombol "Buat Program Baru".
+- **Baru (update desain 26 Okt 2026 malam)**:
+  - Ikon ☰ di topbar fungsinya belum dijelaskan di desain. Di prototipe ikon ini menyembunyikan/menampilkan sidebar.
