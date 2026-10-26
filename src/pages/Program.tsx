@@ -1,0 +1,215 @@
+import { useEffect, useMemo, useRef } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { ArrowLeft, Download, Eye, Info, Pencil, Plus, Clock } from 'lucide-react'
+import { StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
+import { ApprovalPanel } from '../components/Approval'
+import { EmptyDocIcon, MoneyBag } from '../components/brand'
+import { EDITABLE, feeOf, netOf, statusOf, useDB } from '../lib/store'
+import { approveProgram, rejectProgram } from '../lib/actions'
+import { daysLeft, rupiah, tanggal } from '../lib/format'
+import { downloadCsv } from '../lib/export'
+import type { Program, ProgramStatus } from '../lib/types'
+
+const DECIDED: ProgramStatus[] = ['Aktif', 'Selesai', 'Ditolak']
+
+function hasFunds(p: Program) { return p.status === 'Aktif' }
+function sisaWaktu(p: Program) {
+  const s = statusOf(p)
+  if (p.status !== 'Aktif' || s === 'Selesai') return '-'
+  return `${daysLeft(p.endDate)} Hari`
+}
+function persen(p: Program) { return hasFunds(p) && p.target > 0 ? Math.round((p.gross / p.target) * 100) + '%' : '-' }
+
+function StatCards({ programs, blank }: { programs: Program[]; blank: boolean }) {
+  const live = programs.filter(hasFunds)
+  const gross = live.reduce((s, p) => s + p.gross, 0)
+  const fee = live.reduce((s, p) => s + feeOf(p), 0)
+  const v = (n: number) => (blank ? 'Rp -' : rupiah(n))
+  return (
+    <div className="stats">
+      <div className="stat gross"><div className="stat-head"><span className="stat-icon"><MoneyBag /></span>Total Terkumpul (Gross)</div><div className="stat-value">{v(gross)}</div></div>
+      <div className="stat net"><div className="stat-head"><span className="stat-icon"><MoneyBag /></span>Total Terkumpul (Net)</div><div className="stat-value">{v(gross - fee)}</div></div>
+      <div className="stat fee"><div className="stat-head"><span className="stat-icon"><MoneyBag /></span>Total Fee (3%)</div><div className="stat-value">{v(fee)}</div></div>
+    </div>
+  )
+}
+
+export function ProgramPage() {
+  const db = useDB()
+  const nav = useNavigate()
+  const toast = useToast()
+  const [params, setParams] = useSearchParams()
+  const user = db.users.find((u) => u.id === db.session?.userId)!
+  const isAdmin = user.role === 'admin'
+  const fundraiser = db.fundraisers.find((f) => f.id === user.fundraiserId)
+  const verified = isAdmin || fundraiser?.status === 'Terverifikasi'
+  const programs = useMemo(
+    () => db.programs.filter((p) => isAdmin || p.fundraiserId === user.fundraiserId),
+    [db.programs, isAdmin, user.fundraiserId],
+  )
+  const frName = (id: string) => db.fundraisers.find((f) => f.id === id)?.name ?? '-'
+  const paged = usePaged(programs)
+  const detailId = params.get('detail')
+  const detail = detailId ? programs.find((p) => p.id === detailId) : undefined
+
+  const notified = useRef<string | null>(null)
+  useEffect(() => {
+    // Termasuk upaya membuka program milik fundraiser lain lewat URL
+    if (detailId && !detail) {
+      if (notified.current !== detailId) toast('Data program tidak ditemukan', 'err')
+      notified.current = detailId
+      setParams({}, { replace: true })
+    }
+  }, [detailId, detail, setParams, toast])
+
+  const exportCsv = () => {
+    downloadCsv('program.csv',
+      ['ID Program', 'Judul', 'Fundraiser', 'Target Terkumpul', 'Total Terkumpul (Gross)', 'Total Terkumpul (Net)', 'Total Fee (3%)', 'Persentase Tercapai', 'Jumlah Donatur', 'Sisa Waktu', 'Status'],
+      programs.map((p) => [p.id, p.title, frName(p.fundraiserId), p.target, hasFunds(p) ? p.gross : 0, hasFunds(p) ? netOf(p) : 0, hasFunds(p) ? feeOf(p) : 0, persen(p), hasFunds(p) ? p.donors : 0, sisaWaktu(p), statusOf(p)]))
+    toast('File program.csv diunduh')
+  }
+
+  const createBtn = !isAdmin && (
+    <button className="btn btn-primary btn-sm" disabled={!verified} onClick={() => nav('/dashboard/program/buat')}>
+      Buat Program Baru <Plus size={16} />
+    </button>
+  )
+
+  return (
+    <>
+      <div className="page-head"><h1 className="page-title">Program</h1>{createBtn}</div>
+      <StatCards programs={programs} blank={!verified} />
+
+      {!verified ? (
+        <div className="card empty">
+          <EmptyDocIcon variant="blocked" />
+          <div className="empty-title">Program Belum Bisa Dibuat</div>
+          <p className="empty-text">Akun Anda masih dalam proses verifikasi oleh admin. Anda dapat membuat program setelah akun berhasil diverifikasi.</p>
+        </div>
+      ) : programs.length === 0 ? (
+        <div className="card empty">
+          <EmptyDocIcon variant="empty" />
+          <div className="empty-title">Belum Ada Program</div>
+          <p className="empty-text">Anda belum memiliki program. Mulai buat program pertama Anda untuk menggalang dana.</p>
+          {!isAdmin && <button className="btn btn-primary btn-sm" onClick={() => nav('/dashboard/program/buat')}>Buat Program Baru <Plus size={16} /></button>}
+        </div>
+      ) : (
+        <div className="card">
+          <div className="table-toolbar"><button className="btn btn-outline btn-sm" onClick={exportCsv}>Export <Download size={15} /></button></div>
+          <div className="table-wrap">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>No</th><th>Nama Program</th>{isAdmin && <th className="wrap">Nama<br />Fundraiser</th>}
+                  <th className="wrap">Target<br />Terkumpul</th><th className="wrap">Total<br />Terkumpul</th><th className="wrap">Persentase<br />Tercapai</th>
+                  <th className="wrap">Jumlah<br />Donatur</th><th>Sisa Waktu</th><th>Status</th><th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paged.slice.map((p, i) => {
+                  const s = statusOf(p)
+                  const canEdit = !isAdmin && EDITABLE.includes(s)
+                  return (
+                    <tr key={p.id}>
+                      <td>{paged.offset + i + 1}</td>
+                      <td>{p.title}</td>
+                      {isAdmin && <td>{frName(p.fundraiserId)}</td>}
+                      <td className="num">{p.target ? rupiah(p.target) : '-'}</td>
+                      <td className="num">{hasFunds(p) ? rupiah(p.gross) : '-'}</td>
+                      <td>{persen(p)}</td>
+                      <td>{hasFunds(p) ? p.donors : '-'}</td>
+                      <td className="num">{sisaWaktu(p)}</td>
+                      <td><StatusBadge status={s} /></td>
+                      <td className="num">
+                        <button className="icon-btn view" aria-label={`Lihat ${p.title}`} onClick={() => setParams({ detail: p.id })}><Eye size={15} /></button>
+                        {!isAdmin && (
+                          <button className="icon-btn edit" aria-label={`Edit ${p.title}`} disabled={!canEdit} title={canEdit ? undefined : 'Program yang menunggu persetujuan tidak bisa diedit'}
+                            onClick={() => nav(`/dashboard/program/${p.id}/edit`)}><Pencil size={14} /></button>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          <TableFooter {...paged} />
+        </div>
+      )}
+
+      {detail && <ProgramDrawer p={detail} isAdmin={isAdmin} fundraiserName={frName(detail.fundraiserId)} onClose={() => setParams({})} />}
+    </>
+  )
+}
+
+function Tip({ text }: { text: string }) {
+  return <span title={text} style={{ display: 'inline-flex', verticalAlign: '-2px', marginLeft: 4, color: '#b0b0b0', cursor: 'help' }}><Info size={13} /></span>
+}
+
+function ProgramDrawer({ p, isAdmin, fundraiserName, onClose }: { p: Program; isAdmin: boolean; fundraiserName: string; onClose: () => void }) {
+  const toast = useToast()
+  const nav = useNavigate()
+  const s = statusOf(p)
+  const live = hasFunds(p)
+  return (
+    <div className="drawer" role="dialog" aria-label="Detail Program">
+      <div className="drawer-body">
+        <div className="drawer-head"><button onClick={onClose} aria-label="Kembali"><ArrowLeft size={20} /></button>Detail Program</div>
+        <div className="hero">
+          <div className="hero-row"><div className="hero-title">{p.title}</div><StatusBadge status={s} /></div>
+        </div>
+        {p.image
+          ? <img className="banner-img" src={p.image} alt={`Foto ${p.title}`} />
+          : <div className="banner-img" style={{ display: 'grid', placeItems: 'center', color: '#8f8f8f', fontSize: 13 }}>Belum ada foto</div>}
+
+        <div className="sec-title">Deskripsi Program</div>
+        <div className="desc-box">{p.description || <span className="muted">Belum ada deskripsi</span>}</div>
+
+        {p.pendingEdit && (
+          <div className="alert orange">
+            <div className="alert-title"><Clock size={16} /> Perubahan menunggu persetujuan</div>
+            Deskripsi baru: “{p.pendingEdit.description}”
+          </div>
+        )}
+
+        <div className="sec-title">Informasi Program</div>
+        <dl className="kv">
+          <dt>Judul Program</dt><dd>{p.title}</dd>
+          <dt>Fundraiser</dt><dd>{fundraiserName}</dd>
+          <dt>Target Terkumpul</dt><dd>{p.target ? rupiah(p.target) : '-'}</dd>
+          {live && <>
+            <dt>Total Terkumpul (Gross)<Tip text="Total donasi yang diterima untuk program ini" /></dt><dd>{rupiah(p.gross)}</dd>
+            <dt>Total Terkumpul (Net)<Tip text="Total donasi setelah dipotong fee 3%" /></dt><dd>{rupiah(netOf(p))}</dd>
+            <dt>Total Fee (3%)</dt><dd>{rupiah(feeOf(p))}</dd>
+          </>}
+          <dt>Persentase Tercapai</dt><dd>{persen(p)}</dd>
+          <dt>Jumlah Donatur</dt><dd>{live ? p.donors : '-'}</dd>
+          <dt>Tanggal Berakhir</dt><dd>{tanggal(p.endDate)}</dd>
+          <dt>Sisa Waktu</dt><dd>{sisaWaktu(p)}</dd>
+          <dt>Status Persetujuan</dt><dd><StatusBadge status={s} /></dd>
+          {DECIDED.includes(s) && p.decidedAt && <><dt>Tanggal Persetujuan</dt><dd>{tanggal(p.decidedAt)}</dd></>}
+          {p.rejectReason && <><dt>Alasan Penolakan</dt><dd>{p.rejectReason}</dd></>}
+        </dl>
+
+        {!isAdmin && (
+          <button className="btn btn-primary btn-block mt-16" disabled={!EDITABLE.includes(s)}
+            title={EDITABLE.includes(s) ? undefined : 'Program yang menunggu persetujuan tidak bisa diedit'}
+            onClick={() => nav(`/dashboard/program/${p.id}/edit`)}>Edit</button>
+        )}
+        {isAdmin && s === 'Menunggu Persetujuan' && (
+          <div className="mt-16">
+            <ApprovalPanel
+              key={p.id}
+              approveLabel="Setujui Program"
+              statusWord="persetujuan"
+              approveConfirm="Program ini akan disetujui dan statusnya diperbarui. Apakah Anda yakin ingin melanjutkan?"
+              rejectConfirm="Program ini akan ditolak, dan alasan penolakan akan disimpan sebagai catatan. Apakah Anda yakin ingin melanjutkan?"
+              onApprove={() => { approveProgram(p.id); toast(p.pendingEdit ? 'Perubahan program disetujui' : 'Program disetujui dan tampil ke donatur') }}
+              onReject={(r) => { rejectProgram(p.id, r); toast(p.pendingEdit ? 'Perubahan program ditolak' : 'Program ditolak') }}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

@@ -1,0 +1,270 @@
+import { getDB, setDB } from './store'
+import { uid } from './format'
+import type { DocFile, Fundraiser, Program, ProgramEdit, SimEmail, User } from './types'
+
+export const IDLE_MS_DEFAULT = 30 * 60 * 1000 // AC Login #5: sesi berakhir setelah 30 menit tidak aktif
+export const SESSION_MAX_MS = 7 * 24 * 60 * 60 * 1000 // Validasi Login: 7 hari tidak membuka website
+export const RESET_TTL_MS = 60 * 60 * 1000 // tautan reset berlaku 60 menit
+
+const now = () => new Date().toISOString()
+
+// ---------------- Sesi ----------------
+export function currentUser(): User | null {
+  const db = getDB()
+  if (!db.session) return null
+  return db.users.find((u) => u.id === db.session!.userId) ?? null
+}
+
+export function currentFundraiser(): Fundraiser | null {
+  const u = currentUser()
+  if (!u?.fundraiserId) return null
+  return getDB().fundraisers.find((f) => f.id === u.fundraiserId) ?? null
+}
+
+/** Dipanggil saat aplikasi dibuka: sesi habis jika website tidak dibuka 7 hari (hitungan diulang tiap dibuka, K-01). */
+export function checkSessionExpiry(): boolean {
+  const s = getDB().session
+  if (!s) return false
+  if (Date.now() - new Date(s.lastActive).getTime() > SESSION_MAX_MS) {
+    setDB((d) => { d.session = null })
+    return true
+  }
+  return false
+}
+
+export function touchSession() {
+  const s = getDB().session
+  if (!s) return
+  // Hemat tulis: perbarui paling sering sekali per menit
+  if (Date.now() - new Date(s.lastActive).getTime() < 60_000) return
+  setDB((d) => { if (d.session) d.session.lastActive = now() })
+}
+
+export function login(email: string, password: string): { ok: true; user: User } | { ok: false; error: string } {
+  const user = getDB().users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase())
+  if (!user || user.password !== password) return { ok: false, error: 'Email atau password salah' }
+  setDB((d) => { d.session = { userId: user.id, lastActive: now() } })
+  return { ok: true, user }
+}
+
+export function logout() {
+  setDB((d) => { d.session = null })
+}
+
+// ---------------- Email simulasi ----------------
+function pushEmail(d: ReturnType<typeof getDB>, email: Omit<SimEmail, 'id' | 'createdAt'>) {
+  d.emails.unshift({ ...email, id: uid('mail'), createdAt: now() })
+}
+
+// ---------------- Registrasi ----------------
+export interface RegisterData {
+  email: string
+  category: string
+  phone: string
+  licenseNo: string
+  name: string
+  businessField: string
+  address: string
+  bankName: string
+  commodityAccount: string
+  withdrawAccount: string
+  npwp: string
+}
+
+export function emailTaken(email: string, exceptUserId?: string): boolean {
+  return getDB().users.some((u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.id !== exceptUserId)
+}
+
+export function registerFundraiser(data: RegisterData, doc: DocFile, password: string) {
+  const fid = uid('f')
+  setDB((d) => {
+    d.fundraisers.unshift({
+      id: fid, ...data, email: data.email.trim(), doc,
+      registeredAt: now(), status: 'Menunggu Verifikasi',
+    })
+    d.users.push({
+      id: 'u-' + fid, email: data.email.trim(), password, role: 'fundraiser', name: data.name, fundraiserId: fid,
+    })
+  })
+}
+
+/** Edit Fundraiser (desain Hifi baru). Bisa dari status Terverifikasi atau Ditolak. */
+export function updateFundraiserData(id: string, data: RegisterData, doc: DocFile) {
+  setDB((d) => {
+    const f = d.fundraisers.find((x) => x.id === id)
+    if (!f) return
+    Object.assign(f, data, { email: data.email.trim(), doc })
+    if (f.status === 'Ditolak') {
+      // Asumsi: setelah diperbaiki, kembali menunggu verifikasi.
+      // Untuk yang Terverifikasi statusnya tetap (perlu konfirmasi apakah harus verifikasi ulang).
+      f.status = 'Menunggu Verifikasi'
+      f.rejectedAt = undefined
+      f.rejectReason = undefined
+    }
+    const u = d.users.find((x) => x.fundraiserId === id)
+    if (u) { u.name = data.name; u.email = data.email.trim() }
+  })
+}
+
+// ---------------- Lupa password ----------------
+/** false jika email tidak terdaftar — desain baru menampilkan error "Email tidak terdaftar" (beda dengan AC PRD). */
+export function requestReset(email: string): boolean {
+  const user = getDB().users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase())
+  if (!user) return false
+  const token = uid('rst')
+  setDB((d) => {
+    // K-17 (asumsi): tautan lama dibatalkan saat meminta tautan baru
+    d.resetTokens.forEach((t) => { if (t.email === user.email) t.revoked = true })
+    d.resetTokens.push({ token, email: user.email, createdAt: now(), used: false, revoked: false })
+    pushEmail(d, {
+      to: user.email,
+      subject: 'Atur Ulang Password Anda',
+      body: `Halo ${user.name},\n\nKami menerima permintaan untuk mengatur ulang password akun Anda. Klik tombol di bawah untuk melanjutkan. Tautan ini berlaku 60 menit dan hanya bisa dipakai sekali.`,
+      resetToken: token,
+    })
+  })
+  return true
+}
+
+export type TokenState = 'valid' | 'expired' | 'used' | 'invalid'
+
+export function tokenState(token: string | null): TokenState {
+  if (!token) return 'invalid'
+  const t = getDB().resetTokens.find((x) => x.token === token)
+  if (!t || t.revoked) return 'invalid'
+  if (t.used) return 'used'
+  if (Date.now() - new Date(t.createdAt).getTime() > RESET_TTL_MS) return 'expired'
+  return 'valid'
+}
+
+export function tokenEmail(token: string | null): string | null {
+  return getDB().resetTokens.find((x) => x.token === token)?.email ?? null
+}
+
+export function expireTokenForDemo(token: string) {
+  setDB((d) => {
+    const t = d.resetTokens.find((x) => x.token === token)
+    if (t) t.createdAt = new Date(Date.now() - RESET_TTL_MS - 60_000).toISOString()
+  })
+}
+
+export function resetPassword(token: string, password: string) {
+  setDB((d) => {
+    const t = d.resetTokens.find((x) => x.token === token)
+    if (!t) return
+    t.used = true
+    const u = d.users.find((x) => x.email === t.email)
+    if (!u) return
+    u.password = password
+    pushEmail(d, {
+      to: u.email,
+      subject: 'Password Berhasil Diubah',
+      body: `Halo ${u.name},\n\nPassword akun Anda berhasil diubah. Jika Anda tidak merasa melakukan perubahan password, segera hubungi tim kami untuk mengamankan akun Anda.`,
+    })
+  })
+}
+
+// ---------------- Approval fundraiser ----------------
+export function approveFundraiser(id: string) {
+  setDB((d) => {
+    const f = d.fundraisers.find((x) => x.id === id)
+    if (!f || f.status !== 'Menunggu Verifikasi') return
+    f.status = 'Terverifikasi'
+    f.verifiedAt = now()
+    pushEmail(d, {
+      to: f.email,
+      subject: 'Akun Fundraiser Anda Terverifikasi',
+      body: `Halo ${f.name},\n\nSelamat! Pendaftaran akun fundraiser Anda telah diverifikasi oleh Admin. Sekarang Anda dapat login dan membuat program donasi.`,
+    })
+  })
+}
+
+export function rejectFundraiser(id: string, reason: string) {
+  setDB((d) => {
+    const f = d.fundraisers.find((x) => x.id === id)
+    if (!f || f.status !== 'Menunggu Verifikasi') return
+    f.status = 'Ditolak'
+    f.rejectedAt = now()
+    f.rejectReason = reason.trim()
+    // K-07 (asumsi): email penolakan juga dikirim
+    pushEmail(d, {
+      to: f.email,
+      subject: 'Pendaftaran Fundraiser Ditolak',
+      body: `Halo ${f.name},\n\nMohon maaf, pendaftaran akun fundraiser Anda belum dapat disetujui.\nAlasan: ${reason.trim()}\n\nSilakan login untuk memperbarui data Anda.`,
+    })
+  })
+}
+
+// ---------------- Program ----------------
+export interface ProgramInput {
+  title: string
+  target: number
+  endDate: string
+  description: string
+  image: string
+}
+
+export function createProgram(fundraiserId: string, input: ProgramInput, asDraft: boolean): string {
+  const id = uid('p')
+  setDB((d) => {
+    d.programs.unshift({
+      id, fundraiserId, ...input, gross: 0, donors: 0, createdAt: now(),
+      status: asDraft ? 'Draf' : 'Menunggu Persetujuan',
+    })
+  })
+  return id
+}
+
+/** Draf/Ditolak: semua field berubah. Program Aktif: perubahan disimpan sebagai pendingEdit (K-13). */
+export function updateProgram(id: string, input: ProgramInput, mode: 'draft' | 'submit') {
+  setDB((d) => {
+    const p = d.programs.find((x) => x.id === id)
+    if (!p) return
+    if (p.status === 'Aktif') {
+      const edit: ProgramEdit = { description: input.description, image: input.image }
+      p.pendingEdit = edit
+      return
+    }
+    Object.assign(p, input)
+    p.rejectReason = undefined
+    p.decidedAt = undefined
+    p.status = mode === 'draft' ? 'Draf' : 'Menunggu Persetujuan'
+  })
+}
+
+export function approveProgram(id: string) {
+  setDB((d) => {
+    const p = d.programs.find((x) => x.id === id)
+    if (!p) return
+    if (p.pendingEdit) {
+      Object.assign(p, p.pendingEdit)
+      p.pendingEdit = undefined
+      return
+    }
+    if (p.status !== 'Menunggu Persetujuan') return
+    p.status = 'Aktif'
+    p.decidedAt = now()
+  })
+}
+
+export function rejectProgram(id: string, reason: string) {
+  setDB((d) => {
+    const p = d.programs.find((x) => x.id === id)
+    if (!p) return
+    if (p.pendingEdit) {
+      // K-13 (asumsi): perubahan ditolak, program tetap aktif dengan data lama
+      p.pendingEdit = undefined
+      p.rejectReason = 'Perubahan ditolak: ' + reason.trim()
+      return
+    }
+    if (p.status !== 'Menunggu Persetujuan') return
+    p.status = 'Ditolak'
+    p.rejectReason = reason.trim()
+    p.decidedAt = now()
+  })
+}
+
+export function programById(id: string | null): Program | undefined {
+  if (!id) return undefined
+  return getDB().programs.find((p) => p.id === id)
+}
