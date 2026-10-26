@@ -22,7 +22,7 @@ Buka http://localhost:5173. Perintah lain: `npm run typecheck` (cek TypeScript) 
 Link: https://aprilliobintang284.github.io/ziswaf-prototype/
 
 - Setiap push ke branch `main` otomatis di-build dan dipublikasikan oleh workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). Progresnya bisa dilihat di tab **Actions** repo.
-- Situs GitHub Pages bisa dibuka siapa pun yang punya link, walaupun repo-nya private. Yang private hanya kode sumbernya.
+- Repo ini public (GitHub Pages gratis hanya untuk repo public), jadi situs dan kode sumbernya bisa dilihat siapa pun yang punya link.
 - Data dummy tetap tersimpan di browser masing-masing orang, jadi perubahan satu orang tidak terlihat oleh orang lain.
 
 ## Akun demo
