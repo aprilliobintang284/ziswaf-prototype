@@ -38,13 +38,13 @@ export function checkSessionExpiry(): boolean {
 export function touchSession() {
   const s = getDB().session
   if (!s) return
-  // Hemat tulis: perbarui paling sering sekali per 15 detik (dibaca juga oleh tab lain, K-45)
+  // Hemat tulis: perbarui paling sering sekali per 15 detik (dibaca juga oleh tab lain, K-43)
   if (Date.now() - new Date(s.lastActive).getTime() < TOUCH_MS) return
   setDB((d) => { if (d.session) d.session.lastActive = now() })
 }
 
 export function login(email: string, password: string): { ok: true; user: User } | { ok: false; error: string } {
-  // K-41 (asumsi): email dibersihkan, password dibandingkan apa adanya (tidak di-trim)
+  // Standar QA: email dibersihkan, password dibandingkan apa adanya (tidak di-trim)
   const user = getDB().users.find((u) => u.email.toLowerCase() === clean(email).toLowerCase())
   if (!user || user.password !== password) return { ok: false, error: 'Email atau password salah' }
   setDB((d) => { d.session = { userId: user.id, lastActive: now() } })
@@ -79,7 +79,7 @@ export function emailTaken(email: string, exceptUserId?: string): boolean {
   return getDB().users.some((u) => u.email.toLowerCase() === clean(email).toLowerCase() && u.id !== exceptUserId)
 }
 
-/** K-41 (asumsi): semua isian teks disimpan tanpa spasi/karakter tak terlihat di awal & akhir. */
+/** Standar QA: semua isian teks disimpan tanpa spasi/karakter tak terlihat di awal & akhir. */
 function cleanData(data: RegisterData): RegisterData {
   return Object.fromEntries(Object.entries(data).map(([k, v]) => [k, typeof v === 'string' ? clean(v) : v])) as unknown as RegisterData
 }

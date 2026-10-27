@@ -12,7 +12,7 @@ const DIGITS = /^[0-9]+$/
 const INVISIBLE = /[​-‍⁠﻿]/g
 
 /**
- * K-41 (asumsi): isian hasil copy-paste dibersihkan sebelum divalidasi dan disimpan —
+ * Standar QA: isian hasil copy-paste dibersihkan sebelum divalidasi dan disimpan —
  * karakter tak terlihat (zero-width space dll.) dibuang, non-breaking space jadi spasi biasa,
  * lalu spasi/tab/baris baru di awal & akhir dibuang. Password dan No. HP (aturan PRD) tidak ikut.
  */
@@ -32,7 +32,7 @@ function blank(v: string) {
 export function validateEmail(v: string): string | undefined {
   if (blank(v)) return 'Email tidak boleh kosong'
   const s = clean(v)
-  if (s.length > 254) return 'Email maksimal 254 karakter' // K-42 (asumsi)
+  if (s.length > 254) return 'Email maksimal 254 karakter' // standar panjang email (RFC)
   return EMAIL_RE.test(s) ? undefined : 'Format email salah'
 }
 
@@ -58,7 +58,7 @@ export function validateFundraiserName(raw: string): string | undefined {
 export function validatePhone(v: string): string | undefined {
   if (!v) return 'Nomor telepon wajib diisi'
   // PRD: angka 10–13 digit, tanpa spasi di awal/akhir. Desain memakai satu pesan untuk semua kasus.
-  // K-43 (asumsi): harus diawali 08, jadi 0000000000 / 62812… ditolak.
+  // K-41 (asumsi): harus diawali 08, jadi 0000000000 / 62812… ditolak.
   if (v !== v.trim() || !DIGITS.test(v) || v.length < 10 || v.length > 13 || !v.startsWith('08')) return 'Nomor telepon tidak valid'
   return undefined
 }

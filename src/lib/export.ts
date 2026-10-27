@@ -2,7 +2,7 @@
 
 function cell(v: unknown, keepText = false): string {
   let s = v === undefined || v === null ? '' : String(v)
-  // Teks yang diawali = + - @ dibaca Excel sebagai rumus (injeksi rumus) → diberi awalan tanda kutip (K-49)
+  // Teks yang diawali = + - @ dibaca Excel sebagai rumus (injeksi rumus) → diberi awalan tanda kutip (standar keamanan)
   if (!keepText && /^[=+\-@\t\r]/.test(s)) s = "'" + s
   const quoted = '"' + s.replace(/"/g, '""') + '"'
   return keepText && s ? '=' + quoted : quoted

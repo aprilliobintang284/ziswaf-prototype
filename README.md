@@ -93,9 +93,9 @@ Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah
   - **K-39** Fundraiser Terverifikasi yang mengedit data kembali Menunggu Verifikasi. Programnya tetap tampil, tetapi buat/edit program, Transaksi, dan Penarikan dikunci sampai disetujui lagi.
   - **K-40** Email status verifikasi sama untuk disetujui/ditolak dan tidak ada email setelah registrasi, mengikuti desain. Tautan cadangan di email reset memakai domain prototipe (di desain contohnya financeadmin.app).
 - **Baru (audit QA v6, 27 Okt 2026)**, belum diatur PRD:
-  - **K-41** Email dan semua field teks dibersihkan sebelum divalidasi dan disimpan: spasi/tab/baris baru di awal & akhir dibuang, non-breaking space jadi spasi biasa, karakter tak terlihat (zero-width space) dibuang. Batas minimal/maksimal dihitung setelahnya. Password tidak di-trim; No. HP tetap ikut PRD (spasi di awal/akhir = error).
-  - **K-42** Email maksimal 254 karakter.
-  - **K-43** Nomor telepon harus diawali 08.
-  - **K-45** Sesi dibagi semua tab: aktivitas di tab mana pun (termasuk mengetik) menahan logout, dan logout/ganti akun di satu tab langsung berlaku di tab lain.
-  - **K-49** Isi sel export yang diawali `=`, `+`, `-`, `@` diberi awalan tanda kutip supaya tidak dibaca sebagai rumus oleh Excel.
+  - Standar QA (tidak perlu konfirmasi PM): email dan semua field teks dibersihkan sebelum divalidasi dan disimpan: spasi/tab/baris baru di awal & akhir dibuang, non-breaking space jadi spasi biasa, karakter tak terlihat (zero-width space) dibuang. Batas minimal/maksimal dihitung setelahnya. Password tidak di-trim; No. HP tetap ikut PRD (spasi di awal/akhir = error).
+  - Standar QA: email maksimal 254 karakter.
+  - **K-41** Nomor telepon harus diawali 08.
+  - **K-43** Sesi dibagi semua tab: aktivitas di tab mana pun (termasuk mengetik) menahan logout, dan logout/ganti akun di satu tab langsung berlaku di tab lain.
+  - Standar keamanan: isi sel export yang diawali `=`, `+`, `-`, `@` diberi awalan tanda kutip supaya tidak dibaca sebagai rumus oleh Excel.
   - Target Terkumpul: nominal yang ditempel ("Rp 15.000.000", "15.000.000,00") dibaca sebagai Rp15.000.000, tidak jadi 100× lipat. Kursor tidak lompat ke akhir saat mengedit angka di tengah.
