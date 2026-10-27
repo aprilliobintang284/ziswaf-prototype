@@ -52,7 +52,7 @@ export function DashboardLayout() {
     if (!user) return
     const limit = idleMs()
     const expire = () => {
-      // Aktivitas di tab lain tercatat di sesi bersama → tab yang diam tidak boleh me-logout tab yang aktif (K-43)
+      // Aktivitas di tab lain tercatat di sesi bersama → tab yang diam tidak boleh me-logout tab yang aktif (K-42)
       const s = getDB().session
       const idleFor = s ? Date.now() - new Date(s.lastActive).getTime() : limit
       if (idleFor < limit) { timer.current = window.setTimeout(expire, limit - idleFor); return }

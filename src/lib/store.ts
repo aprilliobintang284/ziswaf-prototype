@@ -34,7 +34,7 @@ let state: DB = load()
 const listeners = new Set<() => void>()
 
 // Tab lain mengubah data (simpan, logout, ganti akun) → muat ulang, supaya tab ini ikut berganti
-// dan tidak menimpa data terbaru dengan salinan lama saat menyimpan (K-43).
+// dan tidak menimpa data terbaru dengan salinan lama saat menyimpan (K-42).
 window.addEventListener('storage', (e) => {
   if (e.key !== KEY) return
   state = load()

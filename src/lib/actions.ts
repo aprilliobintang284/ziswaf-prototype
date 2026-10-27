@@ -38,7 +38,7 @@ export function checkSessionExpiry(): boolean {
 export function touchSession() {
   const s = getDB().session
   if (!s) return
-  // Hemat tulis: perbarui paling sering sekali per 15 detik (dibaca juga oleh tab lain, K-43)
+  // Hemat tulis: perbarui paling sering sekali per 15 detik (dibaca juga oleh tab lain, K-42)
   if (Date.now() - new Date(s.lastActive).getTime() < TOUCH_MS) return
   setDB((d) => { if (d.session) d.session.lastActive = now() })
 }

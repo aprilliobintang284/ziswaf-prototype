@@ -58,8 +58,8 @@ export function validateFundraiserName(raw: string): string | undefined {
 export function validatePhone(v: string): string | undefined {
   if (!v) return 'Nomor telepon wajib diisi'
   // PRD: angka 10–13 digit, tanpa spasi di awal/akhir. Desain memakai satu pesan untuk semua kasus.
-  // K-41 (asumsi): harus diawali 08, jadi 0000000000 / 62812… ditolak.
-  if (v !== v.trim() || !DIGITS.test(v) || v.length < 10 || v.length > 13 || !v.startsWith('08')) return 'Nomor telepon tidak valid'
+  // Awalan nomor (08/62) tidak dicek — keputusan QA 27 Okt 2026.
+  if (v !== v.trim() || !DIGITS.test(v) || v.length < 10 || v.length > 13) return 'Nomor telepon tidak valid'
   return undefined
 }
 
