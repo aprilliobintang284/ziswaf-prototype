@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Calendar, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
+import { Icon } from './icons'
 import { NAMA_BULAN, toISODate, todayISO } from '../lib/format'
 
 const DOW = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
@@ -58,19 +58,19 @@ export function DatePicker({ value, onChange, disabled, invalid }: { value: stri
         onFocus={() => { setTemp(value); setOpen(true) }}
       />
       <button type="button" className="input-icon-btn" disabled={disabled} onClick={() => { setTemp(value); setOpen((o) => !o) }} aria-label="Buka kalender">
-        <Calendar size={18} />
+        <Icon name="calendar" />
       </button>
       {open && !disabled && (
         <div className="dp" role="dialog" aria-label="Pilih tanggal">
           <div className="dp-head">
             <div>
-              <button type="button" onClick={() => shift(-12)} aria-label="Tahun sebelumnya"><ChevronsLeft size={16} /></button>
-              <button type="button" onClick={() => shift(-1)} aria-label="Bulan sebelumnya"><ChevronLeft size={16} /></button>
+              <button type="button" onClick={() => shift(-12)} aria-label="Tahun sebelumnya"><Icon name="chevrons-left" size={20} tint /></button>
+              <button type="button" onClick={() => shift(-1)} aria-label="Bulan sebelumnya"><Icon name="chevron-left" size={20} tint /></button>
             </div>
             <span>{NAMA_BULAN[view.m]} {view.y}</span>
             <div>
-              <button type="button" onClick={() => shift(1)} aria-label="Bulan berikutnya"><ChevronRight size={16} /></button>
-              <button type="button" onClick={() => shift(12)} aria-label="Tahun berikutnya"><ChevronsRight size={16} /></button>
+              <button type="button" onClick={() => shift(1)} aria-label="Bulan berikutnya"><Icon name="chevron-left" size={20} tint flip /></button>
+              <button type="button" onClick={() => shift(12)} aria-label="Tahun berikutnya"><Icon name="chevrons-left" size={20} tint flip /></button>
             </div>
           </div>
           <div className="dp-grid">

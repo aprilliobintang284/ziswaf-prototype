@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Box, ChevronDown, CircleUserRound, Menu, Receipt, Users, Wallet } from 'lucide-react'
 import { DonationIllustration, Logo } from './brand'
+import { Icon } from './icons'
 import { ConfirmModal } from './ui'
 import { useDB } from '../lib/store'
 import { IDLE_MS_DEFAULT, logout, touchSession } from '../lib/actions'
@@ -78,10 +78,10 @@ export function DashboardLayout() {
 
   const locked = user.role === 'fundraiser' && fundraiser?.status !== 'Terverifikasi'
   const items = [
-    { to: '/dashboard/fundraiser', label: 'Fundraiser', icon: <Users size={18} /> },
-    { to: '/dashboard/program', label: 'Program', icon: <Box size={18} /> },
-    { to: '/dashboard/transaksi', label: 'Transaksi', icon: <Receipt size={18} />, locked },
-    { to: '/dashboard/penarikan', label: 'Penarikan', icon: <Wallet size={18} />, locked },
+    { to: '/dashboard/fundraiser', label: 'Fundraiser', icon: <Icon name="users" size={18} tint /> },
+    { to: '/dashboard/program', label: 'Program', icon: <Icon name="box" size={18} tint /> },
+    { to: '/dashboard/transaksi', label: 'Transaksi', icon: <Icon name="receipt" size={18} tint />, locked },
+    { to: '/dashboard/penarikan', label: 'Penarikan', icon: <Icon name="wallet" size={18} tint />, locked },
   ]
 
   return (
@@ -100,18 +100,18 @@ export function DashboardLayout() {
       <div className="main">
         <header className="topbar">
           <button className="menu-toggle" aria-label={sideHidden ? 'Tampilkan menu' : 'Sembunyikan menu'} onClick={() => setSideHidden((s) => !s)}>
-            <Menu size={22} strokeWidth={1.6} />
+            <Icon name="menu" size={18} tint />
           </button>
           <div className="usermenu" ref={menuRef}>
             <button className="usermenu-btn" aria-expanded={menu} onClick={() => setMenu((m) => !m)}>
-              <CircleUserRound size={22} strokeWidth={1.4} />
+              <Icon name="user-circle" size={24} tint />
               <span className="usermenu-name">{user.name}</span>
-              <ChevronDown size={16} />
+              <Icon name="chevron-down" tint />
             </button>
             {menu && (
               <div className="usercard" role="menu">
                 <span className="usercard-role">{user.role === 'admin' ? 'Admin' : 'Fundraiser'}</span>
-                <CircleUserRound size={44} strokeWidth={1.1} />
+                <Icon name="user-circle" size={44} tint />
                 <div className="usercard-name">{user.name}</div>
                 <div className="usercard-email">{user.email}</div>
                 <hr />

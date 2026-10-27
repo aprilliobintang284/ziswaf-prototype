@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { AuthLayout } from '../components/layouts'
+import { Icon } from '../components/icons'
 import { Logo } from '../components/brand'
 import { Field, Modal, PasswordCriteria, PasswordInput } from '../components/ui'
 import { DocField, EMPTY_FORM, FundraiserFields, checkDocFile, hasErrors, validateFundraiserForm } from '../components/FundraiserFields'
@@ -81,7 +81,7 @@ export function RegisterPage() {
             Saya menyatakan bahwa data dan dokumen yang saya berikan adalah benar dan sesuai dengan yang sebenarnya
           </label>
           <div className="auth-actions end">
-            <button type="button" className="btn btn-primary" disabled={!canNext} onClick={() => setStep(2)}>Berikut <ArrowRight size={16} /></button>
+            <button type="button" className="btn btn-primary" disabled={!canNext} onClick={() => setStep(2)}>Berikut <Icon name="arrow-left" size={18} tint flip /></button>
           </div>
         </div>
       ) : (
@@ -96,9 +96,9 @@ export function RegisterPage() {
           </Field>
           <PasswordCriteria value={pw} />
           <div className="auth-actions">
-            <button type="button" className="btn btn-outline" onClick={() => setStep(1)} disabled={loading}><ArrowLeft size={16} /> Kembali</button>
+            <button type="button" className="btn btn-outline" onClick={() => setStep(1)} disabled={loading}><Icon name="arrow-left" size={18} /> Kembali</button>
             <button type="button" className="btn btn-primary" onClick={submit} disabled={!canSubmit}>
-              {loading ? <><span className="spin" /> Memproses</> : <>Daftar <ArrowRight size={16} /></>}
+              {loading ? <><span className="spin" /> Memproses</> : <>Daftar <Icon name="arrow-left" size={18} tint flip /></>}
             </button>
           </div>
         </div>

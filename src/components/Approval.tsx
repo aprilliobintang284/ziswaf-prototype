@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { Icon } from './icons'
 import { ConfirmModal, Field } from './ui'
 import { validateReason } from '../lib/validation'
 
@@ -32,8 +32,8 @@ export function ApprovalPanel({ approveLabel, statusWord, approveConfirm, reject
   if (mode === 'idle') {
     return (
       <div className="btn-pair">
-        <button className="btn btn-danger btn-sm" onClick={() => setMode('reject')}><XCircle size={16} /> Tolak</button>
-        <button className="btn btn-success btn-sm" onClick={() => setMode('approve')}><CheckCircle2 size={16} /> {approveLabel}</button>
+        <button className="btn btn-danger btn-sm" onClick={() => setMode('reject')}><Icon name="x-circle" size={16} tint /> Tolak</button>
+        <button className="btn btn-success btn-sm" onClick={() => setMode('approve')}><Icon name="check-circle-outline" size={16} tint /> {approveLabel}</button>
       </div>
     )
   }
@@ -43,7 +43,7 @@ export function ApprovalPanel({ approveLabel, statusWord, approveConfirm, reject
       {mode === 'reject' ? (
         <>
           <div className="alert red">
-            <div className="alert-title"><XCircle size={16} /> Ditolak</div>
+            <div className="alert-title"><Icon name="x-circle" /> Ditolak</div>
             Status {statusWord} akan berubah setelah Anda melakukan konfirmasi
           </div>
           <Field label="Alasan Penolakan" required error={error}>
@@ -54,7 +54,7 @@ export function ApprovalPanel({ approveLabel, statusWord, approveConfirm, reject
         </>
       ) : (
         <div className="alert green">
-          <div className="alert-title"><CheckCircle2 size={16} /> Disetujui</div>
+          <div className="alert-title"><Icon name="check-circle-outline" /> Disetujui</div>
           Status {statusWord} akan berubah setelah Anda melakukan konfirmasi
         </div>
       )}

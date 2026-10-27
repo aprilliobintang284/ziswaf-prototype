@@ -36,6 +36,19 @@ export function MailSim() {
                     <button className="btn btn-outline btn-xs" title="Mundurkan waktu kirim 61 menit untuk menguji tautan kedaluwarsa" onClick={() => expireTokenForDemo(m.resetToken!)}>Simulasikan lewat 60 menit</button>
                   </div>
                 )}
+                {m.loginButton && (
+                  <div className="mail-actions">
+                    <button className="btn btn-primary btn-xs" onClick={() => { setOpen(false); nav('/masuk') }}>Masuk</button>
+                  </div>
+                )}
+                {m.footer && <div className="mail-body mail-footer">{m.footer}</div>}
+                {m.resetToken && (
+                  <div className="mail-fallback">Jika tombol di atas tidak berfungsi, salin dan tempel tautan ini ke browser Anda:
+                    <span className="mail-link">{`${window.location.origin}${import.meta.env.BASE_URL}atur-ulang-password?token=${m.resetToken}`}</span>
+                  </div>
+                )}
+                {/* Penutup lama (sebelum template 27 Okt) tidak punya salam */}
+                {m.footer && <div className="mail-body mail-footer">Salam hangat,{'\n'}<b>Tim Ziswaf</b></div>}
               </div>
             ))}
           </div>

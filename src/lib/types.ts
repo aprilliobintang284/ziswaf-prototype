@@ -72,6 +72,10 @@ export interface SimEmail {
   body: string
   createdAt: string
   resetToken?: string
+  /** Template email punya tombol "Masuk" (Password Berhasil Diubah, Pembaruan Status Verifikasi) */
+  loginButton?: boolean
+  /** Paragraf setelah tombol (template email desain 27 Okt) */
+  footer?: string
 }
 
 export interface ResetToken {

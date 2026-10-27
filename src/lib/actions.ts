@@ -94,13 +94,12 @@ export function updateFundraiserData(id: string, data: RegisterData, doc: DocFil
     const f = d.fundraisers.find((x) => x.id === id)
     if (!f) return
     Object.assign(f, data, { email: data.email.trim(), doc })
-    if (f.status === 'Ditolak') {
-      // Asumsi: setelah diperbaiki, kembali menunggu verifikasi.
-      // Untuk yang Terverifikasi statusnya tetap (perlu konfirmasi apakah harus verifikasi ulang).
-      f.status = 'Menunggu Verifikasi'
-      f.rejectedAt = undefined
-      f.rejectReason = undefined
-    }
+    // Desain 27 Okt (pop-up "Konfirmasi Perubahan"): perubahan data selalu diajukan ulang untuk
+    // diverifikasi admin, baik dari status Ditolak maupun Terverifikasi.
+    f.status = 'Menunggu Verifikasi'
+    f.verifiedAt = undefined
+    f.rejectedAt = undefined
+    f.rejectReason = undefined
     const u = d.users.find((x) => x.fundraiserId === id)
     if (u) { u.name = data.name; u.email = data.email.trim() }
   })
@@ -116,10 +115,12 @@ export function requestReset(email: string): boolean {
     // K-17 (asumsi): tautan lama dibatalkan saat meminta tautan baru
     d.resetTokens.forEach((t) => { if (t.email === user.email) t.revoked = true })
     d.resetTokens.push({ token, email: user.email, createdAt: now(), used: false, revoked: false })
+    // Isi mengikuti template email "Atur Ulang Password" di Figma (desain 27 Okt)
     pushEmail(d, {
       to: user.email,
-      subject: 'Atur Ulang Password Anda',
-      body: `Halo ${user.name},\n\nKami menerima permintaan untuk mengatur ulang password akun Anda. Klik tombol di bawah untuk melanjutkan. Tautan ini berlaku 60 menit dan hanya bisa dipakai sekali.`,
+      subject: 'Atur Ulang Password',
+      body: `Halo ${user.name},\n\nKami menerima permintaan untuk mengatur ulang password akun Ziswaf Anda.\n\nUntuk membuat password baru, silakan klik tombol di bawah ini.`,
+      footer: 'Penting: Tautan ini hanya berlaku selama 60 menit sejak email dikirim. Jika tautan sudah kedaluwarsa, silakan ajukan permintaan reset password kembali.\n\nJika Anda tidak merasa melakukan permintaan ini, abaikan email ini. Password akun Anda tidak akan berubah selama Anda tidak menyelesaikan proses reset password.',
       resetToken: token,
     })
   })
@@ -159,7 +160,9 @@ export function resetPassword(token: string, password: string) {
     pushEmail(d, {
       to: u.email,
       subject: 'Password Berhasil Diubah',
-      body: `Halo ${u.name},\n\nPassword akun Anda berhasil diubah. Jika Anda tidak merasa melakukan perubahan password, segera hubungi tim kami untuk mengamankan akun Anda.`,
+      body: `Halo ${u.name},\n\nPassword akun Ziswaf Anda berhasil diubah.\n\nSilakan masuk ke Platform Ziswaf menggunakan password baru Anda.`,
+      loginButton: true,
+      footer: 'Jika Anda tidak merasa melakukan perubahan ini, segera hubungi tim Ziswaf untuk mendapatkan bantuan dan mengamankan akun Anda.\n\nTerima kasih telah menggunakan Ziswaf.',
     })
   })
 }
@@ -171,12 +174,22 @@ export function approveFundraiser(id: string) {
     if (!f || f.status !== 'Menunggu Verifikasi') return
     f.status = 'Terverifikasi'
     f.verifiedAt = now()
-    pushEmail(d, {
-      to: f.email,
-      subject: 'Akun Fundraiser Anda Terverifikasi',
-      body: `Halo ${f.name},\n\nSelamat! Pendaftaran akun fundraiser Anda telah diverifikasi oleh Admin. Sekarang Anda dapat login dan membuat program donasi.`,
-    })
+    pushEmail(d, statusEmail(f.email, f.name))
   })
+}
+
+/**
+ * Template "Pembaruan Status Verifikasi Fundraiser" (desain 27 Okt) — satu email yang sama untuk
+ * disetujui maupun ditolak; hasilnya dilihat fundraiser setelah masuk ke platform.
+ */
+function statusEmail(to: string, name: string): Omit<SimEmail, 'id' | 'createdAt'> {
+  return {
+    to,
+    subject: 'Pembaruan Status Verifikasi Fundraiser',
+    body: `Halo ${name},\n\nTerima kasih telah mendaftar sebagai fundraiser di Ziswaf.\n\nKami informasikan bahwa proses verifikasi data fundraiser Anda telah selesai dilakukan.\n\nSilakan masuk ke Platform Ziswaf untuk melihat status verifikasi dan informasi lebih lanjut terkait akun Anda.`,
+    loginButton: true,
+    footer: 'Terima kasih atas perhatian dan partisipasi Anda bersama Ziswaf.',
+  }
 }
 
 export function rejectFundraiser(id: string, reason: string) {
@@ -186,12 +199,8 @@ export function rejectFundraiser(id: string, reason: string) {
     f.status = 'Ditolak'
     f.rejectedAt = now()
     f.rejectReason = reason.trim()
-    // K-07 (asumsi): email penolakan juga dikirim
-    pushEmail(d, {
-      to: f.email,
-      subject: 'Pendaftaran Fundraiser Ditolak',
-      body: `Halo ${f.name},\n\nMohon maaf, pendaftaran akun fundraiser Anda belum dapat disetujui.\nAlasan: ${reason.trim()}\n\nSilakan login untuk memperbarui data Anda.`,
-    })
+    // K-07 terjawab desain: email dikirim juga saat ditolak, isinya generik (alasan dilihat di platform)
+    pushEmail(d, statusEmail(f.email, f.name))
   })
 }
 

@@ -76,6 +76,8 @@ a { color: inherit; }
 .has-error .input, .has-error .textarea, .has-error .file-input { border-color: var(--red); }
 .error-text { color: var(--red); font-size: 12px; display: flex; align-items: center; gap: 5px; }
 .error-text svg { flex: none; }
+.ficon { display: inline-flex; flex: none; line-height: 0; }
+.ficon.flip svg { transform: scaleX(-1); }
 .hint-text { color: var(--muted); font-size: 12px; }
 .input-icon-btn { position: absolute; right: 12px; background: none; border: 0; padding: 4px; cursor: pointer; color: #5f5f5f; display: flex; }
 .input.with-icon { padding-right: 44px; }
@@ -99,18 +101,14 @@ a { color: inherit; }
 .criteria { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
 .criteria-title { font-weight: 600; font-size: 13px; }
 .criteria-item { display: flex; align-items: center; gap: 8px; color: #8f8f8f; font-size: 13px; }
-.criteria-item .dot { width: 14px; height: 14px; border-radius: 50%; background: #bdbdbd; display: grid; place-items: center; color: #fff; flex: none; }
 .criteria-item.ok { color: var(--text-2); }
-.criteria-item.ok .dot { background: var(--green-btn); }
 
 /* ---------------- Auth layout ---------------- */
 .auth { display: grid; grid-template-columns: 568fr 872fr; min-height: 100vh; }
-.auth-art { position: relative; overflow: hidden; background: linear-gradient(160deg, #5db6ab 0%, #4fa59b 55%, #4a9c92 100%); display: grid; place-items: center; }
-.auth-art::before { content: ''; position: absolute; inset: -20% -40%; background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,.12) 38%, rgba(255,255,255,.12) 58%, transparent 58%); }
-.auth-art::after { content: ''; position: absolute; inset: 0; background:
-  linear-gradient(155deg, transparent 22%, rgba(231,199,122,.55) 22.15%, transparent 22.35%),
-  linear-gradient(155deg, transparent 71%, rgba(231,199,122,.45) 71.15%, transparent 71.35%); }
-.auth-art svg { position: relative; z-index: 1; width: min(78%, 440px); height: auto; }
+/* Background = layer "BG" di Figma (Copy as SVG), dipotong ke lebar panel kiri */
+.auth-art { position: relative; overflow: hidden; background: #54afa5 url(./assets/bg-auth-panel.svg) center / cover no-repeat; display: grid; place-items: center; }
+/* Di Figma grup ilustrasi 568×626 = selebar panel kiri, posisinya di tengah secara vertikal */
+.auth-illustration { position: relative; z-index: 1; width: 100%; height: auto; }
 .auth-main { background: var(--bg); padding: 72px 150px 56px 108px; display: flex; flex-direction: column; }
 .auth-inner { width: 100%; max-width: 616px; }
 .auth-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; }
@@ -127,9 +125,9 @@ a { color: inherit; }
 .auth-banner.err { background: var(--red-bg); color: #a12a2e; }
 
 .logo { display: inline-flex; align-items: center; gap: 10px; color: var(--primary); font-weight: 700; font-size: 26px; text-decoration: none; letter-spacing: -.3px; }
-.logo svg { width: 32px; height: 32px; }
+.logo-icon { width: 32px; height: auto; display: block; }
 .logo.sm { font-size: 24px; }
-.logo.sm svg { width: 30px; height: 30px; }
+.logo.sm .logo-icon { width: 28px; }
 
 /* ---------------- Dashboard ---------------- */
 .dash { display: grid; grid-template-columns: 284px 1fr; min-height: 100vh; background: var(--primary-soft); }
@@ -166,14 +164,10 @@ a { color: inherit; }
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 20px; }
 .stat { border-radius: 10px; padding: 16px 30px 18px; border: 1.5px solid; border-top-width: 4px; min-height: 102px; }
 .stat-head { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--text-2); }
-.stat-icon { width: 30px; height: 30px; border-radius: 7px; background: rgba(255,255,255,.75); display: grid; place-items: center; }
 .stat-value { font-size: 24px; font-weight: 600; margin-top: 12px; }
 .stat.gross { background: linear-gradient(180deg, #fed691 0%, #feeed7 75%); border-color: #f5b74e; }
-.stat.gross .stat-icon { color: #e08a1e; }
 .stat.net { background: linear-gradient(180deg, #88d0ff 0%, #d4eaf7 75%); border-color: #4a9fe0; }
-.stat.net .stat-icon { color: #2d7fd0; }
 .stat.fee { background: linear-gradient(180deg, #9ce5b8 0%, #cfeadb 75%); border-color: #3fc47a; }
-.stat.fee .stat-icon { color: #24a65c; }
 
 /* Kartu tabel */
 .card { background: var(--bg); border-radius: 10px; box-shadow: var(--shadow); }
@@ -193,7 +187,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
 .rows-select select { height: 30px; border: 1px solid var(--primary); border-radius: 5px; background: #fff; padding: 0 6px; color: var(--primary); }
 .pager { display: flex; align-items: center; border: 1px solid var(--primary); border-radius: 6px; overflow: hidden; }
 .pager button { min-width: 30px; height: 28px; border: 0; background: #fff; color: var(--primary); cursor: pointer; font-size: 13px; padding: 0 6px; display: grid; place-items: center; }
-.pager button:disabled { color: #b9c9c7; cursor: default; }
+.pager button:disabled { color: #cacaca; cursor: default; }
 .pager button.active { background: var(--primary); color: #fff; font-weight: 600; }
 .pager .gap { padding: 0 6px; color: var(--primary); }
 
@@ -206,10 +200,8 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
 .badge.gray { color: #4b4b4b; border-color: #9e9e9e; background: var(--gray-badge); }
 .badge.blue { color: #1f6fb8; border-color: #90c2ef; background: #e8f3fd; }
 
-.icon-btn { width: 24px; height: 24px; border-radius: 5px; border: 0; display: inline-grid; place-items: center; cursor: pointer; margin-right: 6px; }
-.icon-btn.view { background: #d4e8fb; color: #1d6fc5; }
-.icon-btn.edit { background: #ffe2a8; color: #c27c00; }
-.icon-btn:disabled { background: #dcdcdc; color: #9e9e9e; cursor: not-allowed; }
+.icon-btn { width: 20px; height: 20px; border-radius: 4px; border: 0; padding: 0; background: none; display: inline-grid; place-items: center; cursor: pointer; margin-right: 6px; }
+.icon-btn:disabled { cursor: not-allowed; }
 
 /* Drawer */
 .drawer-backdrop { position: fixed; inset: 0; z-index: 40; }
@@ -229,7 +221,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
 .kv dt { color: #9a9a9a; }
 .kv dd { margin: 0; color: var(--text); word-break: break-word; }
 .doc { display: flex; align-items: center; gap: 12px; background: #dcefec; border-radius: 6px; padding: 10px 12px; }
-.doc-icon { color: var(--primary); display: flex; }
+.doc-icon { display: flex; }
 .doc-meta { flex: 1; min-width: 0; }
 .doc-name { font-size: 13px; }
 .doc-size { font-size: 11px; color: var(--muted); }
@@ -249,11 +241,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
 .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.32); display: grid; place-items: center; z-index: 60; padding: 20px; animation: fade .15s; }
 @keyframes fade { from { opacity: 0; } }
 .modal { width: 560px; max-width: 100%; background: var(--bg); border-radius: 14px; padding: 22px 24px 20px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,.2); }
-.modal-icon { width: 46px; height: 46px; border-radius: 10px; display: grid; place-items: center; margin: 0 auto 12px; }
-.modal-icon.warn, .modal-icon.logout { background: #fff3e0; color: #f29d12; }
-.modal-icon.ok { background: #e3f7ea; color: var(--green-btn); }
-.modal-icon.bad { background: var(--red-bg); color: var(--red); }
-.modal-icon.mail { background: #e3f7ea; color: var(--green-btn); }
+.modal-icon { display: flex; justify-content: center; margin: 0 auto 12px; }
 .modal-title { font-size: 18px; font-weight: 700; margin: 0 0 6px; }
 .modal-text { font-size: 14px; color: var(--text-2); margin: 0 0 18px; }
 .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -267,10 +255,12 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
 /* Form program */
 .form-card { padding: 22px 24px 26px; display: flex; flex-direction: column; gap: 18px; }
 .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; }
+/* Tombol rata kanan berukuran tetap (Edit / Batal-Simpan di halaman Fundraiser, desain 27 Okt) */
+.btn-wide { min-width: 235px; }
 .upload-box { border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #8f8f8f; font-size: 13px; cursor: pointer; position: relative; overflow: hidden; }
 .upload-box:hover { border-color: var(--primary); }
 .upload-box img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.upload-change { position: absolute; top: 10px; right: 10px; z-index: 2; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.92); border: 0; display: grid; place-items: center; cursor: pointer; color: var(--primary); }
+.upload-change { position: absolute; top: 10px; right: 10px; z-index: 2; border: 0; padding: 0; background: none; display: grid; place-items: center; cursor: pointer; }
 .counter { font-size: 12px; color: var(--muted); text-align: right; }
 
 /* Date picker */
@@ -305,6 +295,9 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
 .mail-meta { color: var(--muted); margin: 2px 0 6px; }
 .mail-body { white-space: pre-wrap; color: var(--text-2); }
 .mail-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.mail-footer { margin-top: 8px; }
+.mail-fallback { margin-top: 8px; font-size: 11px; color: var(--muted); }
+.mail-link { display: block; margin-top: 4px; padding: 6px 8px; border: 1px solid #9cc9f0; border-radius: 6px; background: #eef6fd; color: #1d6fc5; word-break: break-all; }
 .proto-tag { position: fixed; left: 12px; bottom: 12px; font-size: 11px; color: #6b7d7b; background: rgba(255,255,255,.8); padding: 3px 8px; border-radius: 10px; z-index: 5; }
 
 .placeholder { padding: 60px 40px; text-align: center; color: var(--muted); }

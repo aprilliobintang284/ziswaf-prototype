@@ -1,8 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { InputHTMLAttributes, ReactNode } from 'react'
-import {
-  AlertTriangle, Check, CheckCircle2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, EyeOff, LogOut, Mail, XCircle,
-} from 'lucide-react'
+import { Icon } from './icons'
+import type { IconName } from './icons'
 import { checkPassword } from '../lib/validation'
 import type { FundraiserStatus, ProgramStatus } from '../lib/types'
 
@@ -29,7 +28,7 @@ export function Field({ label, required, error, invalid, hint, className = '', c
 }
 
 export function ErrorText({ children }: { children: ReactNode }) {
-  return <span className="error-text"><XCircle size={12} strokeWidth={2.2} />{children}</span>
+  return <span className="error-text"><Icon name="alert-circle" />{children}</span>
 }
 
 export function PasswordInput(props: InputHTMLAttributes<HTMLInputElement>) {
@@ -38,7 +37,7 @@ export function PasswordInput(props: InputHTMLAttributes<HTMLInputElement>) {
     <div className="input-wrap">
       <input {...props} type={show ? 'text' : 'password'} className="input with-icon" />
       <button type="button" className="input-icon-btn" onClick={() => setShow((s) => !s)} aria-label={show ? 'Sembunyikan password' : 'Tampilkan password'}>
-        {show ? <Eye size={18} /> : <EyeOff size={18} />}
+        <Icon name={show ? 'eye' : 'eye-off'} />
       </button>
     </div>
   )
@@ -57,7 +56,7 @@ export function PasswordCriteria({ value }: { value: string }) {
       <span className="criteria-title">Kriteria Password:</span>
       {items.map(([ok, text]) => (
         <span key={text} className={'criteria-item' + (ok ? ' ok' : '')}>
-          <span className="dot"><Check size={10} strokeWidth={3} /></span>{text}
+          <Icon name={ok ? 'check-circle' : 'check-circle-off'} />{text}
         </span>
       ))}
     </div>
@@ -82,19 +81,19 @@ export function StatusBadge({ status, small = false }: { status: FundraiserStatu
 // ---------------- Modal ----------------
 type ModalIcon = 'warn' | 'ok' | 'bad' | 'mail' | 'logout'
 
-const ICONS: Record<ModalIcon, ReactNode> = {
-  warn: <AlertTriangle size={24} />,
-  ok: <CheckCircle2 size={26} strokeDasharray="3 2" />,
-  bad: <XCircle size={26} />,
-  mail: <Mail size={24} />,
-  logout: <LogOut size={24} />,
+const ICONS: Record<ModalIcon, IconName> = {
+  warn: 'modal-warn',
+  ok: 'modal-success',
+  bad: 'modal-expired',
+  mail: 'modal-mail',
+  logout: 'modal-logout',
 }
 
 export function Modal({ icon, title, children, actions }: { icon: ModalIcon; title: string; children?: ReactNode; actions: ReactNode }) {
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={title}>
       <div className="modal">
-        <div className={`modal-icon ${icon}`}>{ICONS[icon]}</div>
+        <Icon name={ICONS[icon]} className="modal-icon" />
         <h3 className="modal-title">{title}</h3>
         {children && <p className="modal-text">{children}</p>}
         {actions}
@@ -163,13 +162,13 @@ export function TableFooter({ page, pages, size, setPage, setSize }: { page: num
         </select>
       </label>
       <div className="pager">
-        <button disabled={page === 1} onClick={() => setPage(1)} aria-label="Halaman pertama"><ChevronsLeft size={14} /></button>
-        <button disabled={page === 1} onClick={() => setPage(page - 1)} aria-label="Halaman sebelumnya"><ChevronLeft size={14} /></button>
+        <button disabled={page === 1} onClick={() => setPage(1)} aria-label="Halaman pertama"><Icon name="chevrons-left" size={18} tint /></button>
+        <button disabled={page === 1} onClick={() => setPage(page - 1)} aria-label="Halaman sebelumnya"><Icon name="chevron-left" size={18} tint /></button>
         {nums.map((n, i) => n === '…'
           ? <span key={'g' + i} className="gap">…</span>
           : <button key={n} className={n === page ? 'active' : ''} onClick={() => setPage(n)}>{n}</button>)}
-        <button disabled={page === pages} onClick={() => setPage(page + 1)} aria-label="Halaman berikutnya"><ChevronRight size={14} /></button>
-        <button disabled={page === pages} onClick={() => setPage(pages)} aria-label="Halaman terakhir"><ChevronsRight size={14} /></button>
+        <button disabled={page === pages} onClick={() => setPage(page + 1)} aria-label="Halaman berikutnya"><Icon name="chevron-left" size={18} tint flip /></button>
+        <button disabled={page === pages} onClick={() => setPage(pages)} aria-label="Halaman terakhir"><Icon name="chevrons-left" size={18} tint flip /></button>
       </div>
     </div>
   )

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, useBlocker, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, ImageUp, Upload } from 'lucide-react'
 import { ConfirmModal, Field, useToast } from '../components/ui'
+import { Icon } from '../components/icons'
 import { DatePicker } from '../components/DatePicker'
 import { EDITABLE, statusOf, useDB } from '../lib/store'
 import { createProgram, updateProgram } from '../lib/actions'
@@ -115,7 +115,7 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
     <>
       <div className="page-head">
         <h1 className="page-title">
-          <button className="back" onClick={() => nav('/dashboard/program')} aria-label="Kembali"><ArrowLeft size={26} /></button>
+          <button className="back" onClick={() => nav('/dashboard/program')} aria-label="Kembali"><Icon name="back-arrow" size={26} tint /></button>
           {mode === 'create' ? 'Buat Program' : 'Edit Program'}
         </h1>
       </div>
@@ -144,10 +144,11 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
             {v.image ? (
               <>
                 <img src={v.image} alt="Pratinjau foto program" />
-                <button type="button" className="upload-change" aria-label="Ganti foto" onClick={(e) => { e.stopPropagation(); fileRef.current?.click() }}><ImageUp size={16} /></button>
+                {/* Desain: ikon X di pojok foto untuk menghapus foto (lalu upload ulang) */}
+                <button type="button" className="upload-change" aria-label="Hapus foto" onClick={(e) => { e.stopPropagation(); set('image', '') }}><Icon name="photo-remove" /></button>
               </>
             ) : (
-              <><Upload size={22} color="#555" />Format: JPG atau PNG (Maks. 2 MB)</>
+              <><Icon name="upload" size={24} />Format: JPG atau PNG (Maks. 2 MB)</>
             )}
           </div>
           <input ref={fileRef} type="file" hidden accept=".jpg,.jpeg,.png" onChange={(e) => { onImage(e.target.files?.[0]); e.target.value = '' }} />

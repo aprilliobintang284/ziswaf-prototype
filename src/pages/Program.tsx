@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Download, Eye, Info, Pencil, Plus, Clock } from 'lucide-react'
+// Info & Clock tidak ada padanannya di Figma (tooltip/alert khusus prototipe), jadi tetap memakai lucide
+import { Info, Clock } from 'lucide-react'
 import { StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
 import { ApprovalPanel } from '../components/Approval'
-import { EmptyDocIcon, MoneyBag } from '../components/brand'
+import { Icon } from '../components/icons'
 import { EDITABLE, feeOf, netOf, statusOf, useDB } from '../lib/store'
 import { approveProgram, rejectProgram } from '../lib/actions'
 import { daysLeft, rupiah, tanggal } from '../lib/format'
@@ -27,9 +28,9 @@ function StatCards({ programs, blank }: { programs: Program[]; blank: boolean })
   const v = (n: number) => (blank ? 'Rp -' : rupiah(n))
   return (
     <div className="stats">
-      <div className="stat gross"><div className="stat-head"><span className="stat-icon"><MoneyBag /></span>Total Terkumpul (Gross)</div><div className="stat-value">{v(gross)}</div></div>
-      <div className="stat net"><div className="stat-head"><span className="stat-icon"><MoneyBag /></span>Total Terkumpul (Net)</div><div className="stat-value">{v(gross - fee)}</div></div>
-      <div className="stat fee"><div className="stat-head"><span className="stat-icon"><MoneyBag /></span>Total Fee (3%)</div><div className="stat-value">{v(fee)}</div></div>
+      <div className="stat gross"><div className="stat-head"><Icon name="stat-gross" />Total Terkumpul (Gross)</div><div className="stat-value">{v(gross)}</div></div>
+      <div className="stat net"><div className="stat-head"><Icon name="stat-net" />Total Terkumpul (Net)</div><div className="stat-value">{v(gross - fee)}</div></div>
+      <div className="stat fee"><div className="stat-head"><Icon name="stat-fee" />Total Fee (3%)</div><div className="stat-value">{v(fee)}</div></div>
     </div>
   )
 }
@@ -71,31 +72,33 @@ export function ProgramPage() {
 
   const createBtn = !isAdmin && (
     <button className="btn btn-primary btn-sm" disabled={!verified} onClick={() => nav('/dashboard/program/buat')}>
-      Buat Program Baru <Plus size={16} />
+      Buat Program Baru <Icon name="plus" tint />
     </button>
   )
 
   return (
     <>
       <div className="page-head"><h1 className="page-title">Program</h1>{createBtn}</div>
-      <StatCards programs={programs} blank={!verified} />
+      {/* Fundraiser Terverifikasi yang mengedit data kembali Menunggu Verifikasi (desain 27 Okt).
+          Asumsi K-39: programnya tetap tampil, tetapi buat/edit program dikunci sampai disetujui lagi. */}
+      <StatCards programs={programs} blank={!verified && programs.length === 0} />
 
-      {!verified ? (
+      {!verified && programs.length === 0 ? (
         <div className="card empty">
-          <EmptyDocIcon variant="blocked" />
+          <Icon name="empty-blocked" />
           <div className="empty-title">Program Belum Bisa Dibuat</div>
           <p className="empty-text">Akun Anda masih dalam proses verifikasi oleh admin. Anda dapat membuat program setelah akun berhasil diverifikasi.</p>
         </div>
       ) : programs.length === 0 ? (
         <div className="card empty">
-          <EmptyDocIcon variant="empty" />
+          <Icon name="empty-none" />
           <div className="empty-title">Belum Ada Program</div>
           <p className="empty-text">Anda belum memiliki program. Mulai buat program pertama Anda untuk menggalang dana.</p>
-          {!isAdmin && <button className="btn btn-primary btn-sm" onClick={() => nav('/dashboard/program/buat')}>Buat Program Baru <Plus size={16} /></button>}
+          {!isAdmin && <button className="btn btn-primary btn-sm" onClick={() => nav('/dashboard/program/buat')}>Buat Program Baru <Icon name="plus" tint /></button>}
         </div>
       ) : (
         <div className="card">
-          <div className="table-toolbar"><button className="btn btn-outline btn-sm" onClick={exportCsv}>Export <Download size={15} /></button></div>
+          <div className="table-toolbar"><button className="btn btn-outline btn-sm" onClick={exportCsv}>Export <Icon name="download" /></button></div>
           <div className="table-wrap">
             <table className="tbl">
               <thead>
@@ -108,7 +111,7 @@ export function ProgramPage() {
               <tbody>
                 {paged.slice.map((p, i) => {
                   const s = statusOf(p)
-                  const canEdit = !isAdmin && EDITABLE.includes(s)
+                  const canEdit = !isAdmin && verified && EDITABLE.includes(s)
                   return (
                     <tr key={p.id}>
                       <td>{paged.offset + i + 1}</td>
@@ -121,10 +124,10 @@ export function ProgramPage() {
                       <td className="num">{sisaWaktu(p)}</td>
                       <td><StatusBadge status={s} /></td>
                       <td className="num">
-                        <button className="icon-btn view" aria-label={`Lihat ${p.title}`} onClick={() => setParams({ detail: p.id })}><Eye size={15} /></button>
+                        <button className="icon-btn view" aria-label={`Lihat ${p.title}`} onClick={() => setParams({ detail: p.id })}><Icon name="action-eye" /></button>
                         {!isAdmin && (
                           <button className="icon-btn edit" aria-label={`Edit ${p.title}`} disabled={!canEdit} title={canEdit ? undefined : 'Program yang menunggu persetujuan tidak bisa diedit'}
-                            onClick={() => nav(`/dashboard/program/${p.id}/edit`)}><Pencil size={14} /></button>
+                            onClick={() => nav(`/dashboard/program/${p.id}/edit`)}><Icon name={canEdit ? 'action-pencil' : 'action-pencil-disabled'} /></button>
                         )}
                       </td>
                     </tr>
@@ -137,7 +140,7 @@ export function ProgramPage() {
         </div>
       )}
 
-      {detail && <ProgramDrawer p={detail} isAdmin={isAdmin} fundraiserName={frName(detail.fundraiserId)} onClose={() => setParams({})} />}
+      {detail && <ProgramDrawer p={detail} isAdmin={isAdmin} verified={verified} fundraiserName={frName(detail.fundraiserId)} onClose={() => setParams({})} />}
     </>
   )
 }
@@ -146,7 +149,7 @@ function Tip({ text }: { text: string }) {
   return <span title={text} style={{ display: 'inline-flex', verticalAlign: '-2px', marginLeft: 4, color: '#b0b0b0', cursor: 'help' }}><Info size={13} /></span>
 }
 
-function ProgramDrawer({ p, isAdmin, fundraiserName, onClose }: { p: Program; isAdmin: boolean; fundraiserName: string; onClose: () => void }) {
+function ProgramDrawer({ p, isAdmin, verified, fundraiserName, onClose }: { p: Program; isAdmin: boolean; verified: boolean; fundraiserName: string; onClose: () => void }) {
   const toast = useToast()
   const nav = useNavigate()
   const s = statusOf(p)
@@ -154,7 +157,7 @@ function ProgramDrawer({ p, isAdmin, fundraiserName, onClose }: { p: Program; is
   return (
     <div className="drawer" role="dialog" aria-label="Detail Program">
       <div className="drawer-body">
-        <div className="drawer-head"><button onClick={onClose} aria-label="Kembali"><ArrowLeft size={20} /></button>Detail Program</div>
+        <div className="drawer-head"><button onClick={onClose} aria-label="Kembali"><Icon name="back-arrow" size={20} /></button>Detail Program</div>
         <div className="hero">
           <div className="hero-row"><div className="hero-title">{p.title}</div><StatusBadge status={s} /></div>
         </div>
@@ -192,8 +195,8 @@ function ProgramDrawer({ p, isAdmin, fundraiserName, onClose }: { p: Program; is
         </dl>
 
         {!isAdmin && (
-          <button className="btn btn-primary btn-block mt-16" disabled={!EDITABLE.includes(s)}
-            title={EDITABLE.includes(s) ? undefined : 'Program yang menunggu persetujuan tidak bisa diedit'}
+          <button className="btn btn-primary btn-block mt-16" disabled={!verified || !EDITABLE.includes(s)}
+            title={!verified ? 'Program bisa diedit setelah akun terverifikasi lagi' : EDITABLE.includes(s) ? undefined : 'Program yang menunggu persetujuan tidak bisa diedit'}
             onClick={() => nav(`/dashboard/program/${p.id}/edit`)}>Edit</button>
         )}
         {isAdmin && s === 'Menunggu Persetujuan' && (

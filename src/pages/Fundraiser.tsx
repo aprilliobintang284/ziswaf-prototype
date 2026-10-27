@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Download, Eye, FileText } from 'lucide-react'
 import { StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
+import { Icon } from '../components/icons'
 import { ApprovalPanel } from '../components/Approval'
 import { useDB } from '../lib/store'
 import { approveFundraiser, rejectFundraiser } from '../lib/actions'
@@ -19,7 +19,7 @@ function openDocPreview(f: Fundraiser) {
     <div style="border:2px dashed #ccc;border-radius:12px;padding:60px;text-align:center;color:#999">Dokumen izin usaha milik <b>${f.name}</b></div></div>`
 }
 
-function FundraiserInfo({ f, programCount, self = false }: { f: Fundraiser; programCount: number; self?: boolean }) {
+function FundraiserInfo({ f, programCount }: { f: Fundraiser; programCount: number }) {
   return (
     <>
       <div className="hero">
@@ -46,11 +46,10 @@ function FundraiserInfo({ f, programCount, self = false }: { f: Fundraiser; prog
         {f.status === 'Terverifikasi' && <><dt>Tanggal Verifikasi</dt><dd>{tanggal(f.verifiedAt)}</dd><dt>Jumlah Program</dt><dd>{programCount}</dd></>}
         {/* Desain memakai label "Tanggal Verifikasi" juga untuk status Ditolak */}
         {f.status === 'Ditolak' && <><dt>Tanggal Verifikasi</dt><dd>{tanggal(f.rejectedAt)}</dd><dt>Alasan Ditolak</dt><dd>{f.rejectReason}</dd></>}
-        {f.status === 'Menunggu Verifikasi' && self && <><dt>Jumlah Program</dt><dd>-</dd></>}
       </dl>
       <div className="sec-title">Dokumen Pendukung</div>
       <div className="doc">
-        <span className="doc-icon"><FileText size={22} /></span>
+        <Icon name="file-description" className="doc-icon" />
         <div className="doc-meta"><div className="doc-name">{f.doc.name}</div><div className="doc-size">{f.doc.type.includes('pdf') ? 'PDF' : 'Gambar'} {fileSize(f.doc.size)}</div></div>
         <button className="btn btn-outline btn-xs" onClick={() => openDocPreview(f)}>Lihat</button>
       </div>
@@ -71,19 +70,16 @@ function OwnFundraiser() {
   const user = db.users.find((u) => u.id === db.session?.userId)!
   const f = db.fundraisers.find((x) => x.id === user.fundraiserId)!
   const count = db.programs.filter((p) => p.fundraiserId === f.id).length
-  // Desain: Batal & Edit nonaktif selama Menunggu Verifikasi
+  // Desain: Edit nonaktif selama Menunggu Verifikasi (tombol Batal sudah dihapus di update desain 27 Okt)
   const locked = f.status === 'Menunggu Verifikasi'
-  // Fungsi "Batal" di halaman lihat belum jelas di desain → asumsi: kembali ke halaman sebelumnya
-  const back = () => ((window.history.state?.idx ?? 0) > 0 ? nav(-1) : nav('/dashboard/program'))
   return (
     <>
       <div className="page-head"><h1 className="page-title">Fundraiser</h1></div>
       <div className="card detail-card">
-        <FundraiserInfo f={f} programCount={count} self />
+        <FundraiserInfo f={f} programCount={count} />
       </div>
-      <div className="btn-pair">
-        <button className="btn btn-outline" disabled={locked} onClick={back}>Batal</button>
-        <button className="btn btn-primary" disabled={locked} title={locked ? 'Data bisa diedit setelah proses verifikasi selesai' : undefined}
+      <div className="form-actions">
+        <button className="btn btn-primary btn-wide" disabled={locked} title={locked ? 'Data bisa diedit setelah proses verifikasi selesai' : undefined}
           onClick={() => nav('/dashboard/fundraiser/edit')}>Edit</button>
       </div>
     </>
@@ -126,7 +122,7 @@ function FundraiserList() {
     <>
       <div className="page-head"><h1 className="page-title">Fundraiser</h1></div>
       <div className="card">
-        <div className="table-toolbar"><button className="btn btn-outline btn-sm" onClick={exportCsv}>Export <Download size={15} /></button></div>
+        <div className="table-toolbar"><button className="btn btn-outline btn-sm" onClick={exportCsv}>Export <Icon name="download" /></button></div>
         <div className="table-wrap">
           <table className="tbl">
             <thead><tr><th>No</th><th>Nama</th><th>Email</th><th>Kategori</th><th>Tanggal Daftar</th><th>Status Verifikasi</th><th>Jumlah Program</th><th>Aksi</th></tr></thead>
@@ -140,7 +136,7 @@ function FundraiserList() {
                   <td className="num">{tanggal(f.registeredAt)}</td>
                   <td><StatusBadge status={f.status} /></td>
                   <td>{f.status === 'Terverifikasi' ? counts.get(f.id) ?? 0 : '-'}</td>
-                  <td><button className="icon-btn view" aria-label={`Lihat detail ${f.name}`} onClick={() => setParams({ detail: f.id })}><Eye size={15} /></button></td>
+                  <td><button className="icon-btn view" aria-label={`Lihat detail ${f.name}`} onClick={() => setParams({ detail: f.id })}><Icon name="action-eye" /></button></td>
                 </tr>
               ))}
               {rows.length === 0 && <tr><td colSpan={8} className="tbl-empty">Belum ada fundraiser</td></tr>}
@@ -153,7 +149,7 @@ function FundraiserList() {
       {detail && (
         <div className="drawer" role="dialog" aria-label="Detail Fundraiser">
           <div className="drawer-body">
-            <div className="drawer-head"><button onClick={() => setParams({})} aria-label="Kembali"><ArrowLeft size={20} /></button>Detail Fundraiser</div>
+            <div className="drawer-head"><button onClick={() => setParams({})} aria-label="Kembali"><Icon name="back-arrow" size={20} /></button>Detail Fundraiser</div>
             <FundraiserInfo f={detail} programCount={counts.get(detail.id) ?? 0} />
             {detail.status === 'Menunggu Verifikasi' && (
               <div className="mt-16">
