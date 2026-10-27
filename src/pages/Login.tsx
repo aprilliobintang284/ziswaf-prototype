@@ -7,7 +7,7 @@ import { Logo } from '../components/brand'
 import { Field, PasswordInput } from '../components/ui'
 import { useDB } from '../lib/store'
 import { login } from '../lib/actions'
-import { validateEmail } from '../lib/validation'
+import { clean, validateEmail } from '../lib/validation'
 
 const DEMO = [
   ['Admin', 'admin@ziswaf.id', 'Admin@2026'],
@@ -26,7 +26,7 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   // Desain Hifi: setelah gagal, kedua field merah dan tombol Masuk nonaktif sampai input diubah
   const [err, setErr] = useState<{ email?: string; password?: string; both?: boolean } | null>(null)
-  const canSubmit = email.trim() !== '' && password !== '' && !err
+  const canSubmit = clean(email) !== '' && password !== '' && !err
 
   if (db.session) return <Navigate to={next && next.startsWith('/dashboard') ? next : '/dashboard/fundraiser'} replace />
 

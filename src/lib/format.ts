@@ -11,6 +11,12 @@ export function digitsToRupiahText(digits: string): string {
   return Number(digits).toLocaleString('id-ID')
 }
 
+/** Nominal yang ditempel (contoh "Rp 15.000.000" atau "15.000.000,00") → digit tanpa bagian desimal. */
+export function pastedAmountToDigits(text: string): string {
+  const s = text.trim().replace(/[.,]\d{1,2}$/, '')
+  return s.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 15)
+}
+
 export function tanggal(iso?: string): string {
   if (!iso) return '-'
   const d = new Date(iso.length === 10 ? iso + 'T00:00:00' : iso)

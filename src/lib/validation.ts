@@ -9,31 +9,46 @@ const NAME_RE = /^[A-Za-z0-9 ]+$/
 const ALNUM = /^[A-Za-z0-9]+$/
 const DIGITS = /^[0-9]+$/
 
+const INVISIBLE = /[​-‍⁠﻿]/g
+
+/**
+ * K-41 (asumsi): isian hasil copy-paste dibersihkan sebelum divalidasi dan disimpan —
+ * karakter tak terlihat (zero-width space dll.) dibuang, non-breaking space jadi spasi biasa,
+ * lalu spasi/tab/baris baru di awal & akhir dibuang. Password dan No. HP (aturan PRD) tidak ikut.
+ */
+export function clean(v: string): string {
+  return (v ?? '').replace(INVISIBLE, '').replace(/ /g, ' ').trim()
+}
+
 export function required(v: string, label: string): string | undefined {
-  if (!v || !v.trim()) return `${label} wajib diisi`
+  if (!clean(v)) return `${label} wajib diisi`
   return undefined
 }
 
 function blank(v: string) {
-  return !v || !v.trim()
+  return !clean(v)
 }
 
 export function validateEmail(v: string): string | undefined {
   if (blank(v)) return 'Email tidak boleh kosong'
-  return EMAIL_RE.test(v.trim()) ? undefined : 'Format email salah'
+  const s = clean(v)
+  if (s.length > 254) return 'Email maksimal 254 karakter' // K-42 (asumsi)
+  return EMAIL_RE.test(s) ? undefined : 'Format email salah'
 }
 
-export function validateCategory(v: string): string | undefined {
+export function validateCategory(raw: string): string | undefined {
   // K-05: spasi diizinkan (asumsi), K-06: teks bebas
-  if (blank(v)) return 'Kategori tidak boleh kosong'
+  const v = clean(raw)
+  if (!v) return 'Kategori tidak boleh kosong'
   if (!LETTERS_SPACES.test(v)) return 'Kategori fundraiser hanya boleh berisi huruf'
   if (v.length < 5) return 'Kategori fundraiser minimal 5 karakter'
   if (v.length > 20) return 'Kategori fundraiser maksimal 20 karakter'
   return undefined
 }
 
-export function validateFundraiserName(v: string): string | undefined {
-  if (blank(v)) return 'Nama fundraiser tidak boleh kosong'
+export function validateFundraiserName(raw: string): string | undefined {
+  const v = clean(raw)
+  if (!v) return 'Nama fundraiser tidak boleh kosong'
   if (!NAME_RE.test(v)) return 'Nama fundraiser hanya boleh berisi huruf, spasi, dan angka'
   if (v.length < 5) return 'Nama fundraiser minimal 5 karakter'
   if (v.length > 100) return 'Nama fundraiser maksimal 100 karakter'
@@ -43,34 +58,37 @@ export function validateFundraiserName(v: string): string | undefined {
 export function validatePhone(v: string): string | undefined {
   if (!v) return 'Nomor telepon wajib diisi'
   // PRD: angka 10–13 digit, tanpa spasi di awal/akhir. Desain memakai satu pesan untuk semua kasus.
-  if (v !== v.trim() || !DIGITS.test(v) || v.length < 10 || v.length > 13) return 'Nomor telepon tidak valid'
+  // K-43 (asumsi): harus diawali 08, jadi 0000000000 / 62812… ditolak.
+  if (v !== v.trim() || !DIGITS.test(v) || v.length < 10 || v.length > 13 || !v.startsWith('08')) return 'Nomor telepon tidak valid'
   return undefined
 }
 
-export function validateLicense(v: string): string | undefined {
-  const r = required(v, 'Nomor izin usaha')
+export function validateLicense(raw: string): string | undefined {
+  const r = required(raw, 'Nomor izin usaha')
   if (r) return r
+  const v = clean(raw)
   if (!ALNUM.test(v) || v.length > 25) return 'Nomor izin usaha tidak valid'
   return undefined
 }
 
-export function validateLetters(v: string, label: string): string | undefined {
-  const r = required(v, label)
+export function validateLetters(raw: string, label: string): string | undefined {
+  const r = required(raw, label)
   if (r) return r
-  if (!LETTERS_SPACES.test(v)) return `${label} hanya boleh berisi huruf`
+  if (!LETTERS_SPACES.test(clean(raw))) return `${label} hanya boleh berisi huruf`
   return undefined
 }
 
-export function validateDigits(v: string, label: string, invalidMsg: string): string | undefined {
-  const r = required(v, label)
+export function validateDigits(raw: string, label: string, invalidMsg: string): string | undefined {
+  const r = required(raw, label)
   if (r) return r
-  if (!DIGITS.test(v)) return invalidMsg
+  if (!DIGITS.test(clean(raw))) return invalidMsg
   return undefined
 }
 
-export function validateNpwp(v: string): string | undefined {
-  const r = required(v, 'NPWP')
+export function validateNpwp(raw: string): string | undefined {
+  const r = required(raw, 'NPWP')
   if (r) return r
+  const v = clean(raw)
   if (!DIGITS.test(v) || v.length !== 16) return 'Nomor NPWP tidak valid'
   return undefined
 }
@@ -120,9 +138,10 @@ export function validateConfirm(pw: string, confirm: string): string | undefined
   return undefined
 }
 
-export function validateReason(v: string): string | undefined {
-  if (!v || !v.trim()) return 'Alasan penolakan wajib diisi'
-  if (v.trim().length < 3) return 'Alasan penolakan minimal 3 karakter'
+export function validateReason(raw: string): string | undefined {
+  const v = clean(raw)
+  if (!v) return 'Alasan penolakan wajib diisi'
+  if (v.length < 3) return 'Alasan penolakan minimal 3 karakter'
   if (v.length > 250) return 'Alasan penolakan maksimal 250 karakter'
   return undefined
 }
@@ -132,10 +151,11 @@ export const IMG_EXT = /\.(jpe?g|png)$/i
 export const IMG_TYPES = ['image/jpeg', 'image/png']
 export const IMG_MAX = 2 * 1024 * 1024
 
-export function validateProgramTitle(v: string): string | undefined {
-  const r = required(v, 'Nama program')
+export function validateProgramTitle(raw: string): string | undefined {
+  const r = required(raw, 'Nama program')
   if (r) return r
-  if (v.trim().length < 5) return 'Nama program minimal 5 karakter'
+  const v = clean(raw)
+  if (v.length < 5) return 'Nama program minimal 5 karakter'
   if (v.length > 100) return 'Nama program maksimal 100 karakter'
   return undefined
 }
@@ -153,10 +173,11 @@ export function validateEndDate(iso: string, today: string): string | undefined 
   return undefined
 }
 
-export function validateDescription(v: string): string | undefined {
-  const r = required(v, 'Deskripsi program')
+export function validateDescription(raw: string): string | undefined {
+  const r = required(raw, 'Deskripsi program')
   if (r) return r
-  if (v.trim().length < 5) return 'Deskripsi program minimal 5 karakter'
+  const v = clean(raw)
+  if (v.length < 5) return 'Deskripsi program minimal 5 karakter'
   if (v.length > 1000) return 'Deskripsi program maksimal 1000 karakter'
   return undefined
 }

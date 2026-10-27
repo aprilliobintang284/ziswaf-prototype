@@ -1,7 +1,9 @@
 // Export CSV di sisi browser. Angka panjang dibungkus ="..." supaya Excel tidak mengubahnya jadi format ilmiah.
 
 function cell(v: unknown, keepText = false): string {
-  const s = v === undefined || v === null ? '' : String(v)
+  let s = v === undefined || v === null ? '' : String(v)
+  // Teks yang diawali = + - @ dibaca Excel sebagai rumus (injeksi rumus) → diberi awalan tanda kutip (K-49)
+  if (!keepText && /^[=+\-@\t\r]/.test(s)) s = "'" + s
   const quoted = '"' + s.replace(/"/g, '""') + '"'
   return keepText && s ? '=' + quoted : quoted
 }

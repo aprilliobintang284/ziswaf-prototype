@@ -33,6 +33,14 @@ function migrateV3(db: DB): DB {
 let state: DB = load()
 const listeners = new Set<() => void>()
 
+// Tab lain mengubah data (simpan, logout, ganti akun) → muat ulang, supaya tab ini ikut berganti
+// dan tidak menimpa data terbaru dengan salinan lama saat menyimpan (K-45).
+window.addEventListener('storage', (e) => {
+  if (e.key !== KEY) return
+  state = load()
+  listeners.forEach((l) => l())
+})
+
 function persist() {
   try {
     localStorage.setItem(KEY, JSON.stringify(state))

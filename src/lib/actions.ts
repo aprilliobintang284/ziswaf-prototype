@@ -1,10 +1,13 @@
 import { getDB, setDB } from './store'
 import { uid } from './format'
 import type { DocFile, Fundraiser, Program, ProgramEdit, SimEmail, User } from './types'
+import { clean } from './validation'
 
 export const IDLE_MS_DEFAULT = 30 * 60 * 1000 // AC Login #5: sesi berakhir setelah 30 menit tidak aktif
 export const SESSION_MAX_MS = 7 * 24 * 60 * 60 * 1000 // Validasi Login: 7 hari tidak membuka website
 export const RESET_TTL_MS = 60 * 60 * 1000 // tautan reset berlaku 60 menit
+
+export const TOUCH_MS = 15_000
 
 const now = () => new Date().toISOString()
 
@@ -35,13 +38,14 @@ export function checkSessionExpiry(): boolean {
 export function touchSession() {
   const s = getDB().session
   if (!s) return
-  // Hemat tulis: perbarui paling sering sekali per menit
-  if (Date.now() - new Date(s.lastActive).getTime() < 60_000) return
+  // Hemat tulis: perbarui paling sering sekali per 15 detik (dibaca juga oleh tab lain, K-45)
+  if (Date.now() - new Date(s.lastActive).getTime() < TOUCH_MS) return
   setDB((d) => { if (d.session) d.session.lastActive = now() })
 }
 
 export function login(email: string, password: string): { ok: true; user: User } | { ok: false; error: string } {
-  const user = getDB().users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase())
+  // K-41 (asumsi): email dibersihkan, password dibandingkan apa adanya (tidak di-trim)
+  const user = getDB().users.find((u) => u.email.toLowerCase() === clean(email).toLowerCase())
   if (!user || user.password !== password) return { ok: false, error: 'Email atau password salah' }
   setDB((d) => { d.session = { userId: user.id, lastActive: now() } })
   return { ok: true, user }
@@ -72,28 +76,35 @@ export interface RegisterData {
 }
 
 export function emailTaken(email: string, exceptUserId?: string): boolean {
-  return getDB().users.some((u) => u.email.toLowerCase() === email.trim().toLowerCase() && u.id !== exceptUserId)
+  return getDB().users.some((u) => u.email.toLowerCase() === clean(email).toLowerCase() && u.id !== exceptUserId)
 }
 
-export function registerFundraiser(data: RegisterData, doc: DocFile, password: string) {
+/** K-41 (asumsi): semua isian teks disimpan tanpa spasi/karakter tak terlihat di awal & akhir. */
+function cleanData(data: RegisterData): RegisterData {
+  return Object.fromEntries(Object.entries(data).map(([k, v]) => [k, typeof v === 'string' ? clean(v) : v])) as unknown as RegisterData
+}
+
+export function registerFundraiser(raw: RegisterData, doc: DocFile, password: string) {
+  const data = cleanData(raw)
   const fid = uid('f')
   setDB((d) => {
     d.fundraisers.unshift({
-      id: fid, ...data, email: data.email.trim(), doc,
+      id: fid, ...data, doc,
       registeredAt: now(), status: 'Menunggu Verifikasi',
     })
     d.users.push({
-      id: 'u-' + fid, email: data.email.trim(), password, role: 'fundraiser', name: data.name, fundraiserId: fid,
+      id: 'u-' + fid, email: data.email, password, role: 'fundraiser', name: data.name, fundraiserId: fid,
     })
   })
 }
 
 /** Edit Fundraiser (desain Hifi baru). Bisa dari status Terverifikasi atau Ditolak. */
-export function updateFundraiserData(id: string, data: RegisterData, doc: DocFile) {
+export function updateFundraiserData(id: string, raw: RegisterData, doc: DocFile) {
+  const data = cleanData(raw)
   setDB((d) => {
     const f = d.fundraisers.find((x) => x.id === id)
     if (!f) return
-    Object.assign(f, data, { email: data.email.trim(), doc })
+    Object.assign(f, data, { doc })
     // Desain 27 Okt (pop-up "Konfirmasi Perubahan"): perubahan data selalu diajukan ulang untuk
     // diverifikasi admin, baik dari status Ditolak maupun Terverifikasi.
     f.status = 'Menunggu Verifikasi'
@@ -101,14 +112,14 @@ export function updateFundraiserData(id: string, data: RegisterData, doc: DocFil
     f.rejectedAt = undefined
     f.rejectReason = undefined
     const u = d.users.find((x) => x.fundraiserId === id)
-    if (u) { u.name = data.name; u.email = data.email.trim() }
+    if (u) { u.name = data.name; u.email = data.email }
   })
 }
 
 // ---------------- Lupa password ----------------
 /** false jika email tidak terdaftar — desain baru menampilkan error "Email tidak terdaftar" (beda dengan AC PRD). */
 export function requestReset(email: string): boolean {
-  const user = getDB().users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase())
+  const user = getDB().users.find((u) => u.email.toLowerCase() === clean(email).toLowerCase())
   if (!user) return false
   const token = uid('rst')
   setDB((d) => {
@@ -198,7 +209,7 @@ export function rejectFundraiser(id: string, reason: string) {
     if (!f || f.status !== 'Menunggu Verifikasi') return
     f.status = 'Ditolak'
     f.rejectedAt = now()
-    f.rejectReason = reason.trim()
+    f.rejectReason = clean(reason)
     // K-07 terjawab desain: email dikirim juga saat ditolak, isinya generik (alasan dilihat di platform)
     pushEmail(d, statusEmail(f.email, f.name))
   })
@@ -263,12 +274,12 @@ export function rejectProgram(id: string, reason: string) {
     if (p.pendingEdit) {
       // K-13 (asumsi): perubahan ditolak, program tetap aktif dengan data lama
       p.pendingEdit = undefined
-      p.rejectReason = 'Perubahan ditolak: ' + reason.trim()
+      p.rejectReason = 'Perubahan ditolak: ' + clean(reason)
       return
     }
     if (p.status !== 'Menunggu Persetujuan') return
     p.status = 'Ditolak'
-    p.rejectReason = reason.trim()
+    p.rejectReason = clean(reason)
     p.decidedAt = now()
   })
 }

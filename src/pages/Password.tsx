@@ -5,7 +5,7 @@ import { AuthLayout } from '../components/layouts'
 import { Logo } from '../components/brand'
 import { Field, Modal, PasswordCriteria, PasswordInput } from '../components/ui'
 import { requestReset, resetPassword, tokenEmail, tokenState } from '../lib/actions'
-import { validateConfirm, validateEmail, validatePassword } from '../lib/validation'
+import { clean, validateConfirm, validateEmail, validatePassword } from '../lib/validation'
 
 function Header() {
   return (
@@ -25,7 +25,7 @@ export function ForgotPasswordPage() {
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
-    if (!email.trim()) return
+    if (!clean(email)) return
     const err = validateEmail(email) ?? (requestReset(email) ? undefined : 'Email tidak terdaftar')
     setError(err)
     if (!err) setSent(true)
@@ -45,7 +45,7 @@ export function ForgotPasswordPage() {
         <Field label="Email" error={error}>
           <input className="input" placeholder="Masukkan email" value={email} onChange={(e) => { setEmail(e.target.value); setError(undefined) }} />
         </Field>
-        <button className="btn btn-primary btn-block btn-lg" type="submit" disabled={!email.trim()}>Kirim Tautan</button>
+        <button className="btn btn-primary btn-block btn-lg" type="submit" disabled={!clean(email)}>Kirim Tautan</button>
       </form>
 
       {sent && (

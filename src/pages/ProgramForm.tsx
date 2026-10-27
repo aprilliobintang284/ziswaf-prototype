@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, useBlocker, useNavigate, useParams } from 'react-router-dom'
 import { ConfirmModal, Field, useToast } from '../components/ui'
 import { Icon } from '../components/icons'
 import { DatePicker } from '../components/DatePicker'
 import { EDITABLE, statusOf, useDB } from '../lib/store'
 import { createProgram, updateProgram } from '../lib/actions'
-import { digitsToRupiahText, todayISO } from '../lib/format'
+import { digitsToRupiahText, pastedAmountToDigits, todayISO } from '../lib/format'
 import { readImageResized, sniffType } from '../lib/export'
 import {
-  validateDescription, validateEndDate, validateImageFile, validateProgramTitle, validateTarget,
+  clean, validateDescription, validateEndDate, validateImageFile, validateProgramTitle, validateTarget,
 } from '../lib/validation'
 
 type Mode = 'create' | 'edit'
@@ -61,6 +61,18 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
     return () => window.removeEventListener('beforeunload', h)
   }, [dirty])
 
+  // Target berformat titik ribuan: kursor dijaga di posisi digit yang sedang diedit (tidak lompat ke akhir)
+  const targetRef = useRef<HTMLInputElement>(null)
+  const targetCaret = useRef<number | null>(null)
+  useLayoutEffect(() => {
+    const el = targetRef.current
+    if (targetCaret.current === null || !el) return
+    let pos = 0
+    for (let seen = 0; pos < el.value.length && seen < targetCaret.current; pos++) if (/\d/.test(el.value[pos])) seen++
+    el.setSelectionRange(pos, pos)
+    targetCaret.current = null
+  }, [v.target])
+
   const guardNotified = useRef(false)
   useEffect(() => {
     if (guard && !guardNotified.current) { guardNotified.current = true; toast(guard, 'err') }
@@ -68,6 +80,15 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
   if (guard) return <Navigate to="/dashboard/program" replace />
 
   const set = (k: keyof typeof v, val: string) => setV((s) => ({ ...s, [k]: val }))
+
+  const onTargetChange = (el: HTMLInputElement) => {
+    const all = el.value.replace(/\D/g, '')
+    const lead = all.length - all.replace(/^0+(?=\d)/, '').length
+    const digits = all.slice(lead, lead + 15)
+    const before = el.value.slice(0, el.selectionStart ?? el.value.length).replace(/\D/g, '').length - lead
+    targetCaret.current = Math.max(0, Math.min(before, digits.length))
+    set('target', digits)
+  }
 
   const onImage = async (file: File | undefined) => {
     if (!file) return
@@ -102,7 +123,7 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
 
   const run = () => {
     const kind = pending!
-    const input = { title: v.title.trim(), target: Number(v.target || 0), endDate: v.endDate, description: v.description, image: v.image }
+    const input = { title: clean(v.title), target: Number(v.target || 0), endDate: v.endDate, description: clean(v.description), image: v.image }
     if (mode === 'create') createProgram(fundraiser!.id, input, kind === 'draft')
     else updateProgram(program!.id, input, kind === 'draft' ? 'draft' : 'submit')
     skipBlock.current = true
@@ -127,8 +148,9 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
         <Field label="Target Terkumpul" required error={errs.target}>
           <div className="input-wrap">
             <span className="input-prefix">Rp</span>
-            <input className="input with-prefix" placeholder="Masukkan nominal target" inputMode="numeric" disabled={live}
-              value={digitsToRupiahText(v.target)} onChange={(e) => set('target', e.target.value.replace(/\D/g, '').slice(0, 15))} />
+            <input ref={targetRef} className="input with-prefix" placeholder="Masukkan nominal target" inputMode="numeric" disabled={live}
+              value={digitsToRupiahText(v.target)} onChange={(e) => onTargetChange(e.target)}
+              onPaste={(e) => { e.preventDefault(); set('target', pastedAmountToDigits(e.clipboardData.getData('text'))) }} />
           </div>
         </Field>
         <Field label="Tanggal Berakhir" required error={errs.endDate}>

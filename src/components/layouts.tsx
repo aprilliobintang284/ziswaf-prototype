@@ -4,7 +4,7 @@ import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-route
 import { DonationIllustration, Logo } from './brand'
 import { Icon } from './icons'
 import { ConfirmModal } from './ui'
-import { useDB } from '../lib/store'
+import { getDB, useDB } from '../lib/store'
 import { IDLE_MS_DEFAULT, logout, touchSession } from '../lib/actions'
 
 export function AuthLayout({ children }: { children: ReactNode }) {
@@ -51,12 +51,17 @@ export function DashboardLayout() {
   useEffect(() => {
     if (!user) return
     const limit = idleMs()
+    const expire = () => {
+      // Aktivitas di tab lain tercatat di sesi bersama → tab yang diam tidak boleh me-logout tab yang aktif (K-45)
+      const s = getDB().session
+      const idleFor = s ? Date.now() - new Date(s.lastActive).getTime() : limit
+      if (idleFor < limit) { timer.current = window.setTimeout(expire, limit - idleFor); return }
+      logout()
+      nav(`/masuk?alasan=sesi-habis&next=${encodeURIComponent(hereRef.current)}`, { replace: true })
+    }
     const reset = () => {
       window.clearTimeout(timer.current)
-      timer.current = window.setTimeout(() => {
-        logout()
-        nav(`/masuk?alasan=sesi-habis&next=${encodeURIComponent(hereRef.current)}`, { replace: true })
-      }, limit)
+      timer.current = window.setTimeout(expire, limit)
       touchSession()
     }
     reset()

@@ -176,7 +176,7 @@ a { color: inherit; }
 table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
 .tbl th { text-align: left; font-weight: 600; padding: 14px 14px; vertical-align: middle; border-bottom: 1px solid #ececec; white-space: nowrap; }
 .tbl th.wrap { white-space: normal; line-height: 1.35; }
-.tbl td { padding: 0 14px; height: 42px; vertical-align: middle; }
+.tbl td { padding: 0 14px; height: 42px; vertical-align: middle; overflow-wrap: anywhere; }
 .tbl tbody tr:nth-child(odd) { background: #fff; }
 .tbl tbody tr:nth-child(even) { background: var(--primary-soft); }
 .tbl tbody tr:hover { background: #dcefec; }
@@ -219,7 +219,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
 .sec-title { color: var(--primary); font-weight: 600; font-size: 14px; margin: 18px 0 10px; }
 .kv { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; row-gap: 10px; font-size: 13px; }
 .kv dt { color: #9a9a9a; }
-.kv dd { margin: 0; color: var(--text); word-break: break-word; }
+.kv dd { margin: 0; color: var(--text); word-break: break-word; overflow-wrap: anywhere; white-space: pre-line; }
 .doc { display: flex; align-items: center; gap: 12px; background: #dcefec; border-radius: 6px; padding: 10px 12px; }
 .doc-icon { display: flex; }
 .doc-meta { flex: 1; min-width: 0; }
