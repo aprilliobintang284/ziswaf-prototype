@@ -37,7 +37,7 @@ export function validateEmail(v: string): string | undefined {
 }
 
 export function validateCategory(raw: string): string | undefined {
-  // K-05: spasi diizinkan (asumsi), K-06: teks bebas
+  // Spasi diizinkan (standar QA), K-06: teks bebas (PM 27 Okt 2026)
   const v = clean(raw)
   if (!v) return 'Kategori tidak boleh kosong'
   if (!LETTERS_SPACES.test(v)) return 'Kategori fundraiser hanya boleh berisi huruf'

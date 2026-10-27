@@ -123,7 +123,7 @@ export function requestReset(email: string): boolean {
   if (!user) return false
   const token = uid('rst')
   setDB((d) => {
-    // K-17 (asumsi): tautan lama dibatalkan saat meminta tautan baru
+    // Standar keamanan: tautan lama dibatalkan saat meminta tautan baru
     d.resetTokens.forEach((t) => { if (t.email === user.email) t.revoked = true })
     d.resetTokens.push({ token, email: user.email, createdAt: now(), used: false, revoked: false })
     // Isi mengikuti template email "Atur Ulang Password" di Figma (desain 27 Okt)
