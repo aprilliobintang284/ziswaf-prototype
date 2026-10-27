@@ -76,10 +76,11 @@ Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah
 
 ## Asumsi yang dipakai (perlu konfirmasi PM/Designer)
 
-- **K-01** Sesi 7 hari dihitung ulang setiap website dibuka.
+- **K-01** (terjawab PM 27 Okt) Tab/browser ditutup lalu dibuka lagi ≤ 24 jam tetap login; ≥ 24 jam harus login ulang. Aturan 7 hari dihapus. Diam 30 menit tetap otomatis logout.
+- **K-02** (terjawab PM 27 Okt) Password 8–25 karakter tanpa spasi; huruf, angka, dan simbol tidak wajib semuanya.
 - **K-05/K-06** Kategori fundraiser berupa teks bebas, huruf + spasi, 5–20 karakter.
 - **K-07** (terjawab desain 27 Okt) Setelah ditolak, fundraiser memperbaiki data lewat Edit lalu statusnya kembali "Menunggu Verifikasi". Email status yang sama dikirim saat disetujui maupun ditolak.
-- **K-13** Edit program Aktif hanya bisa mengubah deskripsi dan foto, lalu menunggu persetujuan Admin. "Simpan ke Draf" nonaktif untuk program Aktif.
+- **K-13** (sebagian terjawab, PRD 27 Okt) Edit program Aktif/Selesai: Deskripsi, Foto, Target Terkumpul, dan Tanggal Berakhir bisa diubah (Nama Program terkunci), lalu menunggu persetujuan Admin; program tetap tayang dengan data lama. "Simpan ke Draf" untuk program Aktif masih nonaktif sampai PM menjawab sisa K-13.
 - **K-16** Fee 3% dibulatkan ke rupiah terdekat.
 - **K-17** Meminta tautan reset baru membatalkan tautan lama.
 - **K-30** Target terkumpul cukup lebih dari 0 (batas maksimal belum ditentukan).

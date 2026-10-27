@@ -44,6 +44,8 @@ export interface Fundraiser {
 export interface ProgramEdit {
   description: string
   image: string
+  target?: number
+  endDate?: string
 }
 
 export interface Program {

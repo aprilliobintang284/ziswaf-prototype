@@ -45,11 +45,10 @@ export function PasswordInput(props: InputHTMLAttributes<HTMLInputElement>) {
 
 export function PasswordCriteria({ value }: { value: string }) {
   const c = checkPassword(value)
+  // PRD & PM 27 Okt 2026: huruf, angka, dan simbol tidak wajib semuanya (boleh salah satu sampai ketiganya)
   const items: [boolean, string][] = [
     [c.length, 'Minimal 8 karakter dan maksimal 25 karakter'],
-    [c.letter, 'Mengandung huruf'],
-    [c.digit, 'Mengandung angka'],
-    [c.symbol, 'Mengandung simbol (contoh: !@#$%^&*)'],
+    [value.length > 0 && c.noSpace, 'Tidak mengandung spasi'],
   ]
   return (
     <div className="criteria">
@@ -59,6 +58,7 @@ export function PasswordCriteria({ value }: { value: string }) {
           <Icon name={ok ? 'check-circle' : 'check-circle-off'} />{text}
         </span>
       ))}
+      <span className="criteria-note">Boleh berisi huruf, angka, dan/atau simbol (tidak wajib ketiganya).</span>
     </div>
   )
 }

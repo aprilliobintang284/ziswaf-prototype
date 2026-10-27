@@ -128,7 +128,6 @@ export function validatePassword(v: string): string | undefined {
   const c = checkPassword(v)
   if (!c.noSpace) return 'Password tidak boleh mengandung spasi'
   if (!c.length) return v.length < 8 ? 'Password minimal 8 karakter' : 'Password maksimal 25 karakter'
-  if (!c.letter || !c.digit || !c.symbol) return 'Password harus mengandung huruf, angka, dan simbol'
   return undefined
 }
 

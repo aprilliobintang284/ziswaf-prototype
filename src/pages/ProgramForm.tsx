@@ -34,7 +34,7 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
     return null
   }, [user, fundraiser, program, mode])
 
-  // Aktif & Selesai (status tersimpan "Aktif"): hanya deskripsi & foto yang bisa diubah
+  // Aktif & Selesai (status tersimpan "Aktif"): Nama Program terkunci; Deskripsi, Foto, Target, Tanggal Berakhir bisa diubah (PRD 27 Okt 2026)
   const live = program?.status === 'Aktif'
   const initial = useMemo(() => ({
     title: program?.title ?? '',
@@ -111,8 +111,8 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
       ? { title: validateProgramTitle(v.title) }
       : {
           title: live ? undefined : validateProgramTitle(v.title),
-          target: live ? undefined : validateTarget(v.target),
-          endDate: live ? undefined : validateEndDate(v.endDate, todayISO()),
+          target: validateTarget(v.target),
+          endDate: validateEndDate(v.endDate, todayISO()),
           description: validateDescription(v.description),
           image: v.image ? undefined : 'Foto program wajib diupload',
         }
@@ -148,13 +148,13 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
         <Field label="Target Terkumpul" required error={errs.target}>
           <div className="input-wrap">
             <span className="input-prefix">Rp</span>
-            <input ref={targetRef} className="input with-prefix" placeholder="Masukkan nominal target" inputMode="numeric" disabled={live}
+            <input ref={targetRef} className="input with-prefix" placeholder="Masukkan nominal target" inputMode="numeric"
               value={digitsToRupiahText(v.target)} onChange={(e) => onTargetChange(e.target)}
               onPaste={(e) => { e.preventDefault(); set('target', pastedAmountToDigits(e.clipboardData.getData('text'))) }} />
           </div>
         </Field>
         <Field label="Tanggal Berakhir" required error={errs.endDate}>
-          <DatePicker value={v.endDate} disabled={live} onChange={(iso) => set('endDate', iso.startsWith('invalid:') ? iso.slice(8) : iso)} invalid={!!errs.endDate} />
+          <DatePicker value={v.endDate} onChange={(iso) => set('endDate', iso.startsWith('invalid:') ? iso.slice(8) : iso)} invalid={!!errs.endDate} />
         </Field>
         <Field label="Deskripsi Program" required error={errs.description}>
           <textarea className="textarea" placeholder="Masukkan deskripsi program" value={v.description} onChange={(e) => set('description', e.target.value)} />

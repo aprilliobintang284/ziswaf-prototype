@@ -4,7 +4,7 @@ import type { DocFile, Fundraiser, Program, ProgramEdit, SimEmail, User } from '
 import { clean } from './validation'
 
 export const IDLE_MS_DEFAULT = 30 * 60 * 1000 // AC Login #5: sesi berakhir setelah 30 menit tidak aktif
-export const SESSION_MAX_MS = 7 * 24 * 60 * 60 * 1000 // Validasi Login: 7 hari tidak membuka website
+export const SESSION_MAX_MS = 24 * 60 * 60 * 1000 // Validasi Login (PM 27 Okt 2026): tab/browser ditutup ≥ 24 jam → login ulang
 export const RESET_TTL_MS = 60 * 60 * 1000 // tautan reset berlaku 60 menit
 
 export const TOUCH_MS = 15_000
@@ -24,7 +24,7 @@ export function currentFundraiser(): Fundraiser | null {
   return getDB().fundraisers.find((f) => f.id === u.fundraiserId) ?? null
 }
 
-/** Dipanggil saat aplikasi dibuka: sesi habis jika website tidak dibuka 7 hari (hitungan diulang tiap dibuka, K-01). */
+/** Dipanggil saat aplikasi dibuka: sesi habis jika website ditutup ≥ 24 jam (K-01, aturan 7 hari dihapus). */
 export function checkSessionExpiry(): boolean {
   const s = getDB().session
   if (!s) return false
@@ -235,13 +235,13 @@ export function createProgram(fundraiserId: string, input: ProgramInput, asDraft
   return id
 }
 
-/** Draf/Ditolak: semua field berubah. Program Aktif: perubahan disimpan sebagai pendingEdit (K-13). */
+/** Draf/Ditolak: semua field berubah. Program Aktif/Selesai: Deskripsi, Gambar, Target, Tanggal Berakhir disimpan sebagai pendingEdit (PRD 27 Okt 2026). */
 export function updateProgram(id: string, input: ProgramInput, mode: 'draft' | 'submit') {
   setDB((d) => {
     const p = d.programs.find((x) => x.id === id)
     if (!p) return
     if (p.status === 'Aktif') {
-      const edit: ProgramEdit = { description: input.description, image: input.image }
+      const edit: ProgramEdit = { description: input.description, image: input.image, target: input.target, endDate: input.endDate }
       p.pendingEdit = edit
       return
     }

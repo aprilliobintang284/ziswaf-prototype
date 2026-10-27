@@ -172,6 +172,8 @@ function ProgramDrawer({ p, isAdmin, verified, fundraiserName, onClose }: { p: P
           <div className="alert orange">
             <div className="alert-title"><Clock size={16} /> Perubahan menunggu persetujuan</div>
             Deskripsi baru: “{p.pendingEdit.description}”
+            {p.pendingEdit.target !== undefined && p.pendingEdit.target !== p.target && <div>Target baru: {rupiah(p.pendingEdit.target)}</div>}
+            {p.pendingEdit.endDate && p.pendingEdit.endDate !== p.endDate && <div>Tanggal Berakhir baru: {tanggal(p.pendingEdit.endDate)}</div>}
           </div>
         )}
 

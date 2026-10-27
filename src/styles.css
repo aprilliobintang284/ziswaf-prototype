@@ -102,6 +102,7 @@ a { color: inherit; }
 .criteria-title { font-weight: 600; font-size: 13px; }
 .criteria-item { display: flex; align-items: center; gap: 8px; color: #8f8f8f; font-size: 13px; }
 .criteria-item.ok { color: var(--text-2); }
+.criteria-note { color: #8f8f8f; font-size: 12px; }
 
 /* ---------------- Auth layout ---------------- */
 .auth { display: grid; grid-template-columns: 568fr 872fr; min-height: 100vh; }
