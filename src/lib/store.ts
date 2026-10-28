@@ -113,8 +113,9 @@ export function fundraiserActive(f: Fundraiser | null | undefined): f is Fundrai
 export const EDITABLE: ProgramStatus[] = ['Draf', 'Ditolak', 'Aktif', 'Selesai']
 
 /**
- * Program Selesai yang belum pernah tayang (draf atau pengajuan yang tanggalnya lewat, K-12) sudah final,
- * jadi tidak bisa diedit lagi (keputusan QA 28 Okt 2026: lanjutkan dengan program baru).
+ * Asumsi prototipe: program Selesai yang belum pernah tayang (draf atau pengajuan yang tanggalnya lewat, K-12)
+ * tidak bisa diedit, karena aturan edit program Selesai di PRD berlaku untuk program yang pernah tayang dan
+ * pengajuannya sudah tidak bisa disetujui. Program Selesai yang pernah tayang tetap bisa diedit sesuai PRD.
  */
 export function canEditProgram(p: Program): boolean {
   const s = statusOf(p)

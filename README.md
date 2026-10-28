@@ -86,7 +86,7 @@ Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah
 - **K-07** (terjawab desain 27 Okt) Setelah ditolak, fundraiser memperbaiki data lewat Edit lalu statusnya kembali "Menunggu Verifikasi". Email status yang sama dikirim saat disetujui maupun ditolak.
 - **K-11 & K-12** (terjawab PM 28 Okt) Program masih Aktif sampai 23.59 WIB di tanggal berakhir (sisa waktu "0 Hari"), lalu Selesai mulai hari berikutnya. Program Draf atau Menunggu Persetujuan yang tanggal berakhirnya lewat juga otomatis Selesai dan tidak bisa disetujui lagi.
 - **K-13** (sebagian terjawab, PRD 27 Okt & PM 28 Okt) Edit program punya dua kondisi: program yang belum pernah tayang (Draf, atau Ditolak saat pertama diajukan) bisa mengubah semua field; program yang sudah pernah tayang (Aktif, Selesai, atau perubahannya ditolak) hanya bisa mengubah Deskripsi, Foto, Target Terkumpul, dan Tanggal Berakhir (Nama Program terkunci), lalu menunggu persetujuan Admin; program tetap tayang dengan data lama. "Simpan ke Draf" untuk program Aktif masih nonaktif sampai PM menjawab sisa K-13.
-  - Keputusan QA 28 Okt: program **Selesai** sudah final. Tanggal Berakhir-nya terkunci (tidak bisa diperpanjang untuk aktif lagi), dan draf/pengajuan yang menjadi Selesai karena tanggalnya lewat tidak bisa diedit. Untuk melanjutkan penggalangan dana, buat program baru.
+  - Program **Selesai** tetap bisa diedit sesuai PRD, termasuk memperpanjang Tanggal Berakhir; setelah disetujui program kembali Aktif (asumsi, sisa K-13). Perubahan lain boleh diajukan tanpa mengganti tanggal. Draf/pengajuan yang menjadi Selesai karena tanggalnya lewat tidak bisa diedit (asumsi prototipe).
 - **K-16** (terjawab PM 28 Okt) Fee 3% dibulatkan ke atas ke rupiah penuh, dihitung per program (Rp10.001 → fee Rp301, Net Rp9.700); kartu Total Fee = jumlah fee tiap program. Persentase Tercapai tampil angka bulat, dibulatkan ke bawah (keputusan QA 28 Okt).
 - **K-23 & K-43** (terjawab PM 28 Okt) Fundraiser bisa mengedit data saat Ditolak atau Terverifikasi (Menunggu Verifikasi tidak bisa). Kolom Email terkunci di Edit Fundraiser.
 - **K-21** (terjawab 28 Okt) File export berformat Excel (.xlsx), sama seperti export di payment gateway. Teks disimpan sebagai sel teks, jadi nomor HP, rekening, dan NPWP tidak berubah dan isi yang diawali `=`, `+`, `-`, `@` tidak dibaca sebagai rumus.
@@ -95,7 +95,7 @@ Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah
 - Standar keamanan: meminta tautan reset baru membatalkan tautan lama.
 - **K-30** Target terkumpul cukup lebih dari 0 (batas maksimal belum ditentukan).
 - **Baru (update desain 26 Okt 2026)**:
-  - Program **Selesai** bisa diedit, mengikuti desain (pensil & tombol Edit aktif), kecuali Tanggal Berakhir (lihat K-13).
+  - Program **Selesai** bisa diedit, mengikuti desain (pensil & tombol Edit aktif) dan PRD (lihat K-13).
   - "Lupa Password" menampilkan "Email tidak terdaftar" sesuai desain, padahal AC PRD meminta pesan yang sama untuk email terdaftar/tidak.
   - Kolom "Nama Fundraiser" di tabel Program hanya untuk Admin. Di desain, kolom ini muncul bersama tombol "Buat Program Baru".
 - **Baru (update desain 26 Okt 2026 malam)**:

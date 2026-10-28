@@ -253,9 +253,7 @@ export function updateProgram(id: string, input: ProgramInput, mode: 'draft' | '
     const p = d.programs.find((x) => x.id === id)
     if (!p) return
     if (p.status === 'Aktif') {
-      // Program Selesai sudah final: Tanggal Berakhir tidak ikut berubah walau dikirim berbeda (keputusan QA 28 Okt 2026)
-      const endDate = statusOf(p) === 'Selesai' ? p.endDate : input.endDate
-      const edit: ProgramEdit = { description: input.description, image: input.image, target: input.target, endDate }
+      const edit: ProgramEdit = { description: input.description, image: input.image, target: input.target, endDate: input.endDate }
       p.pendingEdit = edit
       return
     }

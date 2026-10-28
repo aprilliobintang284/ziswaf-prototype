@@ -40,8 +40,6 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
   // K-13 (PM 28 Okt 2026): program yang sudah pernah tayang (status tersimpan "Aktif": Aktif, Selesai, perubahan ditolak)
   // hanya bisa mengubah Deskripsi, Foto, Target, Tanggal Berakhir; Nama Program terkunci. Draf & Ditolak baru: semua field.
   const live = program?.status === 'Aktif'
-  // Keputusan QA 28 Okt 2026: program Selesai sudah final, jadi Tanggal Berakhir tidak bisa diperpanjang
-  const ended = !!program && statusOf(program) === 'Selesai'
   const initial = useMemo(() => ({
     title: program?.title ?? '',
     target: program?.target ? String(program.target) : '',
@@ -118,7 +116,8 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
       : {
           title: live ? undefined : validateProgramTitle(v.title),
           target: validateTarget(v.target),
-          endDate: ended ? undefined : validateEndDate(v.endDate, todayISO()),
+          // Program yang pernah tayang boleh mengajukan perubahan lain tanpa mengganti tanggal (contoh program Selesai)
+          endDate: live && v.endDate === initial.endDate ? undefined : validateEndDate(v.endDate, todayISO()),
           description: validateDescription(v.description),
           image: v.image ? undefined : 'Foto program wajib diupload',
         }
@@ -162,7 +161,7 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
           </div>
         </Field>
         <Field label="Tanggal Berakhir" required error={errs.endDate}>
-          <DatePicker value={v.endDate} onChange={(iso) => set('endDate', iso.startsWith('invalid:') ? iso.slice(8) : iso)} invalid={!!errs.endDate} disabled={ended} />
+          <DatePicker value={v.endDate} onChange={(iso) => set('endDate', iso.startsWith('invalid:') ? iso.slice(8) : iso)} invalid={!!errs.endDate} />
         </Field>
         <Field label="Deskripsi Program" required error={errs.description}>
           <textarea className="textarea" placeholder="Masukkan deskripsi program" value={v.description} onChange={(e) => set('description', e.target.value)} />
