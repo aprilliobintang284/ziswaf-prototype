@@ -6,7 +6,7 @@ import { StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
 import { ApprovalPanel } from '../components/Approval'
 import { Presence } from '../components/motion'
 import { Icon } from '../components/icons'
-import { EDITABLE, feeOf, netOf, statusOf, useDB } from '../lib/store'
+import { EDITABLE, feeOf, fundraiserActive, netOf, statusOf, useDB } from '../lib/store'
 import { approveProgram, rejectProgram } from '../lib/actions'
 import { daysLeft, rupiah, tanggal } from '../lib/format'
 import { downloadCsv } from '../lib/export'
@@ -45,7 +45,7 @@ export function ProgramPage() {
   const user = db.users.find((u) => u.id === db.session?.userId)!
   const isAdmin = user.role === 'admin'
   const fundraiser = db.fundraisers.find((f) => f.id === user.fundraiserId)
-  const verified = isAdmin || fundraiser?.status === 'Terverifikasi'
+  const verified = isAdmin || fundraiserActive(fundraiser)
   const programs = useMemo(
     () => db.programs.filter((p) => isAdmin || p.fundraiserId === user.fundraiserId),
     [db.programs, isAdmin, user.fundraiserId],

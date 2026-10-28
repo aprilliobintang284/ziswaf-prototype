@@ -5,7 +5,7 @@ import { DonationIllustration, Logo } from './brand'
 import { Icon } from './icons'
 import { ConfirmModal } from './ui'
 import { Presence } from './motion'
-import { getDB, useDB } from '../lib/store'
+import { fundraiserActive, getDB, useDB } from '../lib/store'
 import { IDLE_MS_DEFAULT, logout, touchSession } from '../lib/actions'
 
 export function AuthLayout({ children }: { children: ReactNode }) {
@@ -82,7 +82,7 @@ export function DashboardLayout() {
 
   if (!user) return <Navigate to={`/masuk?next=${encodeURIComponent(here)}`} replace />
 
-  const locked = user.role === 'fundraiser' && fundraiser?.status !== 'Terverifikasi'
+  const locked = user.role === 'fundraiser' && !fundraiserActive(fundraiser)
   const items = [
     { to: '/dashboard/fundraiser', label: 'Fundraiser', icon: <Icon name="users" size={18} tint /> },
     { to: '/dashboard/program', label: 'Program', icon: <Icon name="box" size={18} tint /> },

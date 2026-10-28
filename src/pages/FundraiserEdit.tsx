@@ -5,7 +5,7 @@ import type { FundraiserForm } from '../components/FundraiserFields'
 import { ConfirmModal, StatusBadge, useToast } from '../components/ui'
 import { Presence } from '../components/motion'
 import { useDB } from '../lib/store'
-import { emailTaken, updateFundraiserData } from '../lib/actions'
+import { updateFundraiserData } from '../lib/actions'
 import type { DocFile } from '../lib/types'
 
 /** Edit Fundraiser — mengikuti desain Hifi (bisa diakses saat status Terverifikasi atau Ditolak). */
@@ -30,7 +30,6 @@ export function FundraiserEditPage() {
 
   // Data sudah terisi, jadi error ditampilkan langsung saat isian berubah
   const errors = validateFundraiserForm(values, doc, docError)
-  if (!errors.email && emailTaken(values.email, user.id)) errors.email = 'Email sudah terdaftar.'
   const changed = JSON.stringify(values) !== JSON.stringify(initial) || doc !== f.doc
   const canSave = changed && !hasErrors(errors)
 
@@ -54,7 +53,8 @@ export function FundraiserEditPage() {
           </div>
         </div>
         <div className="sec-title">Informasi Fundraiser</div>
-        <FundraiserFields values={values} errors={errors} onChange={(k, v) => setValues((s) => s && { ...s, [k]: v })} />
+        <FundraiserFields values={values} errors={errors} emailLocked
+          onChange={(k, v) => setValues((s) => s && (k === 'email' ? s : { ...s, [k]: v }))} />
         <div className="sec-title" style={{ marginTop: 22 }}>Dokumen Pendukung</div>
         <DocField doc={doc} error={errors.doc} onDoc={async (file) => {
           if (!file) return

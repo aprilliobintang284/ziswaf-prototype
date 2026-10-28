@@ -1,4 +1,4 @@
-import { getDB, setDB } from './store'
+import { getDB, setDB, statusOf } from './store'
 import { uid } from './format'
 import type { DocFile, Fundraiser, Program, ProgramEdit, SimEmail, User } from './types'
 import { clean } from './validation'
@@ -104,15 +104,17 @@ export function updateFundraiserData(id: string, raw: RegisterData, doc: DocFile
   setDB((d) => {
     const f = d.fundraisers.find((x) => x.id === id)
     if (!f) return
-    Object.assign(f, data, { doc })
+    // K-43 (PM 28 Okt 2026): Email tidak bisa diganti, jadi email lama tetap dipakai walau dikirim berbeda
+    Object.assign(f, data, { doc, email: f.email })
     // Desain 27 Okt (pop-up "Konfirmasi Perubahan"): perubahan data selalu diajukan ulang untuk
     // diverifikasi admin, baik dari status Ditolak maupun Terverifikasi.
+    f.reverify = f.status === 'Terverifikasi'
     f.status = 'Menunggu Verifikasi'
     f.verifiedAt = undefined
     f.rejectedAt = undefined
     f.rejectReason = undefined
     const u = d.users.find((x) => x.fundraiserId === id)
-    if (u) { u.name = data.name; u.email = data.email }
+    if (u) u.name = data.name
   })
 }
 
@@ -185,6 +187,7 @@ export function approveFundraiser(id: string) {
     if (!f || f.status !== 'Menunggu Verifikasi') return
     f.status = 'Terverifikasi'
     f.verifiedAt = now()
+    f.reverify = undefined
     pushEmail(d, statusEmail(f.email, f.name))
   })
 }
@@ -207,7 +210,9 @@ export function rejectFundraiser(id: string, reason: string) {
   setDB((d) => {
     const f = d.fundraisers.find((x) => x.id === id)
     if (!f || f.status !== 'Menunggu Verifikasi') return
+    // K-39: akibat penolakan perubahan data fundraiser Terverifikasi belum dijawab PM; sementara jadi Ditolak
     f.status = 'Ditolak'
+    f.reverify = undefined
     f.rejectedAt = now()
     f.rejectReason = clean(reason)
     // K-07 terjawab desain: email dikirim juga saat ditolak, isinya generik (alasan dilihat di platform)
@@ -255,7 +260,7 @@ export function updateProgram(id: string, input: ProgramInput, mode: 'draft' | '
 export function approveProgram(id: string) {
   setDB((d) => {
     const p = d.programs.find((x) => x.id === id)
-    if (!p) return
+    if (!p || statusOf(p) === 'Selesai') return // K-12: pengajuan yang tanggalnya lewat sudah Selesai
     if (p.pendingEdit) {
       Object.assign(p, p.pendingEdit)
       p.pendingEdit = undefined
@@ -270,9 +275,9 @@ export function approveProgram(id: string) {
 export function rejectProgram(id: string, reason: string) {
   setDB((d) => {
     const p = d.programs.find((x) => x.id === id)
-    if (!p) return
+    if (!p || statusOf(p) === 'Selesai') return
     if (p.pendingEdit) {
-      // K-13 (asumsi): perubahan ditolak, program tetap aktif dengan data lama
+      // PRD 27 Okt 2026: perubahan ditolak, program tetap aktif dengan data lama
       p.pendingEdit = undefined
       p.rejectReason = 'Perubahan ditolak: ' + clean(reason)
       return

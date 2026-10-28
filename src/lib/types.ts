@@ -39,6 +39,8 @@ export interface Fundraiser {
   verifiedAt?: string
   rejectedAt?: string
   rejectReason?: string
+  /** Menunggu Verifikasi karena fundraiser Terverifikasi mengedit datanya (K-39), bukan pendaftaran baru */
+  reverify?: boolean
 }
 
 export interface ProgramEdit {

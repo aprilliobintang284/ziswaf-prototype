@@ -1,11 +1,11 @@
 import { Lock, PencilRuler } from 'lucide-react'
-import { useDB } from '../lib/store'
+import { fundraiserActive, useDB } from '../lib/store'
 
 export function PlaceholderPage({ title }: { title: string }) {
   const db = useDB()
   const user = db.users.find((u) => u.id === db.session?.userId)!
   const f = db.fundraisers.find((x) => x.id === user.fundraiserId)
-  const locked = user.role === 'fundraiser' && f?.status !== 'Terverifikasi'
+  const locked = user.role === 'fundraiser' && !fundraiserActive(f)
   return (
     <>
       <div className="page-head"><h1 className="page-title">{title}</h1></div>

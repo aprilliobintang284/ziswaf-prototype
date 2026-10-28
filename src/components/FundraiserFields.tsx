@@ -65,10 +65,12 @@ interface Props {
   onChange: (key: keyof FundraiserForm, value: string) => void
   onBlur?: (key: keyof FundraiserForm) => void
   emailExtra?: ReactNode
+  /** Edit Fundraiser: Email tidak bisa diganti (K-43, PM 28 Okt 2026) */
+  emailLocked?: boolean
 }
 
 /** Urutan field mengikuti desain Hifi terbaru (Daftar Akun & Edit Fundraiser). */
-export function FundraiserFields({ values, errors, onChange, onBlur, emailExtra }: Props) {
+export function FundraiserFields({ values, errors, onChange, onBlur, emailExtra, emailLocked }: Props) {
   const input = (key: keyof FundraiserForm, placeholder: string, extra: Partial<InputHTMLAttributes<HTMLInputElement>> = {}) => (
     <input className="input" placeholder={placeholder} value={values[key]}
       onChange={(e) => onChange(key, e.target.value)} onBlur={() => onBlur?.(key)} {...extra} />
@@ -76,7 +78,9 @@ export function FundraiserFields({ values, errors, onChange, onBlur, emailExtra 
   return (
     <div className="grid-2">
       <Field label="Email" required error={errors.email}>
-        {input('email', 'Contoh: kontak@perusahaan.co.id', { autoComplete: 'email' })}
+        {input('email', 'Contoh: kontak@perusahaan.co.id', emailLocked
+          ? { disabled: true, readOnly: true, title: 'Email tidak bisa diubah' }
+          : { autoComplete: 'email' })}
         {emailExtra}
       </Field>
       <Field label="Kategori Fundraiser" required error={errors.category}>{input('category', 'Contoh: Yayasan, Individu, Komunitas')}</Field>

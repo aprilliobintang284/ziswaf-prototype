@@ -59,7 +59,7 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
 - **Fundraiser**:
   - Admin melihat daftar, detail, setujui/tolak (dengan alasan), dan Export CSV.
   - Fundraiser melihat data sendiri dengan tombol **Edit** rata kanan (nonaktif saat Menunggu Verifikasi), lalu form **Edit Fundraiser**.
-  - Simpan di Edit Fundraiser memunculkan pop-up **Konfirmasi Perubahan**; setelah "Ya", status kembali Menunggu Verifikasi (juga untuk akun Terverifikasi).
+  - Simpan di Edit Fundraiser memunculkan pop-up **Konfirmasi Perubahan**; setelah "Ya", status kembali Menunggu Verifikasi (juga untuk akun Terverifikasi). Kolom Email tidak bisa diubah.
 - **Program**:
   - Kartu Gross/Net/Fee 3% dan tabel status Draf / Menunggu Persetujuan / **Aktif** / Ditolak / **Selesai**.
   - Detail program dengan "Tanggal Persetujuan".
@@ -81,8 +81,11 @@ Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah
 - **K-02** (terjawab PM 27 Okt) Password 8–25 karakter tanpa spasi; huruf, angka, dan simbol tidak wajib semuanya.
 - **K-06** (terjawab PM 27 Okt) Kategori fundraiser berupa teks bebas, huruf + spasi (spasi = standar QA), 5–20 karakter.
 - **K-07** (terjawab desain 27 Okt) Setelah ditolak, fundraiser memperbaiki data lewat Edit lalu statusnya kembali "Menunggu Verifikasi". Email status yang sama dikirim saat disetujui maupun ditolak.
-- **K-13** (sebagian terjawab, PRD 27 Okt) Edit program Aktif/Selesai: Deskripsi, Foto, Target Terkumpul, dan Tanggal Berakhir bisa diubah (Nama Program terkunci), lalu menunggu persetujuan Admin; program tetap tayang dengan data lama. "Simpan ke Draf" untuk program Aktif masih nonaktif sampai PM menjawab sisa K-13.
-- **K-16** Fee 3% dibulatkan ke rupiah terdekat (masih ditanyakan ke PM). Persentase Tercapai tampil angka bulat, dibulatkan ke bawah (keputusan QA 28 Okt).
+- **K-11 & K-12** (terjawab PM 28 Okt) Program masih Aktif sampai 23.59 WIB di tanggal berakhir (sisa waktu "0 Hari"), lalu Selesai mulai hari berikutnya. Program Draf atau Menunggu Persetujuan yang tanggal berakhirnya lewat juga otomatis Selesai dan tidak bisa disetujui lagi.
+- **K-13** (sebagian terjawab, PRD 27 Okt & PM 28 Okt) Edit program punya dua kondisi: program yang belum pernah tayang (Draf, atau Ditolak saat pertama diajukan) bisa mengubah semua field; program yang sudah pernah tayang (Aktif, Selesai, atau perubahannya ditolak) hanya bisa mengubah Deskripsi, Foto, Target Terkumpul, dan Tanggal Berakhir (Nama Program terkunci), lalu menunggu persetujuan Admin; program tetap tayang dengan data lama. "Simpan ke Draf" untuk program Aktif masih nonaktif sampai PM menjawab sisa K-13.
+- **K-16** (terjawab PM 28 Okt) Fee 3% dibulatkan ke atas ke rupiah penuh, dihitung per program (Rp10.001 → fee Rp301, Net Rp9.700); kartu Total Fee = jumlah fee tiap program. Persentase Tercapai tampil angka bulat, dibulatkan ke bawah (keputusan QA 28 Okt).
+- **K-23 & K-43** (terjawab PM 28 Okt) Fundraiser bisa mengedit data saat Ditolak atau Terverifikasi (Menunggu Verifikasi tidak bisa). Kolom Email terkunci di Edit Fundraiser.
+- **K-25** (terjawab PM 28 Okt) Nomor Izin Usaha boleh memakai "/" dan "-" (contoh 503/123/DPMPTSP/2026), maksimal 25 karakter, dan harus berisi huruf atau angka.
 - Standar keamanan: meminta tautan reset baru membatalkan tautan lama.
 - **K-30** Target terkumpul cukup lebih dari 0 (batas maksimal belum ditentukan).
 - **Baru (update desain 26 Okt 2026)**:
@@ -92,7 +95,7 @@ Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah
 - **Baru (update desain 26 Okt 2026 malam)**:
   - Ikon ☰ di topbar fungsinya belum dijelaskan di desain. Di prototipe ikon ini menyembunyikan/menampilkan sidebar.
 - **Baru (update desain 27 Okt 2026)**:
-  - **K-39** Fundraiser Terverifikasi yang mengedit data kembali Menunggu Verifikasi. Programnya tetap tampil, tetapi buat/edit program, Transaksi, dan Penarikan dikunci sampai disetujui lagi.
+  - **K-39** (sebagian terjawab PM 28 Okt) Fundraiser Terverifikasi yang mengedit data kembali Menunggu Verifikasi. Programnya tetap tampil dan menerima donasi, dan buat/edit program, Transaksi, serta Penarikan tetap bisa dipakai selama verifikasi ulang. Kalau Admin menolak perubahannya, sementara akun menjadi Ditolak (belum dijawab PM).
   - **K-40** Email status verifikasi sama untuk disetujui/ditolak dan tidak ada email setelah registrasi, mengikuti desain. Tautan cadangan di email reset memakai domain prototipe (di desain contohnya financeadmin.app).
 - **Baru (audit QA v6, 27 Okt 2026)**, belum diatur PRD:
   - Standar QA (tidak perlu konfirmasi PM): email dan semua field teks dibersihkan sebelum divalidasi dan disimpan: spasi/tab/baris baru di awal & akhir dibuang, non-breaking space jadi spasi biasa, karakter tak terlihat (zero-width space) dibuang. Batas minimal/maksimal dihitung setelahnya. Password tidak di-trim; No. HP tetap ikut PRD (spasi di awal/akhir = error).

@@ -4,7 +4,7 @@ import { ConfirmModal, Field, useToast } from '../components/ui'
 import { Icon } from '../components/icons'
 import { DatePicker } from '../components/DatePicker'
 import { Presence } from '../components/motion'
-import { EDITABLE, statusOf, useDB } from '../lib/store'
+import { EDITABLE, fundraiserActive, statusOf, useDB } from '../lib/store'
 import { createProgram, updateProgram } from '../lib/actions'
 import { digitsToRupiahText, pastedAmountToDigits, todayISO } from '../lib/format'
 import { readImageResized, sniffType } from '../lib/export'
@@ -27,7 +27,7 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
 
   const guard = useMemo(() => {
     if (user.role !== 'fundraiser') return 'Admin tidak dapat membuat atau mengedit program'
-    if (fundraiser?.status !== 'Terverifikasi') return 'Program bisa dibuat setelah akun Anda terverifikasi'
+    if (!fundraiserActive(fundraiser)) return 'Program bisa dibuat setelah akun Anda terverifikasi'
     if (mode === 'edit') {
       if (!program || program.fundraiserId !== fundraiser.id) return 'Data program tidak ditemukan'
       if (!EDITABLE.includes(statusOf(program))) return 'Program yang menunggu persetujuan tidak bisa diedit'
@@ -35,7 +35,8 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
     return null
   }, [user, fundraiser, program, mode])
 
-  // Aktif & Selesai (status tersimpan "Aktif"): Nama Program terkunci; Deskripsi, Foto, Target, Tanggal Berakhir bisa diubah (PRD 27 Okt 2026)
+  // K-13 (PM 28 Okt 2026): program yang sudah pernah tayang (status tersimpan "Aktif": Aktif, Selesai, perubahan ditolak)
+  // hanya bisa mengubah Deskripsi, Foto, Target, Tanggal Berakhir; Nama Program terkunci. Draf & Ditolak baru: semua field.
   const live = program?.status === 'Aktif'
   const initial = useMemo(() => ({
     title: program?.title ?? '',

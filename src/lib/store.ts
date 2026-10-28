@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { createSeed, DB_VERSION } from './seed'
 import { daysLeft } from './format'
-import type { DB, Program, ProgramStatus } from './types'
+import type { DB, Fundraiser, Program, ProgramStatus } from './types'
 
 const KEY = 'ziswaf-proto-db'
 
@@ -78,20 +78,35 @@ export function useDB(): DB {
 }
 
 // ---------------- Turunan data program ----------------
-export const FEE_RATE = 0.03
+export const FEE_PERCENT = 3
 
+// K-16 (PM 28 Okt 2026): fee dibulatkan ke atas ke rupiah penuh, dihitung per program.
+// Pakai bilangan bulat (gross × 3 / 100), bukan gross × 0.03, supaya galat desimal tidak membuat
+// Rp15.000.000 jadi fee Rp450.001.
 export function feeOf(p: Program): number {
-  return Math.round(p.gross * FEE_RATE) // K-16: aturan pembulatan belum ditentukan
+  return Math.ceil((p.gross * FEE_PERCENT) / 100)
 }
 
 export function netOf(p: Program): number {
   return p.gross - feeOf(p)
 }
 
+// K-11/K-12 (PM 28 Okt 2026): program masih berjalan sampai 23.59 WIB di tanggal berakhir, lalu Selesai.
+// Draf dan Menunggu Persetujuan yang tanggalnya lewat juga otomatis Selesai.
+const ENDS: ProgramStatus[] = ['Aktif', 'Draf', 'Menunggu Persetujuan']
+
 export function statusOf(p: Program): ProgramStatus {
   if (p.pendingEdit) return 'Menunggu Persetujuan'
-  if (p.status === 'Aktif' && daysLeft(p.endDate) < 0) return 'Selesai'
+  if (ENDS.includes(p.status) && p.endDate && daysLeft(p.endDate) < 0) return 'Selesai'
   return p.status
+}
+
+/**
+ * Fundraiser boleh memakai fitur program, Transaksi, dan Penarikan: Terverifikasi, atau sedang
+ * diverifikasi ulang setelah mengedit data (K-39, PM 28 Okt 2026: fitur tidak dikunci selama menunggu).
+ */
+export function fundraiserActive(f: Fundraiser | null | undefined): f is Fundraiser {
+  return !!f && (f.status === 'Terverifikasi' || (f.status === 'Menunggu Verifikasi' && !!f.reverify))
 }
 
 // Desain Hifi terbaru: pensil/Edit hanya nonaktif untuk "Menunggu Persetujuan" (Selesai pun bisa diedit — perlu konfirmasi)
