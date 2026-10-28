@@ -95,9 +95,12 @@ export function DashboardLayout() {
       <aside className="side">
         <Logo small />
         <nav className="nav">
+          {/* K-08 (asumsi QA 28 Okt 2026, menunggu desainer): menu terkunci tetap tampil, abu-abu, dan tidak bisa diklik */}
           {items.map((it) => (
             <NavLink key={it.to} to={it.to} className={({ isActive }) => (isActive ? 'active' : '') + (it.locked ? ' locked' : '')}
-              title={it.locked ? 'Bisa diakses setelah akun terverifikasi' : undefined}>
+              title={it.locked ? 'Bisa diakses setelah akun terverifikasi' : undefined}
+              aria-disabled={it.locked || undefined} tabIndex={it.locked ? -1 : undefined}
+              onClick={(e) => { if (it.locked) e.preventDefault() }}>
               {it.icon}{it.label}
             </NavLink>
           ))}

@@ -6,7 +6,7 @@ export type Errors<T extends string> = Partial<Record<T, string>>
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const LETTERS_SPACES = /^[A-Za-z ]+$/
 const NAME_RE = /^[A-Za-z0-9 ]+$/
-const LICENSE = /^[A-Za-z0-9/-]+$/
+const LICENSE = /^[!-~]+$/ // huruf, angka, dan simbol keyboard, tanpa spasi
 const DIGITS = /^[0-9]+$/
 
 const INVISIBLE = /[​-‍⁠﻿]/g
@@ -67,7 +67,8 @@ export function validateLicense(raw: string): string | undefined {
   const r = required(raw, 'Nomor izin usaha')
   if (r) return r
   const v = clean(raw)
-  // K-25 (PM 28 Okt 2026): selain huruf dan angka boleh "/" dan "-" (contoh 503/123/DPMPTSP/2026); harus ada huruf/angka
+  // K-25: PRD membolehkan huruf, angka, dan simbol (PM 28 Okt 2026: termasuk "/" dan "-", contoh 503/123/DPMPTSP/2026).
+  // Standar QA: spasi di tengah ditolak dan isian harus berisi huruf atau angka (bukan hanya simbol).
   if (!LICENSE.test(v) || !/[A-Za-z0-9]/.test(v) || v.length > 25) return 'Nomor izin usaha tidak valid'
   return undefined
 }

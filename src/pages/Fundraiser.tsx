@@ -7,7 +7,7 @@ import { Presence } from '../components/motion'
 import { useDB } from '../lib/store'
 import { approveFundraiser, rejectFundraiser } from '../lib/actions'
 import { fileSize, tanggal } from '../lib/format'
-import { downloadCsv } from '../lib/export'
+import { downloadXlsx } from '../lib/xlsx'
 import type { Fundraiser } from '../lib/types'
 
 function openDocPreview(f: Fundraiser) {
@@ -110,20 +110,20 @@ function FundraiserList() {
     }
   }, [detailId, detail, setParams, toast])
 
-  const exportCsv = () => {
-    downloadCsv('fundraiser.csv',
+  // Nomor HP, rekening, dan NPWP tetap teks supaya angka 0 di depan dan digit panjang tidak berubah
+  const exportXlsx = () => {
+    downloadXlsx('fundraiser.xlsx', 'Fundraiser',
       ['No', 'Nama', 'Email', 'Kategori', 'Tanggal Daftar', 'Status Verifikasi', 'Jumlah Program', 'Nomor HP', 'Nama Bank', 'Nomor Rekening Penarikan', 'Nomor Rekening Dana Komoditi', 'NPWP'],
       rows.map((f, i) => [i + 1, f.name, f.email, f.category, tanggal(f.registeredAt), f.status,
-        f.status === 'Terverifikasi' ? counts.get(f.id) ?? 0 : '-', f.phone, f.bankName, f.withdrawAccount, f.commodityAccount, f.npwp]),
-      [7, 9, 10, 11])
-    toast('File fundraiser.csv diunduh')
+        f.status === 'Terverifikasi' ? counts.get(f.id) ?? 0 : '-', f.phone, f.bankName, f.withdrawAccount, f.commodityAccount, f.npwp]))
+    toast('File fundraiser.xlsx diunduh')
   }
 
   return (
     <>
       <div className="page-head"><h1 className="page-title">Fundraiser</h1></div>
       <div className="card">
-        <div className="table-toolbar"><button className="btn btn-outline btn-sm" onClick={exportCsv}>Export <Icon name="download" /></button></div>
+        <div className="table-toolbar"><button className="btn btn-outline btn-sm" onClick={exportXlsx}>Export <Icon name="download" /></button></div>
         <div className="table-wrap">
           <table className="tbl">
             <thead><tr><th>No</th><th>Nama</th><th>Email</th><th>Kategori</th><th>Tanggal Daftar</th><th>Status Verifikasi</th><th>Jumlah Program</th><th>Aksi</th></tr></thead>

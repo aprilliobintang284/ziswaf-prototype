@@ -57,7 +57,7 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
   - Tautan berlaku 60 menit dan hanya sekali pakai.
   - Setelah berhasil muncul modal "Password Berhasil Diubah".
 - **Fundraiser**:
-  - Admin melihat daftar, detail, setujui/tolak (dengan alasan), dan Export CSV.
+  - Admin melihat daftar, detail, setujui/tolak (dengan alasan), dan Export Excel (.xlsx).
   - Fundraiser melihat data sendiri dengan tombol **Edit** rata kanan (nonaktif saat Menunggu Verifikasi), lalu form **Edit Fundraiser**.
   - Simpan di Edit Fundraiser memunculkan pop-up **Konfirmasi Perubahan**; setelah "Ya", status kembali Menunggu Verifikasi (juga untuk akun Terverifikasi). Kolom Email tidak bisa diubah.
 - **Program**:
@@ -65,7 +65,9 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
   - Detail program dengan "Tanggal Persetujuan".
   - Buat/Edit program dengan date picker, upload foto (ikon X di pojok foto untuk menghapus), dan peringatan keluar halaman.
   - Admin bisa menyetujui atau menolak program.
-- **Topbar**: ikon ☰ dan menu pengguna (peran, nama, email, tombol "Keluar" dengan konfirmasi).
+  - Nama program tidak boleh sama dengan program lain (beda huruf besar/kecil dan spasi berlebih tetap dianggap sama).
+  - Export Excel (.xlsx) untuk Admin dan Fundraiser.
+- **Topbar**: ikon ☰ untuk menyembunyikan/menampilkan menu samping, dan menu pengguna (peran, nama, email, tombol "Keluar" dengan konfirmasi).
 - **Transaksi & Penarikan**: masih placeholder (desain Hifi belum ada).
 - **Animasi**: sidebar (☰), menu pengguna, pop-up, panel detail, date picker, kotak email simulasi, toast, tabel, dan perpindahan halaman memakai transisi singkat (±0,1–0,3 detik). Animasi dimatikan otomatis jika pengaturan "kurangi gerakan" (reduce motion) aktif di perangkat.
 
@@ -80,20 +82,24 @@ Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah
 - **K-01** (terjawab PM 27 Okt) Tab/browser ditutup lalu dibuka lagi ≤ 24 jam tetap login; ≥ 24 jam harus login ulang. Aturan 7 hari dihapus. Diam 30 menit tetap otomatis logout.
 - **K-02** (terjawab PM 27 Okt) Password 8–25 karakter tanpa spasi; huruf, angka, dan simbol tidak wajib semuanya.
 - **K-06** (terjawab PM 27 Okt) Kategori fundraiser berupa teks bebas, huruf + spasi (spasi = standar QA), 5–20 karakter.
+- **K-08** (asumsi QA 28 Okt, menunggu desainer) Untuk fundraiser yang belum terverifikasi, menu Transaksi dan Penarikan tetap tampil tetapi abu-abu dan tidak bisa diklik.
 - **K-07** (terjawab desain 27 Okt) Setelah ditolak, fundraiser memperbaiki data lewat Edit lalu statusnya kembali "Menunggu Verifikasi". Email status yang sama dikirim saat disetujui maupun ditolak.
 - **K-11 & K-12** (terjawab PM 28 Okt) Program masih Aktif sampai 23.59 WIB di tanggal berakhir (sisa waktu "0 Hari"), lalu Selesai mulai hari berikutnya. Program Draf atau Menunggu Persetujuan yang tanggal berakhirnya lewat juga otomatis Selesai dan tidak bisa disetujui lagi.
 - **K-13** (sebagian terjawab, PRD 27 Okt & PM 28 Okt) Edit program punya dua kondisi: program yang belum pernah tayang (Draf, atau Ditolak saat pertama diajukan) bisa mengubah semua field; program yang sudah pernah tayang (Aktif, Selesai, atau perubahannya ditolak) hanya bisa mengubah Deskripsi, Foto, Target Terkumpul, dan Tanggal Berakhir (Nama Program terkunci), lalu menunggu persetujuan Admin; program tetap tayang dengan data lama. "Simpan ke Draf" untuk program Aktif masih nonaktif sampai PM menjawab sisa K-13.
+  - Keputusan QA 28 Okt: program **Selesai** sudah final. Tanggal Berakhir-nya terkunci (tidak bisa diperpanjang untuk aktif lagi), dan draf/pengajuan yang menjadi Selesai karena tanggalnya lewat tidak bisa diedit. Untuk melanjutkan penggalangan dana, buat program baru.
 - **K-16** (terjawab PM 28 Okt) Fee 3% dibulatkan ke atas ke rupiah penuh, dihitung per program (Rp10.001 → fee Rp301, Net Rp9.700); kartu Total Fee = jumlah fee tiap program. Persentase Tercapai tampil angka bulat, dibulatkan ke bawah (keputusan QA 28 Okt).
 - **K-23 & K-43** (terjawab PM 28 Okt) Fundraiser bisa mengedit data saat Ditolak atau Terverifikasi (Menunggu Verifikasi tidak bisa). Kolom Email terkunci di Edit Fundraiser.
-- **K-25** (terjawab PM 28 Okt) Nomor Izin Usaha boleh memakai "/" dan "-" (contoh 503/123/DPMPTSP/2026), maksimal 25 karakter, dan harus berisi huruf atau angka.
+- **K-21** (terjawab 28 Okt) File export berformat Excel (.xlsx), sama seperti export di payment gateway. Teks disimpan sebagai sel teks, jadi nomor HP, rekening, dan NPWP tidak berubah dan isi yang diawali `=`, `+`, `-`, `@` tidak dibaca sebagai rumus.
+- **K-25** (terjawab PRD & PM 28 Okt) Nomor Izin Usaha maksimal 25 karakter, boleh huruf, angka, dan simbol (termasuk "/" dan "-", contoh 503/123/DPMPTSP/2026). Standar QA: spasi di tengah ditolak dan isian harus berisi huruf atau angka.
+- **K-45** (sebagian terjawab 28 Okt) Nama program tidak boleh sama dengan program lain mana pun, termasuk milik fundraiser lain dan program Selesai (cakupan seluruh platform masih asumsi).
 - Standar keamanan: meminta tautan reset baru membatalkan tautan lama.
 - **K-30** Target terkumpul cukup lebih dari 0 (batas maksimal belum ditentukan).
 - **Baru (update desain 26 Okt 2026)**:
-  - Program **Selesai** bisa diedit, mengikuti desain (pensil & tombol Edit aktif). Perilakunya disamakan dengan program Aktif.
+  - Program **Selesai** bisa diedit, mengikuti desain (pensil & tombol Edit aktif), kecuali Tanggal Berakhir (lihat K-13).
   - "Lupa Password" menampilkan "Email tidak terdaftar" sesuai desain, padahal AC PRD meminta pesan yang sama untuk email terdaftar/tidak.
   - Kolom "Nama Fundraiser" di tabel Program hanya untuk Admin. Di desain, kolom ini muncul bersama tombol "Buat Program Baru".
 - **Baru (update desain 26 Okt 2026 malam)**:
-  - Ikon ☰ di topbar fungsinya belum dijelaskan di desain. Di prototipe ikon ini menyembunyikan/menampilkan sidebar.
+  - Ikon ☰ di topbar menyembunyikan/menampilkan sidebar (dikonfirmasi 28 Okt). Status sidebar belum diingat setelah refresh (sisa K-38).
 - **Baru (update desain 27 Okt 2026)**:
   - **K-39** (sebagian terjawab PM 28 Okt) Fundraiser Terverifikasi yang mengedit data kembali Menunggu Verifikasi. Programnya tetap tampil dan menerima donasi, dan buat/edit program, Transaksi, serta Penarikan tetap bisa dipakai selama verifikasi ulang. Kalau Admin menolak perubahannya, sementara akun menjadi Ditolak (belum dijawab PM).
   - **K-40** Email status verifikasi sama untuk disetujui/ditolak dan tidak ada email setelah registrasi, mengikuti desain. Tautan cadangan di email reset memakai domain prototipe (di desain contohnya financeadmin.app).
@@ -102,5 +108,4 @@ Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah
   - Standar QA: email maksimal 254 karakter.
   - Nomor telepon cukup angka 10–13 digit; awalan (08/62) tidak dicek (keputusan QA).
   - **K-42** Sesi dibagi semua tab: aktivitas di tab mana pun (termasuk mengetik) menahan logout, dan logout/ganti akun di satu tab langsung berlaku di tab lain.
-  - Standar keamanan: isi sel export yang diawali `=`, `+`, `-`, `@` diberi awalan tanda kutip supaya tidak dibaca sebagai rumus oleh Excel.
   - Target Terkumpul: nominal yang ditempel ("Rp 15.000.000", "15.000.000,00") dibaca sebagai Rp15.000.000, tidak jadi 100× lipat. Kursor tidak lompat ke akhir saat mengedit angka di tengah.

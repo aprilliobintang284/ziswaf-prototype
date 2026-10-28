@@ -4,8 +4,8 @@ import { ConfirmModal, Field, useToast } from '../components/ui'
 import { Icon } from '../components/icons'
 import { DatePicker } from '../components/DatePicker'
 import { Presence } from '../components/motion'
-import { EDITABLE, fundraiserActive, statusOf, useDB } from '../lib/store'
-import { createProgram, updateProgram } from '../lib/actions'
+import { canEditProgram, fundraiserActive, statusOf, useDB } from '../lib/store'
+import { createProgram, titleTaken, updateProgram } from '../lib/actions'
 import { digitsToRupiahText, pastedAmountToDigits, todayISO } from '../lib/format'
 import { readImageResized, sniffType } from '../lib/export'
 import {
@@ -30,7 +30,9 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
     if (!fundraiserActive(fundraiser)) return 'Program bisa dibuat setelah akun Anda terverifikasi'
     if (mode === 'edit') {
       if (!program || program.fundraiserId !== fundraiser.id) return 'Data program tidak ditemukan'
-      if (!EDITABLE.includes(statusOf(program))) return 'Program yang menunggu persetujuan tidak bisa diedit'
+      if (!canEditProgram(program)) {
+        return statusOf(program) === 'Selesai' ? 'Program yang sudah Selesai tidak bisa diedit' : 'Program yang menunggu persetujuan tidak bisa diedit'
+      }
     }
     return null
   }, [user, fundraiser, program, mode])
@@ -38,6 +40,8 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
   // K-13 (PM 28 Okt 2026): program yang sudah pernah tayang (status tersimpan "Aktif": Aktif, Selesai, perubahan ditolak)
   // hanya bisa mengubah Deskripsi, Foto, Target, Tanggal Berakhir; Nama Program terkunci. Draf & Ditolak baru: semua field.
   const live = program?.status === 'Aktif'
+  // Keputusan QA 28 Okt 2026: program Selesai sudah final, jadi Tanggal Berakhir tidak bisa diperpanjang
+  const ended = !!program && statusOf(program) === 'Selesai'
   const initial = useMemo(() => ({
     title: program?.title ?? '',
     target: program?.target ? String(program.target) : '',
@@ -114,10 +118,12 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
       : {
           title: live ? undefined : validateProgramTitle(v.title),
           target: validateTarget(v.target),
-          endDate: validateEndDate(v.endDate, todayISO()),
+          endDate: ended ? undefined : validateEndDate(v.endDate, todayISO()),
           description: validateDescription(v.description),
           image: v.image ? undefined : 'Foto program wajib diupload',
         }
+    // Nama program tidak boleh sama dengan program lain (28 Okt 2026); nama program yang sudah tayang terkunci
+    if (!live && !e.title && titleTaken(v.title, program?.id)) e.title = 'Nama program sudah digunakan'
     setErrs(e)
     if (Object.values(e).some(Boolean)) return
     setPending(kind)
@@ -156,7 +162,7 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
           </div>
         </Field>
         <Field label="Tanggal Berakhir" required error={errs.endDate}>
-          <DatePicker value={v.endDate} onChange={(iso) => set('endDate', iso.startsWith('invalid:') ? iso.slice(8) : iso)} invalid={!!errs.endDate} />
+          <DatePicker value={v.endDate} onChange={(iso) => set('endDate', iso.startsWith('invalid:') ? iso.slice(8) : iso)} invalid={!!errs.endDate} disabled={ended} />
         </Field>
         <Field label="Deskripsi Program" required error={errs.description}>
           <textarea className="textarea" placeholder="Masukkan deskripsi program" value={v.description} onChange={(e) => set('description', e.target.value)} />

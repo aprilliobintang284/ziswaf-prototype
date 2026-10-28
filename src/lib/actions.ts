@@ -229,6 +229,13 @@ export interface ProgramInput {
   image: string
 }
 
+/** Nama program tidak boleh sama dengan program lain mana pun; beda huruf besar/kecil dan spasi berlebih dianggap sama (28 Okt 2026). */
+export function titleTaken(title: string, exceptId?: string): boolean {
+  const key = (t: string) => clean(t).replace(/\s+/g, ' ').toLowerCase()
+  const k = key(title)
+  return getDB().programs.some((p) => p.id !== exceptId && key(p.title) === k)
+}
+
 export function createProgram(fundraiserId: string, input: ProgramInput, asDraft: boolean): string {
   const id = uid('p')
   setDB((d) => {
@@ -246,7 +253,9 @@ export function updateProgram(id: string, input: ProgramInput, mode: 'draft' | '
     const p = d.programs.find((x) => x.id === id)
     if (!p) return
     if (p.status === 'Aktif') {
-      const edit: ProgramEdit = { description: input.description, image: input.image, target: input.target, endDate: input.endDate }
+      // Program Selesai sudah final: Tanggal Berakhir tidak ikut berubah walau dikirim berbeda (keputusan QA 28 Okt 2026)
+      const endDate = statusOf(p) === 'Selesai' ? p.endDate : input.endDate
+      const edit: ProgramEdit = { description: input.description, image: input.image, target: input.target, endDate }
       p.pendingEdit = edit
       return
     }

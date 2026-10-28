@@ -109,8 +109,17 @@ export function fundraiserActive(f: Fundraiser | null | undefined): f is Fundrai
   return !!f && (f.status === 'Terverifikasi' || (f.status === 'Menunggu Verifikasi' && !!f.reverify))
 }
 
-// Desain Hifi terbaru: pensil/Edit hanya nonaktif untuk "Menunggu Persetujuan" (Selesai pun bisa diedit — perlu konfirmasi)
+// Desain Hifi terbaru: pensil/Edit hanya nonaktif untuk "Menunggu Persetujuan" (Selesai bisa diedit, PRD 27 Okt 2026)
 export const EDITABLE: ProgramStatus[] = ['Draf', 'Ditolak', 'Aktif', 'Selesai']
+
+/**
+ * Program Selesai yang belum pernah tayang (draf atau pengajuan yang tanggalnya lewat, K-12) sudah final,
+ * jadi tidak bisa diedit lagi (keputusan QA 28 Okt 2026: lanjutkan dengan program baru).
+ */
+export function canEditProgram(p: Program): boolean {
+  const s = statusOf(p)
+  return EDITABLE.includes(s) && !(s === 'Selesai' && p.status !== 'Aktif')
+}
 
 export function isLive(p: Program): boolean {
   return p.status === 'Aktif'

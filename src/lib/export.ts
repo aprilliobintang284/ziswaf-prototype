@@ -1,23 +1,5 @@
-// Export CSV di sisi browser. Angka panjang dibungkus ="..." supaya Excel tidak mengubahnya jadi format ilmiah.
-
-function cell(v: unknown, keepText = false): string {
-  let s = v === undefined || v === null ? '' : String(v)
-  // Teks yang diawali = + - @ dibaca Excel sebagai rumus (injeksi rumus) → diberi awalan tanda kutip (standar keamanan)
-  if (!keepText && /^[=+\-@\t\r]/.test(s)) s = "'" + s
-  const quoted = '"' + s.replace(/"/g, '""') + '"'
-  return keepText && s ? '=' + quoted : quoted
-}
-
-export function downloadCsv(filename: string, header: string[], rows: unknown[][], textCols: number[] = []) {
-  const lines = [header.map((h) => cell(h)).join(','), ...rows.map((r) => r.map((v, i) => cell(v, textCols.includes(i))).join(','))]
-  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  setTimeout(() => URL.revokeObjectURL(url), 1000)
-}
+// Bantuan file di sisi browser: memperkecil foto program dan mengecek tipe file asli.
+// Export data ada di xlsx.ts (format .xlsx sejak 28 Okt 2026, K-21).
 
 /** Perkecil gambar sebelum disimpan supaya muat di localStorage. */
 export function readImageResized(file: File, maxW = 1000): Promise<string> {

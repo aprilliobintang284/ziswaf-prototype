@@ -146,7 +146,8 @@ a { color: inherit; }
 .nav a { display: flex; align-items: center; gap: 14px; height: 44px; padding: 0 16px; border-radius: 6px; text-decoration: none; color: var(--text-2); font-size: 14px; white-space: nowrap; transition: background .18s, color .18s; }
 .nav a:hover { background: #eef6f5; }
 .nav a.active { background: var(--primary); color: #fff; font-weight: 600; }
-.nav a.locked { color: #a8a8a8; }
+.nav a.locked { color: #a8a8a8; cursor: not-allowed; }
+.nav a.locked:hover { background: none; }
 .main { min-width: 0; display: flex; flex-direction: column; }
 .dash.side-hidden { grid-template-columns: 0px 1fr; }
 .dash.side-hidden .side { visibility: hidden; opacity: 0; transform: translateX(-24px);

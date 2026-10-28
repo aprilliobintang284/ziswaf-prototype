@@ -6,10 +6,10 @@ import { StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
 import { ApprovalPanel } from '../components/Approval'
 import { Presence } from '../components/motion'
 import { Icon } from '../components/icons'
-import { EDITABLE, feeOf, fundraiserActive, netOf, statusOf, useDB } from '../lib/store'
+import { canEditProgram, feeOf, fundraiserActive, netOf, statusOf, useDB } from '../lib/store'
 import { approveProgram, rejectProgram } from '../lib/actions'
 import { daysLeft, rupiah, tanggal } from '../lib/format'
-import { downloadCsv } from '../lib/export'
+import { downloadXlsx } from '../lib/xlsx'
 import type { Program, ProgramStatus } from '../lib/types'
 
 const DECIDED: ProgramStatus[] = ['Aktif', 'Selesai', 'Ditolak']
@@ -65,11 +65,11 @@ export function ProgramPage() {
     }
   }, [detailId, detail, setParams, toast])
 
-  const exportCsv = () => {
-    downloadCsv('program.csv',
+  const exportXlsx = () => {
+    downloadXlsx('program.xlsx', 'Program',
       ['ID Program', 'Judul', 'Fundraiser', 'Target Terkumpul', 'Total Terkumpul (Gross)', 'Total Terkumpul (Net)', 'Total Fee (3%)', 'Persentase Tercapai', 'Jumlah Donatur', 'Sisa Waktu', 'Status'],
       programs.map((p) => [p.id, p.title, frName(p.fundraiserId), p.target, hasFunds(p) ? p.gross : 0, hasFunds(p) ? netOf(p) : 0, hasFunds(p) ? feeOf(p) : 0, persen(p), hasFunds(p) ? p.donors : 0, sisaWaktu(p), statusOf(p)]))
-    toast('File program.csv diunduh')
+    toast('File program.xlsx diunduh')
   }
 
   const createBtn = !isAdmin && (
@@ -100,7 +100,7 @@ export function ProgramPage() {
         </div>
       ) : (
         <div className="card">
-          <div className="table-toolbar"><button className="btn btn-outline btn-sm" onClick={exportCsv}>Export <Icon name="download" /></button></div>
+          <div className="table-toolbar"><button className="btn btn-outline btn-sm" onClick={exportXlsx}>Export <Icon name="download" /></button></div>
           <div className="table-wrap">
             <table className="tbl">
               <thead>
@@ -113,7 +113,7 @@ export function ProgramPage() {
               <tbody className="rows-in" key={`${paged.page}-${paged.size}`}>
                 {paged.slice.map((p, i) => {
                   const s = statusOf(p)
-                  const canEdit = !isAdmin && verified && EDITABLE.includes(s)
+                  const canEdit = !isAdmin && verified && canEditProgram(p)
                   return (
                     <tr key={p.id}>
                       <td>{paged.offset + i + 1}</td>
@@ -128,7 +128,7 @@ export function ProgramPage() {
                       <td className="num">
                         <button className="icon-btn view" aria-label={`Lihat ${p.title}`} onClick={() => setParams({ detail: p.id })}><Icon name="action-eye" /></button>
                         {!isAdmin && (
-                          <button className="icon-btn edit" aria-label={`Edit ${p.title}`} disabled={!canEdit} title={canEdit ? undefined : 'Program yang menunggu persetujuan tidak bisa diedit'}
+                          <button className="icon-btn edit" aria-label={`Edit ${p.title}`} disabled={!canEdit} title={canEdit ? undefined : s === 'Selesai' ? 'Program yang sudah Selesai tidak bisa diedit' : 'Program yang menunggu persetujuan tidak bisa diedit'}
                             onClick={() => nav(`/dashboard/program/${p.id}/edit`)}><Icon name={canEdit ? 'action-pencil' : 'action-pencil-disabled'} /></button>
                         )}
                       </td>
@@ -201,8 +201,9 @@ function ProgramDrawer({ p, isAdmin, verified, fundraiserName, onClose }: { p: P
         </dl>
 
         {!isAdmin && (
-          <button className="btn btn-primary btn-block mt-16" disabled={!verified || !EDITABLE.includes(s)}
-            title={!verified ? 'Program bisa diedit setelah akun terverifikasi lagi' : EDITABLE.includes(s) ? undefined : 'Program yang menunggu persetujuan tidak bisa diedit'}
+          <button className="btn btn-primary btn-block mt-16" disabled={!verified || !canEditProgram(p)}
+            title={!verified ? 'Program bisa diedit setelah akun terverifikasi lagi' : canEditProgram(p) ? undefined
+              : s === 'Selesai' ? 'Program yang sudah Selesai tidak bisa diedit' : 'Program yang menunggu persetujuan tidak bisa diedit'}
             onClick={() => nav(`/dashboard/program/${p.id}/edit`)}>Edit</button>
         )}
         {isAdmin && s === 'Menunggu Persetujuan' && (
