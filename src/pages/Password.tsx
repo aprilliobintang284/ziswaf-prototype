@@ -4,6 +4,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { AuthLayout } from '../components/layouts'
 import { Logo } from '../components/brand'
 import { Field, Modal, PasswordCriteria, PasswordInput } from '../components/ui'
+import { Presence } from '../components/motion'
 import { requestReset, resetPassword, tokenEmail, tokenState } from '../lib/actions'
 import { clean, validateConfirm, validateEmail, validatePassword } from '../lib/validation'
 
@@ -48,14 +49,14 @@ export function ForgotPasswordPage() {
         <button className="btn btn-primary btn-block btn-lg" type="submit" disabled={!clean(email)}>Kirim Tautan</button>
       </form>
 
-      {sent && (
+      <Presence show={sent}>{sent && (
         <Modal icon="mail" title="Periksa Email Anda" actions={
           <div className="modal-actions one"><button className="btn btn-primary" onClick={() => setSent(false)}>Tutup</button></div>
         }>
           Kami sudah mengirimkan tautan untuk mengatur ulang password Anda. Silakan periksa kotak masuk email Anda.
         </Modal>
-      )}
-      {expired && !sent && (
+      )}</Presence>
+      <Presence show={expired && !sent}>{expired && !sent && (
         <Modal icon="bad" title="Tautan Kedaluwarsa" actions={
           <div className="modal-actions one">
             {params.get('email')
@@ -65,7 +66,7 @@ export function ForgotPasswordPage() {
         }>
           Tautan untuk mengatur ulang password Anda sudah tidak berlaku karena batas waktu 60 menit telah berakhir atau tautan sudah pernah dipakai.
         </Modal>
-      )}
+      )}</Presence>
     </AuthLayout>
   )
 }

@@ -114,7 +114,7 @@ export function ConfirmModal({ title, text, onNo, onYes, icon = 'warn' }: { titl
 }
 
 // ---------------- Toast ----------------
-interface ToastItem { id: number; text: string; kind: 'ok' | 'err' | 'info' }
+interface ToastItem { id: number; text: string; kind: 'ok' | 'err' | 'info'; leaving?: boolean }
 const ToastCtx = createContext<(text: string, kind?: ToastItem['kind']) => void>(() => {})
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -123,12 +123,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const push = useCallback((text: string, kind: ToastItem['kind'] = 'ok') => {
     const id = ++seq.current
     setItems((x) => [...x, { id, text, kind }])
+    // Ditandai "leaving" dulu supaya animasi keluarnya jalan, baru dilepas
+    setTimeout(() => setItems((x) => x.map((t) => (t.id === id ? { ...t, leaving: true } : t))), 3000)
     setTimeout(() => setItems((x) => x.filter((t) => t.id !== id)), 3200)
   }, [])
   return (
     <ToastCtx.Provider value={push}>
       {children}
-      <div className="toasts">{items.map((t) => <div key={t.id} className={`toast ${t.kind}`}>{t.text}</div>)}</div>
+      <div className="toasts">{items.map((t) => <div key={t.id} className={`toast ${t.kind}${t.leaving ? ' leaving' : ''}`}>{t.text}</div>)}</div>
     </ToastCtx.Provider>
   )
 }

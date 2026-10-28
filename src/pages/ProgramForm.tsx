@@ -3,6 +3,7 @@ import { Navigate, useBlocker, useNavigate, useParams } from 'react-router-dom'
 import { ConfirmModal, Field, useToast } from '../components/ui'
 import { Icon } from '../components/icons'
 import { DatePicker } from '../components/DatePicker'
+import { Presence } from '../components/motion'
 import { EDITABLE, statusOf, useDB } from '../lib/store'
 import { createProgram, updateProgram } from '../lib/actions'
 import { digitsToRupiahText, pastedAmountToDigits, todayISO } from '../lib/format'
@@ -183,7 +184,7 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
         <button className="btn btn-primary" onClick={() => ask('submit')}>{mode === 'create' ? 'Ajukan Program' : 'Ajukan Perubahan'}</button>
       </div>
 
-      {pending && (
+      <Presence show={!!pending}>{pending && (
         <ConfirmModal
           title="Konfirmasi"
           text={pending === 'draft' ? 'Simpan program sebagai draf?'
@@ -192,15 +193,15 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
           onNo={() => setPending(null)}
           onYes={run}
         />
-      )}
-      {blocker.state === 'blocked' && (
+      )}</Presence>
+      <Presence show={blocker.state === 'blocked'}>{blocker.state === 'blocked' && (
         <ConfirmModal
           title="Keluar dari halaman?"
           text="Apakah Anda yakin ingin meninggalkan halaman ini? Data yang sudah diisi akan hilang."
           onNo={() => blocker.reset()}
           onYes={() => blocker.proceed()}
         />
-      )}
+      )}</Presence>
     </>
   )
 }

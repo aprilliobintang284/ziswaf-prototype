@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Mail, X } from 'lucide-react'
 import { useDB } from '../lib/store'
 import { expireTokenForDemo } from '../lib/actions'
+import { Presence } from './motion'
 
 /**
  * Kotak masuk simulasi — alat bantu prototipe (tidak ada di desain).
@@ -17,7 +18,7 @@ export function MailSim() {
 
   return (
     <>
-      {open && (
+      <Presence show={open}>{open && (
         <div className="mailsim">
           <div className="mailsim-head">
             <div>Kotak Masuk Simulasi<br /><small>Alat bantu prototipe – tidak ada di desain</small></div>
@@ -53,7 +54,7 @@ export function MailSim() {
             ))}
           </div>
         </div>
-      )}
+      )}</Presence>
       <button className="mailsim-btn" onClick={() => { setOpen((o) => !o); setSeen(db.emails.length) }}>
         <Mail size={16} /> Email simulasi {unread > 0 && <span className="mailsim-count">{unread}</span>}
       </button>

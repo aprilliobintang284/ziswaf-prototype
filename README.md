@@ -67,6 +67,7 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
   - Admin bisa menyetujui atau menolak program.
 - **Topbar**: ikon ☰ dan menu pengguna (peran, nama, email, tombol "Keluar" dengan konfirmasi).
 - **Transaksi & Penarikan**: masih placeholder (desain Hifi belum ada).
+- **Animasi**: sidebar (☰), menu pengguna, pop-up, panel detail, date picker, kotak email simulasi, toast, tabel, dan perpindahan halaman memakai transisi singkat (±0,1–0,3 detik). Animasi dimatikan otomatis jika pengaturan "kurangi gerakan" (reduce motion) aktif di perangkat.
 
 ## Aset dari Figma
 

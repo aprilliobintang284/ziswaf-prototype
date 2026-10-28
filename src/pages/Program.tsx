@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Info, Clock } from 'lucide-react'
 import { StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
 import { ApprovalPanel } from '../components/Approval'
+import { Presence } from '../components/motion'
 import { Icon } from '../components/icons'
 import { EDITABLE, feeOf, netOf, statusOf, useDB } from '../lib/store'
 import { approveProgram, rejectProgram } from '../lib/actions'
@@ -109,7 +110,7 @@ export function ProgramPage() {
                   <th className="wrap">Jumlah<br />Donatur</th><th>Sisa Waktu</th><th>Status</th><th>Aksi</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="rows-in" key={`${paged.page}-${paged.size}`}>
                 {paged.slice.map((p, i) => {
                   const s = statusOf(p)
                   const canEdit = !isAdmin && verified && EDITABLE.includes(s)
@@ -141,7 +142,9 @@ export function ProgramPage() {
         </div>
       )}
 
-      {detail && <ProgramDrawer p={detail} isAdmin={isAdmin} verified={verified} fundraiserName={frName(detail.fundraiserId)} onClose={() => setParams({})} />}
+      <Presence show={!!detail} exitMs={220}>
+        {detail && <ProgramDrawer p={detail} isAdmin={isAdmin} verified={verified} fundraiserName={frName(detail.fundraiserId)} onClose={() => setParams({})} />}
+      </Presence>
     </>
   )
 }

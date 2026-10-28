@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { DocField, FundraiserFields, checkDocFile, hasErrors, validateFundraiserForm } from '../components/FundraiserFields'
 import type { FundraiserForm } from '../components/FundraiserFields'
 import { ConfirmModal, StatusBadge, useToast } from '../components/ui'
+import { Presence } from '../components/motion'
 import { useDB } from '../lib/store'
 import { emailTaken, updateFundraiserData } from '../lib/actions'
 import type { DocFile } from '../lib/types'
@@ -65,11 +66,11 @@ export function FundraiserEditPage() {
         <button className="btn btn-outline btn-wide" onClick={() => nav('/dashboard/fundraiser')}>Batal</button>
         <button className="btn btn-primary btn-wide" disabled={!canSave} onClick={() => setConfirm(true)}>Simpan</button>
       </div>
-      {confirm && (
+      <Presence show={confirm}>{confirm && (
         <ConfirmModal title="Konfirmasi Perubahan"
           text="Apakah Anda yakin ingin menyimpan perubahan data dan mengajukan kembali untuk diverifikasi oleh admin?"
           onNo={() => setConfirm(false)} onYes={save} />
-      )}
+      )}</Presence>
     </>
   )
 }

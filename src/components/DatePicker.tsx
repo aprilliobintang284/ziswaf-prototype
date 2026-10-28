@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Icon } from './icons'
+import { Presence } from './motion'
 import { NAMA_BULAN, toISODate, todayISO } from '../lib/format'
 
 const DOW = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
@@ -60,7 +61,7 @@ export function DatePicker({ value, onChange, disabled, invalid }: { value: stri
       <button type="button" className="input-icon-btn" disabled={disabled} onClick={() => { setTemp(value); setOpen((o) => !o) }} aria-label="Buka kalender">
         <Icon name="calendar" />
       </button>
-      {open && !disabled && (
+      <Presence show={open && !disabled}>{open && !disabled && (
         <div className="dp" role="dialog" aria-label="Pilih tanggal">
           <div className="dp-head">
             <div>
@@ -89,7 +90,7 @@ export function DatePicker({ value, onChange, disabled, invalid }: { value: stri
             <button type="button" className="link" style={{ color: 'var(--primary)', fontWeight: 600 }} onClick={() => { onChange(temp); setOpen(false) }}>Simpan</button>
           </div>
         </div>
-      )}
+      )}</Presence>
     </div>
   )
 }

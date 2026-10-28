@@ -4,6 +4,7 @@ import { Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-route
 import { DonationIllustration, Logo } from './brand'
 import { Icon } from './icons'
 import { ConfirmModal } from './ui'
+import { Presence } from './motion'
 import { getDB, useDB } from '../lib/store'
 import { IDLE_MS_DEFAULT, logout, touchSession } from '../lib/actions'
 
@@ -111,9 +112,9 @@ export function DashboardLayout() {
             <button className="usermenu-btn" aria-expanded={menu} onClick={() => setMenu((m) => !m)}>
               <Icon name="user-circle" size={24} tint />
               <span className="usermenu-name">{user.name}</span>
-              <Icon name="chevron-down" tint />
+              <Icon name="chevron-down" tint className="usermenu-chevron" />
             </button>
-            {menu && (
+            <Presence show={menu}>{menu && (
               <div className="usercard" role="menu">
                 <span className="usercard-role">{user.role === 'admin' ? 'Admin' : 'Fundraiser'}</span>
                 <Icon name="user-circle" size={44} tint />
@@ -122,16 +123,16 @@ export function DashboardLayout() {
                 <hr />
                 <button className="btn btn-primary btn-xs usercard-logout" onClick={() => { setMenu(false); setConfirmLogout(true) }}>Keluar</button>
               </div>
-            )}
+            )}</Presence>
           </div>
         </header>
-        <main className="content"><Outlet /></main>
+        <main className="content"><div className="page-in" key={loc.pathname}><Outlet /></div></main>
       </div>
-      {confirmLogout && (
+      <Presence show={confirmLogout}>{confirmLogout && (
         <ConfirmModal icon="logout" title="Keluar" text="Apakah Anda yakin ingin keluar dari akun Anda?"
           onNo={() => setConfirmLogout(false)}
           onYes={() => { setConfirmLogout(false); logout(); nav('/masuk', { replace: true }) }} />
-      )}
+      )}</Presence>
     </div>
   )
 }

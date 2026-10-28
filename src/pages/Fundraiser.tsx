@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
 import { Icon } from '../components/icons'
 import { ApprovalPanel } from '../components/Approval'
+import { Presence } from '../components/motion'
 import { useDB } from '../lib/store'
 import { approveFundraiser, rejectFundraiser } from '../lib/actions'
 import { fileSize, tanggal } from '../lib/format'
@@ -126,7 +127,7 @@ function FundraiserList() {
         <div className="table-wrap">
           <table className="tbl">
             <thead><tr><th>No</th><th>Nama</th><th>Email</th><th>Kategori</th><th>Tanggal Daftar</th><th>Status Verifikasi</th><th>Jumlah Program</th><th>Aksi</th></tr></thead>
-            <tbody>
+            <tbody className="rows-in" key={`${paged.page}-${paged.size}`}>
               {paged.slice.map((f, i) => (
                 <tr key={f.id}>
                   <td>{paged.offset + i + 1}</td>
@@ -146,7 +147,7 @@ function FundraiserList() {
         <TableFooter {...paged} />
       </div>
 
-      {detail && (
+      <Presence show={!!detail} exitMs={220}>{detail && (
         <div className="drawer" role="dialog" aria-label="Detail Fundraiser">
           <div className="drawer-body">
             <div className="drawer-head"><button onClick={() => setParams({})} aria-label="Kembali"><Icon name="back-arrow" size={20} /></button>Detail Fundraiser</div>
@@ -166,7 +167,7 @@ function FundraiserList() {
             )}
           </div>
         </div>
-      )}
+      )}</Presence>
     </>
   )
 }

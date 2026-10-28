@@ -65,7 +65,7 @@ export function RegisterPage() {
       <h1 className="auth-title">Daftar Akun</h1>
 
       {step === 1 ? (
-        <div className="auth-form">
+        <div className="auth-form step-in" key="langkah-1">
           <FundraiserFields
             values={values}
             errors={shown}
@@ -85,7 +85,7 @@ export function RegisterPage() {
           </div>
         </div>
       ) : (
-        <div className="auth-form">
+        <div className="auth-form step-in" key="langkah-2">
           <Field label="Password" error={pwTouched.pw ? pwErrors.pw : undefined}>
             <PasswordInput placeholder="Masukkan password" value={pw} onChange={(e) => setPw(e.target.value)}
               onBlur={() => setPwTouched((t) => ({ ...t, pw: true }))} autoComplete="new-password" />
