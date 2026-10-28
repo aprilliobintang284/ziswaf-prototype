@@ -19,7 +19,8 @@ function sisaWaktu(p: Program) {
   if (p.status !== 'Aktif' || s === 'Selesai') return '-'
   return `${daysLeft(p.endDate)} Hari`
 }
-function persen(p: Program) { return hasFunds(p) && p.target > 0 ? Math.round((p.gross / p.target) * 100) + '%' : '-' }
+// Angka bulat tanpa koma, dibulatkan ke bawah: 100% hanya tampil kalau target benar-benar tercapai (QA 28 Okt 2026)
+function persen(p: Program) { return hasFunds(p) && p.target > 0 ? Math.floor((p.gross / p.target) * 100) + '%' : '-' }
 
 function StatCards({ programs, blank }: { programs: Program[]; blank: boolean }) {
   const live = programs.filter(hasFunds)
