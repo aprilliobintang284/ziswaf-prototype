@@ -27,9 +27,13 @@ export function ForgotPasswordPage() {
   const submit = (e: FormEvent) => {
     e.preventDefault()
     if (!clean(email)) return
-    const err = validateEmail(email) ?? (requestReset(email) ? undefined : 'Email tidak terdaftar')
+    // K-32 (29 Okt 2026, ikut PRD): pesan selalu sama untuk email terdaftar maupun tidak, supaya tidak bisa
+    // dipakai menebak email yang punya akun. Email hanya benar-benar terkirim kalau terdaftar.
+    const err = validateEmail(email)
     setError(err)
-    if (!err) setSent(true)
+    if (err) return
+    requestReset(email)
+    setSent(true)
   }
 
   const resend = () => {
@@ -53,7 +57,7 @@ export function ForgotPasswordPage() {
         <Modal icon="mail" title="Periksa Email Anda" actions={
           <div className="modal-actions one"><button className="btn btn-primary" onClick={() => setSent(false)}>Tutup</button></div>
         }>
-          Kami sudah mengirimkan tautan untuk mengatur ulang password Anda. Silakan periksa kotak masuk email Anda.
+          Jika email terdaftar, tautan reset sudah dikirim. Silakan periksa kotak masuk email Anda.
         </Modal>
       )}</Presence>
       <Presence show={expired && !sent}>{expired && !sent && (

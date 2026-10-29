@@ -119,7 +119,7 @@ export function updateFundraiserData(id: string, raw: RegisterData, doc: DocFile
 }
 
 // ---------------- Lupa password ----------------
-/** false jika email tidak terdaftar — desain baru menampilkan error "Email tidak terdaftar" (beda dengan AC PRD). */
+/** false jika email tidak terdaftar (tidak ada email terkirim); tampilan ke pengguna tetap sama (K-32). */
 export function requestReset(email: string): boolean {
   const user = getDB().users.find((u) => u.email.toLowerCase() === clean(email).toLowerCase())
   if (!user) return false

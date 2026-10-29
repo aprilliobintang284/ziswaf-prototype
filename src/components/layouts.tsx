@@ -31,6 +31,7 @@ export function idleMs(): number {
 }
 
 const ACTIVITY = ['mousemove', 'mousedown', 'keydown', 'wheel', 'scroll', 'touchstart'] as const
+const SIDE_KEY = 'ziswaf-proto-sidebar-hidden'
 
 export function DashboardLayout() {
   const db = useDB()
@@ -40,9 +41,17 @@ export function DashboardLayout() {
   const fundraiser = user?.fundraiserId ? db.fundraisers.find((f) => f.id === user.fundraiserId) : null
   const [menu, setMenu] = useState(false)
   const [confirmLogout, setConfirmLogout] = useState(false)
-  // Fungsi ikon ☰ belum dijelaskan di desain → asumsi: menyembunyikan/menampilkan sidebar
-  const [sideHidden, setSideHidden] = useState(false)
+  // Ikon ☰ menyembunyikan/menampilkan sidebar (28 Okt 2026); kondisinya tetap sama setelah refresh (29 Okt 2026)
+  const [sideHidden, setSideHidden] = useState(() => {
+    try { return localStorage.getItem(SIDE_KEY) === '1' } catch { return false }
+  })
+  useEffect(() => {
+    try { localStorage.setItem(SIDE_KEY, sideHidden ? '1' : '0') } catch { /* penyimpanan browser tidak tersedia */ }
+  }, [sideHidden])
   const menuRef = useRef<HTMLDivElement>(null)
+  // Keluar manual: login berikutnya kembali ke halaman default (Fundraiser), bukan halaman terakhir.
+  // "Kembali ke halaman terakhir" (AC Login #5) hanya untuk sesi yang habis karena tidak aktif.
+  const loggingOut = useRef(false)
   const timer = useRef<number>()
   const here = loc.pathname + loc.search
   // Lokasi versi router (tanpa base path GitHub Pages) untuk dipakai di dalam timer
@@ -75,12 +84,18 @@ export function DashboardLayout() {
 
   useEffect(() => {
     if (!menu) return
+    // Dropdown tertutup dengan klik nama lagi atau klik di luar (29 Okt 2026); Esc = standar aksesibilitas
     const close = (e: MouseEvent) => { if (!menuRef.current?.contains(e.target as Node)) setMenu(false) }
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenu(false) }
     document.addEventListener('mousedown', close)
-    return () => document.removeEventListener('mousedown', close)
+    document.addEventListener('keydown', esc)
+    return () => {
+      document.removeEventListener('mousedown', close)
+      document.removeEventListener('keydown', esc)
+    }
   }, [menu])
 
-  if (!user) return <Navigate to={`/masuk?next=${encodeURIComponent(here)}`} replace />
+  if (!user) return <Navigate to={loggingOut.current ? '/masuk' : `/masuk?next=${encodeURIComponent(here)}`} replace />
 
   const locked = user.role === 'fundraiser' && !fundraiserActive(fundraiser)
   const items = [
@@ -134,7 +149,7 @@ export function DashboardLayout() {
       <Presence show={confirmLogout}>{confirmLogout && (
         <ConfirmModal icon="logout" title="Keluar" text="Apakah Anda yakin ingin keluar dari akun Anda?"
           onNo={() => setConfirmLogout(false)}
-          onYes={() => { setConfirmLogout(false); logout(); nav('/masuk', { replace: true }) }} />
+          onYes={() => { loggingOut.current = true; setConfirmLogout(false); logout(); nav('/masuk', { replace: true }) }} />
       )}</Presence>
     </div>
   )

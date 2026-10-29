@@ -52,7 +52,7 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
   - "Berikut" aktif hanya jika semua valid, dokumen dipilih, dan pernyataan dicentang.
   - "Daftar" aktif hanya jika password memenuhi kriteria dan konfirmasinya cocok.
 - **Lupa Password / Atur Ulang Password**:
-  - Email tidak terdaftar menampilkan "Email tidak terdaftar".
+  - Email terdaftar maupun tidak terdaftar menampilkan pesan yang sama: "Jika email terdaftar, tautan reset sudah dikirim" (email hanya terkirim kalau terdaftar).
   - Modal "Periksa Email Anda" punya tombol "Tutup".
   - Tautan berlaku 60 menit dan hanya sekali pakai.
   - Setelah berhasil muncul modal "Password Berhasil Diubah".
@@ -96,10 +96,10 @@ Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah
 - **K-30** Target terkumpul cukup lebih dari 0 (batas maksimal belum ditentukan).
 - **Baru (update desain 26 Okt 2026)**:
   - Program **Selesai** bisa diedit, mengikuti desain (pensil & tombol Edit aktif) dan PRD (lihat K-13).
-  - "Lupa Password" menampilkan "Email tidak terdaftar" sesuai desain, padahal AC PRD meminta pesan yang sama untuk email terdaftar/tidak.
-  - Kolom "Nama Fundraiser" di tabel Program hanya untuk Admin. Di desain, kolom ini muncul bersama tombol "Buat Program Baru".
+  - **K-32** (terjawab 29 Okt) Lupa Password ikut PRD: pesannya selalu "Jika email terdaftar, tautan reset sudah dikirim", baik email terdaftar maupun tidak (desain akan disesuaikan). Login memakai satu pesan umum "Email atau password salah".
+  - Kolom "Nama Fundraiser" di tabel Program hanya untuk Admin (AC View List). **K-20** (terjawab 29 Okt): Admin tidak membuat atau mengedit program, jadi tombol Buat Program Baru dan Edit tidak tampil untuk Admin.
 - **Baru (update desain 26 Okt 2026 malam)**:
-  - Ikon ☰ di topbar menyembunyikan/menampilkan sidebar (dikonfirmasi 28 Okt). Status sidebar belum diingat setelah refresh (sisa K-38).
+  - Ikon ☰ di topbar menyembunyikan/menampilkan sidebar (dikonfirmasi 28 Okt), dan kondisinya tetap sama setelah refresh (29 Okt). Dropdown menu pengguna tertutup dengan klik nama lagi, klik di luar, atau Esc. Peringatan saat Keluar dengan form yang belum disimpan masih ditanyakan (sisa K-38).
 - **Baru (update desain 27 Okt 2026)**:
   - **K-39** (sebagian terjawab PM 28 Okt) Fundraiser Terverifikasi yang mengedit data kembali Menunggu Verifikasi. Programnya tetap tampil dan menerima donasi, dan buat/edit program, Transaksi, serta Penarikan tetap bisa dipakai selama verifikasi ulang. Kalau Admin menolak perubahannya, sementara akun menjadi Ditolak (belum dijawab PM).
   - **K-40** Email status verifikasi sama untuk disetujui/ditolak dan tidak ada email setelah registrasi, mengikuti desain. Tautan cadangan di email reset memakai domain prototipe (di desain contohnya financeadmin.app).
