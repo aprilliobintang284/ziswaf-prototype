@@ -5,6 +5,7 @@ import type { FundraiserForm } from '../components/FundraiserFields'
 import { ConfirmModal, StatusBadge, useToast } from '../components/ui'
 import { Presence } from '../components/motion'
 import { useDB } from '../lib/store'
+import { useMarkUnsaved } from '../lib/unsaved'
 import { updateFundraiserData } from '../lib/actions'
 import type { DocFile } from '../lib/types'
 
@@ -23,6 +24,7 @@ export function FundraiserEditPage() {
   const [doc, setDoc] = useState<DocFile | null>(f?.doc ?? null)
   const [docError, setDocError] = useState<string>()
   const [confirm, setConfirm] = useState(false)
+  useMarkUnsaved(!!f && !!values && (JSON.stringify(values) !== JSON.stringify(initial) || doc !== f.doc))
 
   if (!f || !values || f.status === 'Menunggu Verifikasi') {
     return <Navigate to="/dashboard/fundraiser" replace />

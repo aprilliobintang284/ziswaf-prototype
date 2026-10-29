@@ -6,6 +6,7 @@ import { Icon } from './icons'
 import { ConfirmModal } from './ui'
 import { Presence } from './motion'
 import { fundraiserActive, getDB, useDB } from '../lib/store'
+import { useHasUnsaved } from '../lib/unsaved'
 import { IDLE_MS_DEFAULT, logout, touchSession } from '../lib/actions'
 
 export function AuthLayout({ children }: { children: ReactNode }) {
@@ -41,6 +42,7 @@ export function DashboardLayout() {
   const fundraiser = user?.fundraiserId ? db.fundraisers.find((f) => f.id === user.fundraiserId) : null
   const [menu, setMenu] = useState(false)
   const [confirmLogout, setConfirmLogout] = useState(false)
+  const unsaved = useHasUnsaved()
   // Ikon ☰ menyembunyikan/menampilkan sidebar (28 Okt 2026); kondisinya tetap sama setelah refresh (29 Okt 2026)
   const [sideHidden, setSideHidden] = useState(() => {
     try { return localStorage.getItem(SIDE_KEY) === '1' } catch { return false }
@@ -147,7 +149,9 @@ export function DashboardLayout() {
         <main className="content"><div className="page-in" key={loc.pathname}><Outlet /></div></main>
       </div>
       <Presence show={confirmLogout}>{confirmLogout && (
-        <ConfirmModal icon="logout" title="Keluar" text="Apakah Anda yakin ingin keluar dari akun Anda?"
+        // K-38 (29 Okt 2026): satu pop-up saja; kalau ada isian form yang belum disimpan, ikut diperingatkan
+        <ConfirmModal icon="logout" title="Keluar"
+          text={unsaved ? 'Data yang belum disimpan akan hilang. Apakah Anda yakin ingin keluar dari akun Anda?' : 'Apakah Anda yakin ingin keluar dari akun Anda?'}
           onNo={() => setConfirmLogout(false)}
           onYes={() => { loggingOut.current = true; setConfirmLogout(false); logout(); nav('/masuk', { replace: true }) }} />
       )}</Presence>

@@ -4,6 +4,7 @@ import { ConfirmModal, Field, useToast } from '../components/ui'
 import { Icon } from '../components/icons'
 import { DatePicker } from '../components/DatePicker'
 import { Presence } from '../components/motion'
+import { useMarkUnsaved } from '../lib/unsaved'
 import { canEditProgram, fundraiserActive, statusOf, useDB } from '../lib/store'
 import { createProgram, titleTaken, updateProgram } from '../lib/actions'
 import { digitsToRupiahText, pastedAmountToDigits, todayISO } from '../lib/format'
@@ -54,6 +55,7 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
   const skipBlock = useRef(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const dirty = JSON.stringify(v) !== JSON.stringify(initial)
+  useMarkUnsaved(dirty)
 
   const blocker = useBlocker(({ currentLocation, nextLocation }) =>
     !skipBlock.current && dirty && currentLocation.pathname !== nextLocation.pathname)
