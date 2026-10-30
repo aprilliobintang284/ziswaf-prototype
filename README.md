@@ -39,7 +39,7 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
 
 ## Tips pengujian
 
-- **Email simulasi**: tombol "Email simulasi" di kanan bawah menampilkan email yang "terkirim". Isinya mengikuti template email di Figma: "Atur Ulang Password", "Password Berhasil Diubah", "Fundraiser Berhasil Diverifikasi", dan "Fundraiser Belum Berhasil Diverifikasi" (berisi alasan penolakan; desain 30 Okt 2026). Email reset punya tombol **Atur Ulang Password**, tautan cadangan, dan **Simulasikan lewat 60 menit** untuk menguji tautan kedaluwarsa.
+- **Email simulasi**: tombol "Email simulasi" di kiri bawah (supaya tidak menutupi tombol aksi di kanan bawah form) menampilkan email yang "terkirim". Isinya mengikuti template email di Figma: "Atur Ulang Password", "Password Berhasil Diubah", "Fundraiser Berhasil Diverifikasi", dan "Fundraiser Belum Berhasil Diverifikasi" (berisi alasan penolakan; desain 30 Okt 2026). Email reset punya tombol **Atur Ulang Password**, tautan cadangan, dan **Simulasikan lewat 60 menit** untuk menguji tautan kedaluwarsa.
 - **Sesi diam 30 menit**: buka `/masuk?idle=1` supaya batasnya jadi 1 menit (berlaku selama tab terbuka). Diam tanpa klik, gerak mouse, atau scroll akan logout otomatis.
 - **Reset data**: hapus key `ziswaf-proto-db` di DevTools → Application → Local Storage, lalu muat ulang halaman.
 - Data tersimpan per browser/port. Port 5173 dan port lain punya data sendiri-sendiri.
