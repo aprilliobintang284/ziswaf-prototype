@@ -3,7 +3,7 @@ import type { InputHTMLAttributes, ReactNode } from 'react'
 import { Icon } from './icons'
 import type { IconName } from './icons'
 import { checkPassword } from '../lib/validation'
-import type { FundraiserStatus, ProgramStatus } from '../lib/types'
+import type { FundraiserStatus, ProgramStatus, TransactionStatus } from '../lib/types'
 
 // ---------------- Field ----------------
 interface FieldProps {
@@ -64,7 +64,9 @@ export function PasswordCriteria({ value }: { value: string }) {
 }
 
 // ---------------- Badge ----------------
-const BADGE: Record<FundraiserStatus | ProgramStatus, string> = {
+type BadgeStatus = FundraiserStatus | ProgramStatus | TransactionStatus
+
+const BADGE: Record<BadgeStatus, string> = {
   'Menunggu Verifikasi': 'orange',
   Terverifikasi: 'green',
   Ditolak: 'red',
@@ -72,9 +74,14 @@ const BADGE: Record<FundraiserStatus | ProgramStatus, string> = {
   Aktif: 'green',
   Draf: 'gray',
   Selesai: 'blue',
+  // Transaksi (desain Hifi 30 Okt 2026)
+  'Menunggu Pembayaran': 'orange',
+  Diproses: 'blue',
+  Berhasil: 'green',
+  Gagal: 'red',
 }
 
-export function StatusBadge({ status, small = false }: { status: FundraiserStatus | ProgramStatus; small?: boolean }) {
+export function StatusBadge({ status, small = false }: { status: BadgeStatus; small?: boolean }) {
   return <span className={`badge ${BADGE[status]} ${small ? 'sm' : ''}`}>{status}</span>
 }
 

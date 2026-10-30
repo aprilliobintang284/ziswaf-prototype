@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { createSeed, DB_VERSION } from './seed'
+import { createSeed, DB_VERSION, seedTransactions } from './seed'
 import { daysLeft } from './format'
 import type { DB, Fundraiser, Program, ProgramStatus } from './types'
 
@@ -10,7 +10,8 @@ function load(): DB {
     const raw = localStorage.getItem(KEY)
     if (raw) {
       const parsed = JSON.parse(raw) as DB
-      if (parsed.version === 3) return migrateV3(parsed)
+      if (parsed.version === 3) return migrateV4(migrateV3(parsed))
+      if (parsed.version === 4) return migrateV4(parsed)
       if (parsed.version === DB_VERSION) return parsed
     }
   } catch {
@@ -26,6 +27,13 @@ function migrateV3(db: DB): DB {
     if (old.status === 'Diterima') old.status = 'Aktif'
     if (old.startDate) { old.decidedAt = old.startDate + 'T10:00:00'; delete old.startDate }
   })
+  db.version = 4
+  return db
+}
+
+/** v4 → v5: menu Transaksi (desain Hifi 30 Okt 2026) → tambahkan transaksi dummy. Data & sesi tetap. */
+function migrateV4(db: DB): DB {
+  db.transactions = seedTransactions(db.programs)
   db.version = DB_VERSION
   return db
 }

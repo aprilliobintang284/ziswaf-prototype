@@ -23,6 +23,14 @@ export function tanggal(iso?: string): string {
   return `${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}`
 }
 
+/** Contoh: 20 Oktober 2026 15:28:05 (desain Hifi Transaksi), jam WIB. */
+export function waktu(iso?: string): string {
+  if (!iso) return '-'
+  const d = new Date(iso)
+  const two = (n: number) => String(n).padStart(2, '0')
+  return `${tanggal(iso)} ${two(d.getHours())}:${two(d.getMinutes())}:${two(d.getSeconds())}`
+}
+
 export function todayISO(): string {
   const d = new Date()
   return toISODate(d)

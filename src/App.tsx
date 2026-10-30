@@ -10,6 +10,7 @@ import { FundraiserEditPage } from './pages/FundraiserEdit'
 import { ProgramPage } from './pages/Program'
 import { ProgramFormPage } from './pages/ProgramForm'
 import { PlaceholderPage } from './pages/Placeholder'
+import { TransaksiPage } from './pages/Transaksi'
 
 function Root() {
   return (
@@ -40,7 +41,7 @@ const router = createBrowserRouter([
           { path: 'program', element: <ProgramPage /> },
           { path: 'program/buat', element: <ProgramFormPage mode="create" /> },
           { path: 'program/:id/edit', element: <ProgramFormPage mode="edit" /> },
-          { path: 'transaksi', element: <PlaceholderPage title="Transaksi" /> },
+          { path: 'transaksi', element: <TransaksiPage /> },
           { path: 'penarikan', element: <PlaceholderPage title="Penarikan" /> },
         ],
       },

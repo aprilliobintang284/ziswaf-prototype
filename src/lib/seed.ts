@@ -1,7 +1,7 @@
 import { addDays, todayISO } from './format'
-import type { DB, Fundraiser, Program, User } from './types'
+import type { DB, Fundraiser, Program, Transaction, User } from './types'
 
-export const DB_VERSION = 4
+export const DB_VERSION = 5
 
 const PALETTES: [string, string][] = [
   ['#0E8A7C', '#7FD1C5'],
@@ -72,6 +72,59 @@ function prog(
   }
 }
 
+const DONORS = ['Andi', 'Siti Aminah', 'Budi Santoso', 'Rina Wati', 'Ahmad Fauzi', 'Dewi Lestari', 'Rizky Pratama',
+  'Nur Aisyah', 'Hendra Gunawan', 'Fitri Handayani', 'Agus Salim', 'Maya Sari', 'Yusuf Hakim']
+
+/**
+ * Transaksi dummy untuk program yang pernah tayang. Transaksi Berhasil per program dijumlahkan sama persis
+ * dengan Total Terkumpul (Gross) dan banyaknya sama dengan Jumlah Donatur, supaya angka di menu Program dan
+ * Transaksi bisa dicocokkan. Ditambah beberapa transaksi Menunggu Pembayaran, Diproses, dan Gagal.
+ */
+export function seedTransactions(programs: Program[]): Transaction[] {
+  let r = 20261030
+  const rand = () => (r = (r * 1103515245 + 12345) % 2147483648) / 2147483648
+  const now = Date.now()
+  let k = 0
+  const donorInfo = () => {
+    const name = DONORS[k % DONORS.length]
+    const slug = name.toLowerCase().replace(/[^a-z]/g, '')
+    const tx = {
+      donorName: name,
+      email: `${slug}${k % 7 === 0 ? '' : k % 97}@gmail.com`,
+      phone: k % 5 === 4 ? '' : '08' + String(1200000000 + Math.floor(rand() * 8799999999)).slice(0, 10),
+      anonymous: k % 6 === 5,
+    }
+    k++
+    return tx
+  }
+  const list: Omit<Transaction, 'id'>[] = []
+  programs.forEach((p) => {
+    if (p.status !== 'Aktif') return
+    const start = new Date(p.decidedAt ?? p.createdAt).getTime()
+    const end = Math.min(now - 60 * 60 * 1000, new Date(p.endDate + 'T23:59:59').getTime())
+    const at = () => new Date(start + rand() * Math.max(1, end - start)).toISOString()
+    if (p.donors > 0) {
+      const base = Math.floor(p.gross / p.donors / 1000) * 1000
+      const d = Math.min(25_000, Math.floor(base / 2000) * 1000)
+      let sum = 0
+      for (let i = 0; i < p.donors; i++) {
+        const amount = i === p.donors - 1 ? p.gross - sum : base + (i % 2 === 0 ? d : -d)
+        sum += amount
+        list.push({ programId: p.id, ...donorInfo(), amount, createdAt: at(), status: 'Berhasil' })
+      }
+    }
+    list.push({ programId: p.id, ...donorInfo(), amount: 50_000, createdAt: at(), status: 'Gagal' })
+    // Masih berjalan → ada pembayaran yang belum selesai (QRIS berlaku 30 menit)
+    if (new Date(p.endDate + 'T23:59:59').getTime() > now) {
+      list.push({ programId: p.id, ...donorInfo(), amount: 100_000, createdAt: new Date(now - (5 + rand() * 20) * 60_000).toISOString(), status: 'Menunggu Pembayaran' })
+      list.push({ programId: p.id, ...donorInfo(), amount: 25_000, createdAt: new Date(now - (30 + rand() * 60) * 60_000).toISOString(), status: 'Diproses' })
+    }
+  })
+  return list
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .map((t, i) => ({ id: 'TS-' + String(i + 1).padStart(3, '0'), ...t }))
+}
+
 export function createSeed(): DB {
   const fundraisers: Fundraiser[] = [
     fr('f01', 'Yayasan A', 'yayasan@gmail.com', 'Yayasan', 'Terverifikasi', 9),
@@ -118,5 +171,5 @@ export function createSeed(): DB {
     image: programs[11].image,
   }
 
-  return { version: DB_VERSION, users, fundraisers, programs, emails: [], resetTokens: [], session: null }
+  return { version: DB_VERSION, users, fundraisers, programs, transactions: seedTransactions(programs), emails: [], resetTokens: [], session: null }
 }

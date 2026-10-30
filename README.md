@@ -68,7 +68,12 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
   - Nama program tidak boleh sama dengan program lain (beda huruf besar/kecil dan spasi berlebih tetap dianggap sama).
   - Export Excel (.xlsx) untuk Admin dan Fundraiser.
 - **Topbar**: ikon ☰ untuk menyembunyikan/menampilkan menu samping, dan menu pengguna (peran, nama, email, tombol "Keluar" dengan konfirmasi).
-- **Transaksi & Penarikan**: masih placeholder (desain Hifi belum ada).
+- **Transaksi** (desain Hifi 30 Okt 2026):
+  - Tabel ID Transaksi, Donatur, Program, Fundraiser, Nominal, Waktu transaksi, Status (Menunggu Pembayaran / Diproses / Berhasil / Gagal), Aksi; urutan terbaru di atas; Export .xlsx.
+  - Panel Detail Transaksi berisi ID, Donatur, Email, Nomor Telepon, Program, Fundraiser, Nominal, Waktu, dan Status.
+  - Admin melihat semua transaksi; Fundraiser hanya transaksi program miliknya. Akun yang belum terverifikasi tidak bisa membuka menu ini.
+  - Data dummy: jumlah transaksi Berhasil per program sama persis dengan Total Terkumpul (Gross), dan banyaknya sama dengan Jumlah Donatur.
+- **Penarikan**: masih placeholder (desain Hifi belum ada).
 - **Animasi**: sidebar (☰), menu pengguna, pop-up, panel detail, date picker, kotak email simulasi, toast, tabel, dan perpindahan halaman memakai transisi singkat (±0,1–0,3 detik). Animasi dimatikan otomatis jika pengaturan "kurangi gerakan" (reduce motion) aktif di perangkat.
 
 ## Aset dari Figma
@@ -78,6 +83,8 @@ Logo, ilustrasi kotak donasi, background panel login (`src/assets/bg-auth-panel.
 Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah/chevron kiri di Figma, dan beberapa ikon khusus prototipe yang tidak ada di desain (tooltip info, alert "Perubahan menunggu persetujuan", kotak masuk simulasi, halaman placeholder) masih memakai lucide.
 
 ## Asumsi yang dipakai (perlu konfirmasi PM/Designer)
+
+- **Transaksi (Desain vs PRD, 30 Okt 2026)**: status mengikuti desain (Diproses, Gagal), padahal PRD memakai Pending dan Gagal/expired (D-07). Donatur anonim tampil "Anonim", dan Email/Nomor Telepon-nya "-" (D-08). Tampilan Fundraiser memakai desain Admin dengan data milik sendiri (D-09).
 
 - **K-01** (terjawab PM 27 Okt) Tab/browser ditutup lalu dibuka lagi ≤ 24 jam tetap login; ≥ 24 jam harus login ulang. Aturan 7 hari dihapus. Diam 30 menit tetap otomatis logout.
 - **K-02** (terjawab PM 27 Okt) Password 8–25 karakter tanpa spasi; huruf, angka, dan simbol tidak wajib semuanya.

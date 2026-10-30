@@ -69,6 +69,23 @@ export interface Program {
   pendingEdit?: ProgramEdit
 }
 
+// Status transaksi mengikuti desain Hifi Transaksi (30 Okt 2026); PRD memakai "Pending" dan "Gagal/expired"
+// (Desain vs PRD D-07).
+export type TransactionStatus = 'Menunggu Pembayaran' | 'Diproses' | 'Berhasil' | 'Gagal'
+
+export interface Transaction {
+  id: string // contoh TS-001
+  programId: string
+  donorName: string
+  email: string
+  phone: string // nomor HP donatur opsional (PRD) → bisa kosong
+  /** Donatur mencentang "Sembunyikan Data Donatur" → tampil "Anonim" */
+  anonymous: boolean
+  amount: number
+  createdAt: string
+  status: TransactionStatus
+}
+
 export interface SimEmail {
   id: string
   to: string
@@ -100,6 +117,7 @@ export interface DB {
   users: User[]
   fundraisers: Fundraiser[]
   programs: Program[]
+  transactions: Transaction[]
   emails: SimEmail[]
   resetTokens: ResetToken[]
   session: Session | null
