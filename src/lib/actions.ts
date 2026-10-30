@@ -1,4 +1,4 @@
-import { getDB, setDB, statusOf } from './store'
+import { getDB, setDB, statusOf, withdrawable } from './store'
 import { uid } from './format'
 import type { DocFile, Fundraiser, Program, SimEmail, User } from './types'
 import { clean } from './validation'
@@ -193,14 +193,23 @@ export function approveFundraiser(id: string) {
 }
 
 /**
- * Template "Pembaruan Status Verifikasi Fundraiser" (desain 27 Okt) — satu email yang sama untuk
- * disetujui maupun ditolak; hasilnya dilihat fundraiser setelah masuk ke platform.
+ * Template email status verifikasi (desain Hifi 30 Okt 2026, frame 706:23371 dan 857:33658): email disetujui dan
+ * ditolak dibedakan, dan email ditolak menyertakan alasan penolakan. Subjek di PRD masih TBC, jadi memakai judul email.
  */
-function statusEmail(to: string, name: string): Omit<SimEmail, 'id' | 'createdAt'> {
+function statusEmail(to: string, name: string, rejectReason?: string): Omit<SimEmail, 'id' | 'createdAt'> {
+  if (rejectReason === undefined) {
+    return {
+      to,
+      subject: 'Fundraiser Berhasil Diverifikasi',
+      body: `Halo ${name},\n\nTerima kasih telah mendaftar sebagai fundraiser di Ziswaf.\n\nKami informasikan bahwa proses verifikasi data Fundraiser Anda telah berhasil dan disetujui.\n\nSilakan masuk ke Platform Ziswaf untuk mengakses informasi lebih lanjut terkait akun Fundraiser Anda.`,
+      loginButton: true,
+      footer: 'Terima kasih atas perhatian dan partisipasi Anda bersama Ziswaf.',
+    }
+  }
   return {
     to,
-    subject: 'Pembaruan Status Verifikasi Fundraiser',
-    body: `Halo ${name},\n\nTerima kasih telah mendaftar sebagai fundraiser di Ziswaf.\n\nKami informasikan bahwa proses verifikasi data fundraiser Anda telah selesai dilakukan.\n\nSilakan masuk ke Platform Ziswaf untuk melihat status verifikasi dan informasi lebih lanjut terkait akun Anda.`,
+    subject: 'Fundraiser Belum Berhasil Diverifikasi',
+    body: `Halo ${name},\n\nTerima kasih telah mendaftar sebagai fundraiser di Ziswaf.\n\nKami informasikan bahwa proses verifikasi data Fundraiser Anda belum dapat disetujui karena terdapat beberapa informasi atau dokumen yang perlu diperbaiki.\n\nBerikut alasan penolakan verifikasi data Fundraiser Anda:\n\n${rejectReason}\n\nSilakan masuk untuk memperbaiki data sesuai dengan alasan penolakan yang telah diberikan, kemudian ajukan kembali data Anda untuk proses verifikasi.\n\nPastikan seluruh informasi dan dokumen yang diperbarui telah sesuai agar proses verifikasi selanjutnya dapat berjalan dengan lancar.`,
     loginButton: true,
     footer: 'Terima kasih atas perhatian dan partisipasi Anda bersama Ziswaf.',
   }
@@ -215,8 +224,7 @@ export function rejectFundraiser(id: string, reason: string) {
     f.reverify = undefined
     f.rejectedAt = now()
     f.rejectReason = clean(reason)
-    // K-07 terjawab desain: email dikirim juga saat ditolak, isinya generik (alasan dilihat di platform)
-    pushEmail(d, statusEmail(f.email, f.name))
+    pushEmail(d, statusEmail(f.email, f.name, f.rejectReason))
   })
 }
 
@@ -293,4 +301,56 @@ export function rejectProgram(id: string, reason: string) {
 export function programById(id: string | null): Program | undefined {
   if (!id) return undefined
   return getDB().programs.find((p) => p.id === id)
+}
+
+// ---------------- Penarikan ----------------
+export interface WithdrawalInput {
+  programId: string
+  amount: number
+  note: string
+}
+
+/**
+ * Pengajuan penarikan oleh Fundraiser (desain Hifi Skenario 4). Rekening tujuan diambil dari data fundraiser.
+ * editId: mengajukan ulang penarikan yang Ditolak lewat tombol "Edit" (asumsi Desain vs PRD D-13): data diganti,
+ * status kembali Diajukan, dan Tanggal Diajukan ikut diperbarui. Pengajuan yang masih Diajukan tidak bisa diubah (AC).
+ */
+export function submitWithdrawal(fundraiserId: string, input: WithdrawalInput, editId?: string): boolean {
+  let ok = false
+  setDB((d) => {
+    const f = d.fundraisers.find((x) => x.id === fundraiserId)
+    const p = d.programs.find((x) => x.id === input.programId)
+    if (!f || !p || p.fundraiserId !== fundraiserId) return
+    if (input.amount <= 0 || input.amount > withdrawable(d, p.id, editId)) return
+    const data = { programId: p.id, amount: input.amount, note: clean(input.note), bankName: f.bankName, account: f.withdrawAccount, createdAt: now() }
+    if (editId) {
+      const w = d.withdrawals.find((x) => x.id === editId)
+      if (!w || w.fundraiserId !== fundraiserId || w.status !== 'Ditolak') return
+      Object.assign(w, data, { status: 'Diajukan', decidedAt: undefined, rejectReason: undefined })
+    } else {
+      const next = d.withdrawals.reduce((m, w) => Math.max(m, Number(w.id.replace(/\D/g, '')) || 0), 0) + 1
+      d.withdrawals.unshift({ id: 'WD-' + String(next).padStart(3, '0'), fundraiserId, status: 'Diajukan', ...data })
+    }
+    ok = true
+  })
+  return ok
+}
+
+export function approveWithdrawal(id: string) {
+  setDB((d) => {
+    const w = d.withdrawals.find((x) => x.id === id)
+    if (!w || w.status !== 'Diajukan') return
+    w.status = 'Diterima'
+    w.decidedAt = now()
+  })
+}
+
+export function rejectWithdrawal(id: string, reason: string) {
+  setDB((d) => {
+    const w = d.withdrawals.find((x) => x.id === id)
+    if (!w || w.status !== 'Diajukan') return
+    w.status = 'Ditolak'
+    w.rejectReason = clean(reason)
+    w.decidedAt = now()
+  })
 }

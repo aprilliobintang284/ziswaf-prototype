@@ -374,3 +374,25 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
   }
   .btn .spin { animation-duration: .7s !important; animation-iteration-count: infinite !important; }
 }
+
+/* Penarikan (desain Hifi 30 Okt 2026) */
+.stats.two { grid-template-columns: repeat(2, 1fr); }
+.stat-ic { width: 28px; height: 28px; border-radius: 8px; display: inline-grid; place-items: center; flex: none; }
+.stat-ic.blue { background: #e6f4ff; color: #2f80ed; }
+.stat-ic.green { background: #e9f9ef; color: #1e9e5a; }
+.acct-card { max-width: 420px; border-radius: 8px; padding: 12px 16px; margin-bottom: 14px; font-size: 12px; line-height: 1.7; background: linear-gradient(180deg, #8ed0c8 0%, #d9efec 100%); box-shadow: var(--shadow); }
+.acct-title { font-weight: 700; font-size: 15px; }
+.fund-box { border-radius: 6px; padding: 8px 12px; background: var(--primary-soft); margin-top: -8px; }
+.fund-label { color: var(--primary); font-size: 12px; }
+.fund-value { font-size: 15px; font-weight: 500; margin-top: 2px; }
+.label-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.max-note { font-size: 12px; color: var(--muted); }
+.max-note b { color: var(--text); font-weight: 600; }
+.combo { position: relative; }
+.combo-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; text-align: left; cursor: pointer; }
+.combo-placeholder { color: #a3a3a3; }
+.combo-pop { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 20; padding: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); animation: fade-down .16s var(--ease-out); }
+.combo-list { max-height: 200px; overflow-y: auto; margin-top: 6px; }
+.combo-opt { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 14px; color: var(--text); }
+.combo-opt:hover, .combo-opt[aria-selected="true"] { background: var(--primary-soft); }
+.combo-empty { padding: 8px 10px; color: var(--muted); font-size: 13px; }

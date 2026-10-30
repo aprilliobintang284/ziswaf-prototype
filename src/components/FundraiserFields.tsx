@@ -89,7 +89,8 @@ export function FundraiserFields({ values, errors, onChange, onBlur, emailExtra,
       <Field label="Bidang Usaha" required error={errors.businessField}>{input('businessField', 'Contoh: Lembaga Amil Zakat')}</Field>
       <Field label="Nomor Izin Usaha" required error={errors.licenseNo}>{input('licenseNo', 'Masukkan nomor izin usaha')}</Field>
       <Field label="Alamat" required error={errors.address} className="span-2">{input('address', 'Masukkan alamat resmi fundraiser')}</Field>
-      <Field label="Nama Bank" required error={errors.bankName}>{input('bankName', 'Contoh: BNI, BRI, BCA')}</Field>
+      {/* Desain 30 Okt 2026: label "Nama Bank Rekening Penarikan" (Edit Fundraiser di Figma masih "Nama Bank", D-21) */}
+      <Field label="Nama Bank Rekening Penarikan" required error={errors.bankName}>{input('bankName', 'Contoh: BNI, BRI, BCA')}</Field>
       <Field label="Nomor Rekening Penarikan" required error={errors.withdrawAccount}>{input('withdrawAccount', 'Masukkan nomor rekening penarikan', { inputMode: 'numeric' })}</Field>
       <Field label="Nomor Rekening Dana Komoditi" required error={errors.commodityAccount}>{input('commodityAccount', 'Masukkan nomor rekening Artha Graha', { inputMode: 'numeric' })}</Field>
       <Field label="Nomor Wajib Pajak (NPWP)" required error={errors.npwp}>{input('npwp', 'Masukkan nomor wajib pajak', { inputMode: 'numeric' })}</Field>

@@ -3,7 +3,7 @@ import type { InputHTMLAttributes, ReactNode } from 'react'
 import { Icon } from './icons'
 import type { IconName } from './icons'
 import { checkPassword } from '../lib/validation'
-import type { FundraiserStatus, ProgramStatus, TransactionStatus } from '../lib/types'
+import type { FundraiserStatus, ProgramStatus, TransactionStatus, WithdrawalStatus } from '../lib/types'
 
 // ---------------- Field ----------------
 interface FieldProps {
@@ -13,14 +13,17 @@ interface FieldProps {
   // Border merah tanpa teks (mis. field Email saat login gagal)
   invalid?: boolean
   hint?: string
+  /** Teks di kanan label (mis. "Maksimal: Rp10.000.000" di form Penarikan) */
+  aside?: ReactNode
   className?: string
   children: ReactNode
 }
 
-export function Field({ label, required, error, invalid, hint, className = '', children }: FieldProps) {
+export function Field({ label, required, error, invalid, hint, aside, className = '', children }: FieldProps) {
+  const lbl = <label>{label}{required && <span className="req"> *</span>}</label>
   return (
     <div className={`field ${error || invalid ? 'has-error' : ''} ${className}`}>
-      <label>{label}{required && <span className="req"> *</span>}</label>
+      {aside ? <div className="label-row">{lbl}{aside}</div> : lbl}
       {children}
       {error ? <ErrorText>{error}</ErrorText> : hint ? <span className="hint-text">{hint}</span> : null}
     </div>
@@ -64,7 +67,7 @@ export function PasswordCriteria({ value }: { value: string }) {
 }
 
 // ---------------- Badge ----------------
-type BadgeStatus = FundraiserStatus | ProgramStatus | TransactionStatus
+type BadgeStatus = FundraiserStatus | ProgramStatus | TransactionStatus | WithdrawalStatus
 
 const BADGE: Record<BadgeStatus, string> = {
   'Menunggu Verifikasi': 'orange',
@@ -79,6 +82,9 @@ const BADGE: Record<BadgeStatus, string> = {
   Diproses: 'blue',
   Berhasil: 'green',
   Gagal: 'red',
+  // Penarikan (desain Hifi 30 Okt 2026); "Ditolak" sudah merah
+  Diajukan: 'orange',
+  Diterima: 'green',
 }
 
 export function StatusBadge({ status, small = false }: { status: BadgeStatus; small?: boolean }) {

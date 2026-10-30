@@ -38,7 +38,7 @@ function FundraiserInfo({ f, programCount }: { f: Fundraiser; programCount: numb
         <dt>Bidang Usaha</dt><dd>{f.businessField}</dd>
         <dt>Nomor Izin Usaha</dt><dd>{f.licenseNo}</dd>
         <dt>Alamat</dt><dd>{f.address}</dd>
-        <dt>Nama Bank</dt><dd>{f.bankName}</dd>
+        <dt>Nama Bank Rekening Penarikan</dt><dd>{f.bankName}</dd>
         <dt>Nomor Rekening Penarikan</dt><dd>{f.withdrawAccount}</dd>
         <dt>Nomor Rekening Dana Komoditi</dt><dd>{f.commodityAccount}</dd>
         <dt>Nomor Wajib Pajak (NPWP)</dt><dd>{f.npwp}</dd>
@@ -113,7 +113,7 @@ function FundraiserList() {
   // Nomor HP, rekening, dan NPWP tetap teks supaya angka 0 di depan dan digit panjang tidak berubah
   const exportXlsx = () => {
     downloadXlsx('fundraiser.xlsx', 'Fundraiser',
-      ['No', 'Nama', 'Email', 'Kategori', 'Tanggal Daftar', 'Status Verifikasi', 'Jumlah Program', 'Nomor HP', 'Nama Bank', 'Nomor Rekening Penarikan', 'Nomor Rekening Dana Komoditi', 'NPWP'],
+      ['No', 'Nama', 'Email', 'Kategori', 'Tanggal Daftar', 'Status Verifikasi', 'Jumlah Program', 'Nomor HP', 'Nama Bank Rekening Penarikan', 'Nomor Rekening Penarikan', 'Nomor Rekening Dana Komoditi', 'NPWP'],
       rows.map((f, i) => [i + 1, f.name, f.email, f.category, tanggal(f.registeredAt), f.status,
         f.status === 'Terverifikasi' ? counts.get(f.id) ?? 0 : '-', f.phone, f.bankName, f.withdrawAccount, f.commodityAccount, f.npwp]))
     toast('File fundraiser.xlsx diunduh')

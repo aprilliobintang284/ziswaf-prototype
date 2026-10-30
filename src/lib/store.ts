@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { createSeed, DB_VERSION, seedTransactions } from './seed'
+import { createSeed, DB_VERSION, seedTransactions, seedWithdrawals } from './seed'
 import { daysLeft } from './format'
 import type { DB, Fundraiser, Program, ProgramStatus } from './types'
 
@@ -10,9 +10,10 @@ function load(): DB {
     const raw = localStorage.getItem(KEY)
     if (raw) {
       const parsed = JSON.parse(raw) as DB
-      if (parsed.version === 3) return migrateV5(migrateV4(migrateV3(parsed)))
-      if (parsed.version === 4) return migrateV5(migrateV4(parsed))
-      if (parsed.version === 5) return migrateV5(parsed)
+      if (parsed.version === 3) return migrateV6(migrateV5(migrateV4(migrateV3(parsed))))
+      if (parsed.version === 4) return migrateV6(migrateV5(migrateV4(parsed)))
+      if (parsed.version === 5) return migrateV6(migrateV5(parsed))
+      if (parsed.version === 6) return migrateV6(parsed)
       if (parsed.version === DB_VERSION) return parsed
     }
   } catch {
@@ -45,6 +46,13 @@ function migrateV5(db: DB): DB {
     const old = p as Program & { pendingEdit?: Partial<Program> }
     if (old.pendingEdit) { Object.assign(p, old.pendingEdit); delete old.pendingEdit }
   })
+  db.version = 6
+  return db
+}
+
+/** v6 → v7: menu Penarikan (desain Hifi 30 Okt 2026) → tambahkan penarikan dummy. Data & sesi tetap. */
+function migrateV6(db: DB): DB {
+  db.withdrawals = seedWithdrawals(db.programs, db.fundraisers)
   db.version = DB_VERSION
   return db
 }
@@ -142,4 +150,19 @@ export function canEditProgram(p: Program): boolean {
 
 export function isLive(p: Program): boolean {
   return p.status === 'Aktif'
+}
+
+// ---------------- Penarikan ----------------
+/**
+ * "Total Dana yang Dapat Ditarik" (desain Hifi Penarikan). Dasar perhitungan belum diatur PRD (Desain vs PRD D-15);
+ * asumsi prototipe: Total Terkumpul (Net) dikurangi penarikan yang Diterima dan yang masih Diajukan, supaya dua
+ * pengajuan yang menunggu tidak bisa melebihi dana program. Hanya program yang pernah tayang (Aktif/Selesai).
+ */
+export function withdrawable(db: DB, programId: string, exceptId?: string): number {
+  const p = db.programs.find((x) => x.id === programId)
+  if (!p || p.status !== 'Aktif') return 0
+  const used = db.withdrawals
+    .filter((w) => w.programId === programId && w.id !== exceptId && w.status !== 'Ditolak')
+    .reduce((s, w) => s + w.amount, 0)
+  return Math.max(0, netOf(p) - used)
 }

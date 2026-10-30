@@ -1,7 +1,7 @@
 import { addDays, todayISO } from './format'
-import type { DB, Fundraiser, Program, Transaction, User } from './types'
+import type { DB, Fundraiser, Program, Transaction, User, Withdrawal } from './types'
 
-export const DB_VERSION = 6
+export const DB_VERSION = 7
 
 const PALETTES: [string, string][] = [
   ['#0E8A7C', '#7FD1C5'],
@@ -125,6 +125,40 @@ export function seedTransactions(programs: Program[]): Transaction[] {
     .map((t, i) => ({ id: 'TS-' + String(i + 1).padStart(3, '0'), ...t }))
 }
 
+/**
+ * Penarikan dummy (desain Hifi Penarikan 30 Okt 2026) untuk program yang pernah tayang. Total Diterima + Diajukan
+ * per program tidak melebihi Total Terkumpul (Net), supaya batas "Total Dana yang Dapat Ditarik" tetap masuk akal.
+ */
+export function seedWithdrawals(programs: Program[], fundraisers: Fundraiser[]): Withdrawal[] {
+  const t = todayISO()
+  const plan: [string, number, Withdrawal['status'], number, string][] = [
+    // [program, nominal, status, diajukan (hari lalu), catatan]
+    ['p11', 5_000_000, 'Diterima', 12, 'Penyaluran tahap 1 untuk korban banjir'],
+    ['p07', 4_000_000, 'Diterima', 11, 'Biaya operasi gelombang pertama'],
+    ['p04', 1_000_000, 'Diterima', 9, 'Pembelian material atap'],
+    ['p03', 400_000, 'Ditolak', 8, 'Pembelian kitab santri'],
+    ['p11', 2_000_000, 'Diterima', 6, 'Penyaluran tahap 2'],
+    ['p04', 500_000, 'Ditolak', 5, 'Biaya tukang'],
+    ['p01', 300_000, 'Diterima', 4, 'Untuk keperluan pembelian alat'],
+    ['p07', 5_000_000, 'Diajukan', 2, 'Biaya operasi gelombang kedua'],
+    ['p10', 300_000, 'Diajukan', 1, ''],
+    ['p11', 1_000_000, 'Diajukan', 1, 'Penyaluran tahap 3'],
+    ['p01', 200_000, 'Diajukan', 0, 'Untuk keperluan pembelian alat'],
+  ]
+  return plan.flatMap(([pid, amount, status, ago, note], i) => {
+    const p = programs.find((x) => x.id === pid)
+    const f = fundraisers.find((x) => x.id === p?.fundraiserId)
+    if (!p || !f || p.status !== 'Aktif') return []
+    const w: Withdrawal = {
+      id: 'WD-' + String(i + 1).padStart(3, '0'), programId: p.id, fundraiserId: f.id, amount, note,
+      bankName: f.bankName, account: f.withdrawAccount, createdAt: addDays(t, -ago) + 'T09:30:00', status,
+    }
+    if (status !== 'Diajukan') w.decidedAt = addDays(t, -ago + 1) + 'T11:00:00'
+    if (status === 'Ditolak') w.rejectReason = 'Permintaan penarikan dana terindikasi duplikat'
+    return [w]
+  })
+}
+
 export function createSeed(): DB {
   const fundraisers: Fundraiser[] = [
     fr('f01', 'Yayasan A', 'yayasan@gmail.com', 'Yayasan', 'Terverifikasi', 9),
@@ -166,5 +200,8 @@ export function createSeed(): DB {
   programs[5].description = ''
   programs[5].image = ''
 
-  return { version: DB_VERSION, users, fundraisers, programs, transactions: seedTransactions(programs), emails: [], resetTokens: [], session: null }
+  return {
+    version: DB_VERSION, users, fundraisers, programs, transactions: seedTransactions(programs),
+    withdrawals: seedWithdrawals(programs, fundraisers), emails: [], resetTokens: [], session: null,
+  }
 }

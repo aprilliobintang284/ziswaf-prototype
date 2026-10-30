@@ -6,7 +6,7 @@ import { validateReason } from '../lib/validation'
 
 interface Props {
   approveLabel: string
-  statusWord: 'verifikasi' | 'persetujuan'
+  statusWord: 'verifikasi' | 'persetujuan' | 'penarikan'
   approveConfirm: string
   rejectConfirm: string
   onApprove: () => void

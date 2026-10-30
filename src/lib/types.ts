@@ -77,6 +77,26 @@ export interface Transaction {
   status: TransactionStatus
 }
 
+// Status penarikan mengikuti Validasi PRD dan desain Hifi Penarikan (30 Okt 2026). AC PRD masih menulis
+// "Menunggu Approval" dan "Berhasil" (Desain vs PRD D-11).
+export type WithdrawalStatus = 'Diajukan' | 'Diterima' | 'Ditolak'
+
+export interface Withdrawal {
+  id: string // contoh WD-001
+  programId: string
+  fundraiserId: string
+  amount: number
+  note: string
+  /** Rekening tujuan saat diajukan (default dari data registrasi fundraiser) */
+  bankName: string
+  account: string
+  createdAt: string
+  status: WithdrawalStatus
+  /** "Tanggal Validasi" di desain: tanggal Admin menyetujui/menolak */
+  decidedAt?: string
+  rejectReason?: string
+}
+
 export interface SimEmail {
   id: string
   to: string
@@ -84,7 +104,7 @@ export interface SimEmail {
   body: string
   createdAt: string
   resetToken?: string
-  /** Template email punya tombol "Masuk" (Password Berhasil Diubah, Pembaruan Status Verifikasi) */
+  /** Template email punya tombol "Masuk" (Password Berhasil Diubah, status verifikasi fundraiser) */
   loginButton?: boolean
   /** Paragraf setelah tombol (template email desain 27 Okt) */
   footer?: string
@@ -109,6 +129,7 @@ export interface DB {
   fundraisers: Fundraiser[]
   programs: Program[]
   transactions: Transaction[]
+  withdrawals: Withdrawal[]
   emails: SimEmail[]
   resetTokens: ResetToken[]
   session: Session | null

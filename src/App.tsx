@@ -9,8 +9,9 @@ import { FundraiserPage } from './pages/Fundraiser'
 import { FundraiserEditPage } from './pages/FundraiserEdit'
 import { ProgramPage } from './pages/Program'
 import { ProgramFormPage } from './pages/ProgramForm'
-import { PlaceholderPage } from './pages/Placeholder'
 import { TransaksiPage } from './pages/Transaksi'
+import { PenarikanPage } from './pages/Penarikan'
+import { PenarikanFormPage } from './pages/PenarikanForm'
 
 function Root() {
   return (
@@ -42,7 +43,9 @@ const router = createBrowserRouter([
           { path: 'program/buat', element: <ProgramFormPage mode="create" /> },
           { path: 'program/:id/edit', element: <ProgramFormPage mode="edit" /> },
           { path: 'transaksi', element: <TransaksiPage /> },
-          { path: 'penarikan', element: <PlaceholderPage title="Penarikan" /> },
+          { path: 'penarikan', element: <PenarikanPage /> },
+          { path: 'penarikan/ajukan', element: <PenarikanFormPage /> },
+          { path: 'penarikan/:id/edit', element: <PenarikanFormPage /> },
         ],
       },
       { path: '*', element: <Navigate to="/masuk" replace /> },
