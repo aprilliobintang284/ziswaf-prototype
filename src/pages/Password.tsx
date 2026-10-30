@@ -6,7 +6,7 @@ import { Logo } from '../components/brand'
 import { Field, Modal, PasswordCriteria, PasswordInput } from '../components/ui'
 import { Presence } from '../components/motion'
 import { requestReset, resetPassword, tokenEmail, tokenState } from '../lib/actions'
-import { clean, validateConfirm, validateEmail, validatePassword } from '../lib/validation'
+import { shownError, validateConfirm, validateEmail, validatePassword } from '../lib/validation'
 
 function Header() {
   return (
@@ -20,18 +20,17 @@ function Header() {
 export function ForgotPasswordPage() {
   const [params, setParams] = useSearchParams()
   const [email, setEmail] = useState(params.get('email') ?? '')
-  const [error, setError] = useState<string>()
+  const [touched, setTouched] = useState(false)
   const [sent, setSent] = useState(false)
   const expired = params.get('tautan') === 'kedaluwarsa'
+  // K-36: format email salah sudah ditandai saat mengetik; Kirim Tautan aktif hanya jika email valid
+  const error = validateEmail(email)
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
-    if (!clean(email)) return
+    if (error) return
     // K-32 (29 Okt 2026, ikut PRD): pesan selalu sama untuk email terdaftar maupun tidak, supaya tidak bisa
     // dipakai menebak email yang punya akun. Email hanya benar-benar terkirim kalau terdaftar.
-    const err = validateEmail(email)
-    setError(err)
-    if (err) return
     requestReset(email)
     setSent(true)
   }
@@ -47,10 +46,10 @@ export function ForgotPasswordPage() {
       <Header />
       <h1 className="auth-title">Lupa Password</h1>
       <form className="auth-form" onSubmit={submit} noValidate>
-        <Field label="Email" error={error}>
-          <input className="input" placeholder="Masukkan email" value={email} onChange={(e) => { setEmail(e.target.value); setError(undefined) }} />
+        <Field label="Email" error={shownError(error, email, touched)}>
+          <input className="input" placeholder="Masukkan email" value={email} onChange={(e) => setEmail(e.target.value)} onBlur={() => setTouched(true)} />
         </Field>
-        <button className="btn btn-primary btn-block btn-lg" type="submit" disabled={!clean(email)}>Kirim Tautan</button>
+        <button className="btn btn-primary btn-block btn-lg" type="submit" disabled={!!error}>Kirim Tautan</button>
       </form>
 
       <Presence show={sent}>{sent && (
@@ -107,11 +106,11 @@ export function ResetPasswordPage() {
       <Header />
       <h1 className="auth-title">Atur Ulang Password</h1>
       <form className="auth-form" onSubmit={submit} noValidate>
-        <Field label="Password Baru" required error={touched.pw ? errs.pw : undefined}>
+        <Field label="Password Baru" required error={shownError(errs.pw, pw, touched.pw)}>
           <PasswordInput placeholder="Masukkan password" value={pw} onChange={(e) => setPw(e.target.value)}
             onBlur={() => setTouched((t) => ({ ...t, pw: true }))} autoComplete="new-password" />
         </Field>
-        <Field label="Konfirmasi Password Baru" required error={touched.pw2 ? errs.pw2 : undefined}>
+        <Field label="Konfirmasi Password Baru" required error={shownError(errs.pw2, pw2, touched.pw2)}>
           <PasswordInput placeholder="Konfirmasi password" value={pw2} onChange={(e) => setPw2(e.target.value)}
             onBlur={() => setTouched((t) => ({ ...t, pw2: true }))} autoComplete="new-password" />
         </Field>

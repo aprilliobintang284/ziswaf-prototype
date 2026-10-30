@@ -7,7 +7,7 @@ import { Logo } from '../components/brand'
 import { Field, PasswordInput } from '../components/ui'
 import { useDB } from '../lib/store'
 import { login } from '../lib/actions'
-import { clean, validateEmail } from '../lib/validation'
+import { shownError, validateEmail } from '../lib/validation'
 
 const DEMO = [
   ['Admin', 'admin@ziswaf.id', 'Admin@2026'],
@@ -24,9 +24,12 @@ export function LoginPage() {
   const next = params.get('next')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [emailTouched, setEmailTouched] = useState(false)
   // Desain Hifi: setelah gagal, kedua field merah dan tombol Masuk nonaktif sampai input diubah
-  const [err, setErr] = useState<{ email?: string; password?: string; both?: boolean } | null>(null)
-  const canSubmit = clean(email) !== '' && password !== '' && !err
+  const [err, setErr] = useState<{ password: string } | null>(null)
+  // K-36: format email salah sudah ditandai saat mengetik; tombol Masuk aktif hanya jika email valid dan password terisi
+  const emailErr = validateEmail(email)
+  const canSubmit = !emailErr && password !== '' && !err
 
   if (db.session) return <Navigate to={next && next.startsWith('/dashboard') ? next : '/dashboard/fundraiser'} replace />
 
@@ -35,10 +38,8 @@ export function LoginPage() {
   const submit = (e: FormEvent) => {
     e.preventDefault()
     if (!canSubmit) return
-    const emailErr = validateEmail(email)
-    if (emailErr) { setErr({ email: emailErr }); return }
     const res = login(email, password)
-    if (!res.ok) { setErr({ both: true, password: res.error }); return }
+    if (!res.ok) { setErr({ password: res.error }); return }
     nav(next && next.startsWith('/dashboard') ? next : '/dashboard/fundraiser', { replace: true })
   }
 
@@ -55,8 +56,9 @@ export function LoginPage() {
         </div>
       )}
       <form className="auth-form" onSubmit={submit} noValidate>
-        <Field label="Email" error={err?.email} invalid={err?.both}>
-          <input className="input" placeholder="Masukkan email" value={email} onChange={(e) => edit(setEmail)(e.target.value)} autoComplete="username" />
+        <Field label="Email" error={shownError(emailErr, email, emailTouched)} invalid={!!err}>
+          <input className="input" placeholder="Masukkan email" value={email} onChange={(e) => edit(setEmail)(e.target.value)}
+            onBlur={() => setEmailTouched(true)} autoComplete="username" />
         </Field>
         <Field label="Password" error={err?.password}>
           <PasswordInput placeholder="Masukkan password" value={password} onChange={(e) => edit(setPassword)(e.target.value)} autoComplete="current-password" />

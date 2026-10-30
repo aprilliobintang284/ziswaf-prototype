@@ -9,7 +9,7 @@ const NAME_RE = /^[A-Za-z0-9 ]+$/
 const LICENSE = /^[!-~]+$/ // huruf, angka, dan simbol keyboard, tanpa spasi
 const DIGITS = /^[0-9]+$/
 
-const INVISIBLE = /[​-‍⁠﻿]/g
+const INVISIBLE = /[\u200B-\u200D\u2060\uFEFF]/g
 
 /**
  * Standar QA: isian hasil copy-paste dibersihkan sebelum divalidasi dan disimpan —
@@ -17,7 +17,7 @@ const INVISIBLE = /[​-‍⁠﻿]/g
  * lalu spasi/tab/baris baru di awal & akhir dibuang. Password dan No. HP (aturan PRD) tidak ikut.
  */
 export function clean(v: string): string {
-  return (v ?? '').replace(INVISIBLE, '').replace(/ /g, ' ').trim()
+  return (v ?? '').replace(INVISIBLE, '').replace(/\u00A0/g, ' ').trim()
 }
 
 export function required(v: string, label: string): string | undefined {
@@ -27,6 +27,14 @@ export function required(v: string, label: string): string | undefined {
 
 function blank(v: string) {
   return !clean(v)
+}
+
+/**
+ * K-36 (desainer 30 Okt 2026): error field kosong baru tampil setelah field ditinggalkan (pindah kolom),
+ * sedangkan isian yang formatnya salah sudah ditandai saat mengetik.
+ */
+export function shownError(error: string | undefined, value: string, touched: boolean | undefined): string | undefined {
+  return touched || !blank(value) ? error : undefined
 }
 
 export function validateEmail(v: string): string | undefined {

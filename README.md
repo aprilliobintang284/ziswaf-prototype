@@ -46,12 +46,13 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
 
 ## Isi prototipe
 
-- **Masuk**: tombol nonaktif sampai email dan password terisi. Setelah gagal, kedua field merah dan tombol nonaktif sampai isian diubah.
+- **Pesan error di semua form** (K-36, desainer 30 Okt 2026): field yang dibiarkan kosong baru diberi error setelah ditinggalkan (pindah kolom); isian yang formatnya salah sudah diberi error saat mengetik. Form Program juga mengecek semua field saat tombol diklik. Cek email terdaftar dan nama program ganda baru jalan setelah field ditinggalkan.
+- **Masuk**: tombol nonaktif sampai email valid dan password terisi. Setelah gagal, kedua field merah dan tombol nonaktif sampai isian diubah.
 - **Daftar Akun** (2 langkah):
-  - Error muncul per field setelah field ditinggalkan.
   - "Berikut" aktif hanya jika semua valid, dokumen dipilih, dan pernyataan dicentang.
   - "Daftar" aktif hanya jika password memenuhi kriteria dan konfirmasinya cocok.
 - **Lupa Password / Atur Ulang Password**:
+  - "Kirim Tautan" aktif hanya jika format email benar.
   - Email terdaftar maupun tidak terdaftar menampilkan pesan yang sama: "Jika email terdaftar, tautan reset sudah dikirim" (email hanya terkirim kalau terdaftar).
   - Modal "Periksa Email Anda" punya tombol "Tutup".
   - Tautan berlaku 60 menit dan hanya sekali pakai.
@@ -59,7 +60,7 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
 - **Fundraiser**:
   - Admin melihat daftar, detail, setujui/tolak (dengan alasan), dan Export Excel (.xlsx).
   - Fundraiser melihat data sendiri dengan tombol **Edit** rata kanan (nonaktif saat Menunggu Verifikasi), lalu form **Edit Fundraiser**.
-  - Simpan di Edit Fundraiser memunculkan pop-up **Konfirmasi Perubahan**; setelah "Ya", status kembali Menunggu Verifikasi (juga untuk akun Terverifikasi). Kolom Email tidak bisa diubah.
+  - Simpan di Edit Fundraiser memunculkan pop-up **Konfirmasi Perubahan**; setelah "Ya", status kembali Menunggu Verifikasi (juga untuk akun Terverifikasi). Kolom Email tidak bisa diubah. Menambah spasi di awal/akhir saja tidak dihitung sebagai perubahan, jadi Simpan tetap nonaktif.
 - **Program**:
   - Kartu Gross/Net/Fee 3% dan tabel status Draf / Menunggu Persetujuan / **Aktif** / Ditolak / **Selesai**.
   - Detail program dengan "Tanggal Persetujuan".
@@ -89,7 +90,8 @@ Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah
 - **K-01** (terjawab PM 27 Okt) Tab/browser ditutup lalu dibuka lagi ≤ 24 jam tetap login; ≥ 24 jam harus login ulang. Aturan 7 hari dihapus. Diam 30 menit tetap otomatis logout.
 - **K-02** (terjawab PM 27 Okt) Password 8–25 karakter tanpa spasi; huruf, angka, dan simbol tidak wajib semuanya.
 - **K-06** (terjawab PM 27 Okt) Kategori fundraiser berupa teks bebas, huruf + spasi (spasi = standar QA), 5–20 karakter.
-- **K-08** (asumsi QA 28 Okt, menunggu desainer) Untuk fundraiser yang belum terverifikasi, menu Transaksi dan Penarikan tetap tampil tetapi abu-abu dan tidak bisa diklik.
+- **K-08** (terjawab desainer 30 Okt) Untuk fundraiser yang belum terverifikasi, menu Transaksi dan Penarikan tetap tampil tetapi abu-abu dan tidak bisa diklik.
+- **K-35** (terjawab desainer 30 Okt) Label Ditolak memang dibedakan: fundraiser memakai "Tanggal Verifikasi" dan "Alasan Ditolak", program memakai "Tanggal Persetujuan" dan "Alasan Penolakan".
 - **K-07** (terjawab desain 27 Okt) Setelah ditolak, fundraiser memperbaiki data lewat Edit lalu statusnya kembali "Menunggu Verifikasi". Email status yang sama dikirim saat disetujui maupun ditolak.
 - **K-11 & K-12** (terjawab PM 28 Okt) Program masih Aktif sampai 23.59 WIB di tanggal berakhir (sisa waktu "0 Hari"), lalu Selesai mulai hari berikutnya. Program Draf atau Menunggu Persetujuan yang tanggal berakhirnya lewat juga otomatis Selesai dan tidak bisa disetujui lagi.
 - **K-13** (terjawab meeting 30 Okt, ikut desain Hifi) Draf bisa mengubah semua field. Ditolak, Aktif, dan Selesai bisa mengubah semua field kecuali Nama Program; form edit hanya punya tombol Batal dan Simpan dengan pop-up "Apakah Anda yakin untuk menyimpan perubahan ini?". Program Ditolak lalu Menunggu Persetujuan. Perubahan program Aktif dan Selesai langsung berlaku tanpa persetujuan Admin, dan program Selesai yang diperpanjang langsung Aktif kembali. Detail program Selesai menampilkan sisa waktu "0 Hari".

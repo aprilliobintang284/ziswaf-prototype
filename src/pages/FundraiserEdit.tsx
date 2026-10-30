@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { DocField, FundraiserFields, checkDocFile, hasErrors, validateFundraiserForm } from '../components/FundraiserFields'
-import type { FundraiserForm } from '../components/FundraiserFields'
+import type { FormErrors, FundraiserForm } from '../components/FundraiserFields'
 import { ConfirmModal, StatusBadge, useToast } from '../components/ui'
 import { Presence } from '../components/motion'
 import { useDB } from '../lib/store'
 import { useMarkUnsaved } from '../lib/unsaved'
 import { updateFundraiserData } from '../lib/actions'
+import { clean, shownError } from '../lib/validation'
 import type { DocFile } from '../lib/types'
 
 /** Edit Fundraiser — mengikuti desain Hifi (bisa diakses saat status Terverifikasi atau Ditolak). */
@@ -24,15 +25,22 @@ export function FundraiserEditPage() {
   const [doc, setDoc] = useState<DocFile | null>(f?.doc ?? null)
   const [docError, setDocError] = useState<string>()
   const [confirm, setConfirm] = useState(false)
-  useMarkUnsaved(!!f && !!values && (JSON.stringify(values) !== JSON.stringify(initial) || doc !== f.doc))
+  const [touched, setTouched] = useState<Partial<Record<keyof FundraiserForm, boolean>>>({})
+  // Dokumen dibandingkan per isi: objek data fundraiser dibuat ulang setiap DB tersimpan (contoh aktivitas sesi)
+  const docChanged = JSON.stringify(doc) !== JSON.stringify(f?.doc ?? null)
+  useMarkUnsaved(!!f && !!values && (JSON.stringify(values) !== JSON.stringify(initial) || docChanged))
 
   if (!f || !values || f.status === 'Menunggu Verifikasi') {
     return <Navigate to="/dashboard/fundraiser" replace />
   }
 
-  // Data sudah terisi, jadi error ditampilkan langsung saat isian berubah
+  // K-36: field yang dikosongkan diberi error setelah ditinggalkan; format salah langsung ditandai saat mengetik
   const errors = validateFundraiserForm(values, doc, docError)
-  const changed = JSON.stringify(values) !== JSON.stringify(initial) || doc !== f.doc
+  const shown: FormErrors = { doc: errors.doc }
+  for (const k of Object.keys(values) as (keyof FundraiserForm)[]) shown[k] = shownError(errors[k], values[k], touched[k])
+  // Hanya menambah spasi di awal/akhir tidak dihitung sebagai perubahan (spasi dibuang saat disimpan)
+  const same = (Object.keys(values) as (keyof FundraiserForm)[]).every((k) => clean(values[k]) === clean(initial![k]))
+  const changed = !same || docChanged
   const canSave = changed && !hasErrors(errors)
 
   // Desain 27 Okt: setiap simpan perubahan (Ditolak maupun Terverifikasi) diajukan ulang → Menunggu Verifikasi
@@ -55,10 +63,11 @@ export function FundraiserEditPage() {
           </div>
         </div>
         <div className="sec-title">Informasi Fundraiser</div>
-        <FundraiserFields values={values} errors={errors} emailLocked
-          onChange={(k, v) => setValues((s) => s && (k === 'email' ? s : { ...s, [k]: v }))} />
+        <FundraiserFields values={values} errors={shown} emailLocked
+          onChange={(k, v) => setValues((s) => s && (k === 'email' ? s : { ...s, [k]: v }))}
+          onBlur={(k) => setTouched((t) => (t[k] ? t : { ...t, [k]: true }))} />
         <div className="sec-title" style={{ marginTop: 22 }}>Dokumen Pendukung</div>
-        <DocField doc={doc} error={errors.doc} onDoc={async (file) => {
+        <DocField doc={doc} error={shown.doc} onDoc={async (file) => {
           if (!file) return
           setDocError(await checkDocFile(file))
           setDoc({ name: file.name, size: file.size, type: file.type })

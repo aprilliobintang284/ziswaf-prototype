@@ -7,7 +7,7 @@ import { Field, Modal, PasswordCriteria, PasswordInput } from '../components/ui'
 import { DocField, EMPTY_FORM, FundraiserFields, checkDocFile, hasErrors, validateFundraiserForm } from '../components/FundraiserFields'
 import type { FormErrors, FundraiserForm } from '../components/FundraiserFields'
 import { emailTaken, registerFundraiser } from '../lib/actions'
-import { validateConfirm, validatePassword } from '../lib/validation'
+import { shownError, validateConfirm, validatePassword } from '../lib/validation'
 import type { DocFile } from '../lib/types'
 
 type Touched = Partial<Record<keyof FormErrors, boolean>>
@@ -26,12 +26,15 @@ export function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
 
-  // Desain Hifi: error tampil per field setelah field disentuh; tombol aktif hanya jika semua valid
+  // Desain Hifi: tombol aktif hanya jika semua valid. K-36: field kosong error setelah ditinggalkan, format salah saat mengetik
   const errors = validateFundraiserForm(values, doc, docError)
   const dupEmail = !errors.email && emailTaken(values.email)
   if (dupEmail) errors.email = 'Email sudah terdaftar.'
   const shown: FormErrors = {}
-  for (const k of Object.keys(errors) as (keyof FormErrors)[]) if (touched[k]) shown[k] = errors[k]
+  for (const k of Object.keys(errors) as (keyof FormErrors)[]) {
+    shown[k] = k === 'doc' ? (touched.doc ? errors.doc : undefined) : shownError(errors[k], values[k], touched[k])
+  }
+  if (dupEmail && !touched.email) shown.email = undefined // cek email terdaftar baru jalan setelah field Email ditinggalkan
   const canNext = agree && !hasErrors(errors)
 
   const pwErrors = { pw: validatePassword(pw), pw2: validateConfirm(pw, pw2) }
@@ -86,11 +89,11 @@ export function RegisterPage() {
         </div>
       ) : (
         <div className="auth-form step-in" key="langkah-2">
-          <Field label="Password" error={pwTouched.pw ? pwErrors.pw : undefined}>
+          <Field label="Password" error={shownError(pwErrors.pw, pw, pwTouched.pw)}>
             <PasswordInput placeholder="Masukkan password" value={pw} onChange={(e) => setPw(e.target.value)}
               onBlur={() => setPwTouched((t) => ({ ...t, pw: true }))} autoComplete="new-password" />
           </Field>
-          <Field label="Konfirmasi Password" error={pwTouched.pw2 ? pwErrors.pw2 : undefined}>
+          <Field label="Konfirmasi Password" error={shownError(pwErrors.pw2, pw2, pwTouched.pw2)}>
             <PasswordInput placeholder="Konfirmasi password" value={pw2} onChange={(e) => setPw2(e.target.value)}
               onBlur={() => setPwTouched((t) => ({ ...t, pw2: true }))} autoComplete="new-password" />
           </Field>

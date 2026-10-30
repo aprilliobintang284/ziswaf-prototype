@@ -10,7 +10,7 @@ import { createProgram, titleTaken, updateProgram } from '../lib/actions'
 import { digitsToRupiahText, pastedAmountToDigits, todayISO } from '../lib/format'
 import { readImageResized, sniffType } from '../lib/export'
 import {
-  clean, validateDescription, validateEndDate, validateImageFile, validateProgramTitle, validateTarget,
+  clean, shownError, validateDescription, validateEndDate, validateImageFile, validateProgramTitle, validateTarget,
 } from '../lib/validation'
 
 type Mode = 'create' | 'edit'
@@ -51,7 +51,8 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
   }), [program])
 
   const [v, setV] = useState(initial)
-  const [errs, setErrs] = useState<Errs>({})
+  const [touched, setTouched] = useState<Partial<Record<keyof Errs, boolean>>>({})
+  const [imageErr, setImageErr] = useState<string>()
   const [pending, setPending] = useState<Pending>(null)
   const skipBlock = useRef(false)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -87,6 +88,28 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
   if (guard) return <Navigate to="/dashboard/program" replace />
 
   const set = (k: keyof typeof v, val: string) => setV((s) => ({ ...s, [k]: val }))
+  const touch = (k: keyof Errs) => setTouched((t) => (t[k] ? t : { ...t, [k]: true }))
+
+  // Nama program tidak boleh sama dengan program lain (28 Okt 2026); selain Draf, nama program terkunci
+  const titleErr = titleLocked ? undefined
+    : validateProgramTitle(v.title) ?? (titleTaken(v.title, program?.id) ? 'Nama program sudah digunakan' : undefined)
+  const errs: Errs = {
+    title: titleErr,
+    target: validateTarget(v.target),
+    // Program yang pernah tayang boleh menyimpan perubahan lain tanpa mengganti tanggal (contoh program Selesai)
+    endDate: live && v.endDate === initial.endDate ? undefined : validateEndDate(v.endDate, todayISO()),
+    description: validateDescription(v.description),
+    image: imageErr ?? (v.image ? undefined : 'Foto program wajib diupload'),
+  }
+  // K-36 (desainer 30 Okt 2026): error tampil saat field ditinggalkan, format salah langsung saat mengetik,
+  // dan semua field dicek lagi saat tombol diklik. Cek nama ganda baru jalan setelah field ditinggalkan.
+  const shown: Errs = {
+    title: !touched.title && titleErr === 'Nama program sudah digunakan' ? undefined : shownError(errs.title, v.title, touched.title),
+    target: shownError(errs.target, v.target, touched.target),
+    endDate: shownError(errs.endDate, v.endDate, touched.endDate),
+    description: shownError(errs.description, v.description, touched.description),
+    image: imageErr ?? (touched.image ? errs.image : undefined),
+  }
 
   const onTargetChange = (el: HTMLInputElement) => {
     const all = el.value.replace(/\D/g, '')
@@ -104,30 +127,20 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
       const kind = await sniffType(file)
       if (kind !== 'jpg' && kind !== 'png') err = 'File tidak valid atau rusak'
     }
-    if (err) { setErrs((e) => ({ ...e, image: err })); return }
+    if (err) { setImageErr(err); return }
     try {
       set('image', await readImageResized(file))
-      setErrs((e) => ({ ...e, image: undefined }))
+      setImageErr(undefined)
     } catch {
-      setErrs((e) => ({ ...e, image: 'File tidak valid atau rusak' }))
+      setImageErr('File tidak valid atau rusak')
     }
   }
 
   const ask = (kind: 'submit' | 'draft') => {
-    const e: Errs = kind === 'draft'
-      ? { title: validateProgramTitle(v.title) }
-      : {
-          title: titleLocked ? undefined : validateProgramTitle(v.title),
-          target: validateTarget(v.target),
-          // Program yang pernah tayang boleh mengajukan perubahan lain tanpa mengganti tanggal (contoh program Selesai)
-          endDate: live && v.endDate === initial.endDate ? undefined : validateEndDate(v.endDate, todayISO()),
-          description: validateDescription(v.description),
-          image: v.image ? undefined : 'Foto program wajib diupload',
-        }
-    // Nama program tidak boleh sama dengan program lain (28 Okt 2026); selain Draf, nama program terkunci
-    if (!titleLocked && !e.title && titleTaken(v.title, program?.id)) e.title = 'Nama program sudah digunakan'
-    setErrs(e)
-    if (Object.values(e).some(Boolean)) return
+    // Draf cukup Nama Program; Ajukan/Simpan mengecek semua field
+    const keys: (keyof Errs)[] = kind === 'draft' ? ['title'] : ['title', 'target', 'endDate', 'description', 'image']
+    setTouched((t) => ({ ...t, ...Object.fromEntries(keys.map((k) => [k, true])) }))
+    if (keys.some((k) => errs[k])) return
     setPending(kind)
   }
 
@@ -154,25 +167,25 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
       </div>
 
       <div className="card form-card">
-        <Field label="Nama Program" required error={errs.title}>
-          <input className="input" placeholder="Masukkan nama program" value={v.title} disabled={titleLocked} maxLength={120} onChange={(e) => set('title', e.target.value)} />
+        <Field label="Nama Program" required error={shown.title}>
+          <input className="input" placeholder="Masukkan nama program" value={v.title} disabled={titleLocked} maxLength={120} onChange={(e) => set('title', e.target.value)} onBlur={() => touch('title')} />
         </Field>
-        <Field label="Target Terkumpul" required error={errs.target}>
+        <Field label="Target Terkumpul" required error={shown.target}>
           <div className="input-wrap">
             <span className="input-prefix">Rp</span>
             <input ref={targetRef} className="input with-prefix" placeholder="Masukkan nominal target" inputMode="numeric"
-              value={digitsToRupiahText(v.target)} onChange={(e) => onTargetChange(e.target)}
+              value={digitsToRupiahText(v.target)} onChange={(e) => onTargetChange(e.target)} onBlur={() => touch('target')}
               onPaste={(e) => { e.preventDefault(); set('target', pastedAmountToDigits(e.clipboardData.getData('text'))) }} />
           </div>
         </Field>
-        <Field label="Tanggal Berakhir" required error={errs.endDate}>
-          <DatePicker value={v.endDate} onChange={(iso) => set('endDate', iso.startsWith('invalid:') ? iso.slice(8) : iso)} invalid={!!errs.endDate} />
+        <Field label="Tanggal Berakhir" required error={shown.endDate}>
+          <DatePicker value={v.endDate} onChange={(iso) => set('endDate', iso.startsWith('invalid:') ? iso.slice(8) : iso)} invalid={!!shown.endDate} />
         </Field>
-        <Field label="Deskripsi Program" required error={errs.description}>
-          <textarea className="textarea" placeholder="Masukkan deskripsi program" value={v.description} onChange={(e) => set('description', e.target.value)} />
+        <Field label="Deskripsi Program" required error={shown.description}>
+          <textarea className="textarea" placeholder="Masukkan deskripsi program" value={v.description} onChange={(e) => set('description', e.target.value)} onBlur={() => touch('description')} />
           <div className="counter">{v.description.length}/1000</div>
         </Field>
-        <Field label="Foto Program" required error={errs.image}>
+        <Field label="Foto Program" required error={shown.image}>
           <div className="upload-box" role="button" tabIndex={0} onClick={() => fileRef.current?.click()}
             onKeyDown={(e) => { if (e.key === 'Enter') fileRef.current?.click() }}>
             {v.image ? (
