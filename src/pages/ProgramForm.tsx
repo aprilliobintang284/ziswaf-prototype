@@ -38,9 +38,10 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
     return null
   }, [user, fundraiser, program, mode])
 
-  // K-13 (PM 28 Okt 2026): program yang sudah pernah tayang (status tersimpan "Aktif": Aktif, Selesai, perubahan ditolak)
-  // hanya bisa mengubah Deskripsi, Foto, Target, Tanggal Berakhir; Nama Program terkunci. Draf & Ditolak baru: semua field.
+  // Meeting 30 Okt 2026 (ikut desain): selain Draf, Nama Program terkunci dan form hanya punya Batal/Simpan.
+  // live = sudah pernah tayang (status tersimpan "Aktif": Aktif & Selesai) → perubahan langsung berlaku.
   const live = program?.status === 'Aktif'
+  const titleLocked = !!program && program.status !== 'Draf'
   const initial = useMemo(() => ({
     title: program?.title ?? '',
     target: program?.target ? String(program.target) : '',
@@ -116,15 +117,15 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
     const e: Errs = kind === 'draft'
       ? { title: validateProgramTitle(v.title) }
       : {
-          title: live ? undefined : validateProgramTitle(v.title),
+          title: titleLocked ? undefined : validateProgramTitle(v.title),
           target: validateTarget(v.target),
           // Program yang pernah tayang boleh mengajukan perubahan lain tanpa mengganti tanggal (contoh program Selesai)
           endDate: live && v.endDate === initial.endDate ? undefined : validateEndDate(v.endDate, todayISO()),
           description: validateDescription(v.description),
           image: v.image ? undefined : 'Foto program wajib diupload',
         }
-    // Nama program tidak boleh sama dengan program lain (28 Okt 2026); nama program yang sudah tayang terkunci
-    if (!live && !e.title && titleTaken(v.title, program?.id)) e.title = 'Nama program sudah digunakan'
+    // Nama program tidak boleh sama dengan program lain (28 Okt 2026); selain Draf, nama program terkunci
+    if (!titleLocked && !e.title && titleTaken(v.title, program?.id)) e.title = 'Nama program sudah digunakan'
     setErrs(e)
     if (Object.values(e).some(Boolean)) return
     setPending(kind)
@@ -137,7 +138,9 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
     else updateProgram(program!.id, input, kind === 'draft' ? 'draft' : 'submit')
     skipBlock.current = true
     setPending(null)
-    toast(kind === 'draft' ? 'Program disimpan sebagai draf' : mode === 'create' ? 'Program berhasil diajukan' : 'Perubahan program berhasil diajukan')
+    toast(kind === 'draft' ? 'Program disimpan sebagai draf'
+      : mode === 'create' || program?.status === 'Draf' ? 'Program berhasil diajukan'
+        : live ? 'Perubahan program berhasil disimpan' : 'Program berhasil diajukan ulang')
     nav('/dashboard/program')
   }
 
@@ -152,7 +155,7 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
 
       <div className="card form-card">
         <Field label="Nama Program" required error={errs.title}>
-          <input className="input" placeholder="Masukkan nama program" value={v.title} disabled={live} maxLength={120} onChange={(e) => set('title', e.target.value)} />
+          <input className="input" placeholder="Masukkan nama program" value={v.title} disabled={titleLocked} maxLength={120} onChange={(e) => set('title', e.target.value)} />
         </Field>
         <Field label="Target Terkumpul" required error={errs.target}>
           <div className="input-wrap">
@@ -188,8 +191,14 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
 
       <div className="form-actions">
         <button className="btn btn-outline" onClick={() => nav('/dashboard/program')}>Batal</button>
-        <button className="btn btn-outline" disabled={live} title={live ? 'Tidak tersedia untuk program aktif (menunggu keputusan PM, K-13)' : undefined} onClick={() => ask('draft')}>Simpan ke Draf</button>
-        <button className="btn btn-primary" onClick={() => ask('submit')}>{mode === 'create' ? 'Ajukan Program' : 'Ajukan Perubahan'}</button>
+        {titleLocked ? (
+          <button className="btn btn-primary" onClick={() => ask('submit')}>Simpan</button>
+        ) : (
+          <>
+            <button className="btn btn-outline" onClick={() => ask('draft')}>Simpan ke Draf</button>
+            <button className="btn btn-primary" onClick={() => ask('submit')}>{mode === 'create' ? 'Ajukan Program' : 'Ajukan Perubahan'}</button>
+          </>
+        )}
       </div>
 
       <Presence show={!!pending}>{pending && (
@@ -197,7 +206,8 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
           title="Konfirmasi"
           text={pending === 'draft' ? 'Simpan program sebagai draf?'
             : mode === 'create' ? 'Apakah Anda yakin untuk membuat dan mengajukan program ini?'
-              : 'Apakah Anda yakin untuk menyimpan perubahan dan mengajukan ulang program ini?'}
+              : titleLocked ? 'Apakah Anda yakin untuk menyimpan perubahan ini?'
+                : 'Apakah Anda yakin untuk menyimpan perubahan dan mengajukan ulang program ini?'}
           onNo={() => setPending(null)}
           onYes={run}
         />

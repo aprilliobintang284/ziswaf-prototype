@@ -1,6 +1,6 @@
 import { getDB, setDB, statusOf } from './store'
 import { uid } from './format'
-import type { DocFile, Fundraiser, Program, ProgramEdit, SimEmail, User } from './types'
+import type { DocFile, Fundraiser, Program, SimEmail, User } from './types'
 import { clean } from './validation'
 
 export const IDLE_MS_DEFAULT = 30 * 60 * 1000 // AC Login #5: sesi berakhir setelah 30 menit tidak aktif
@@ -247,17 +247,22 @@ export function createProgram(fundraiserId: string, input: ProgramInput, asDraft
   return id
 }
 
-/** Draf/Ditolak: semua field berubah. Program Aktif/Selesai: Deskripsi, Gambar, Target, Tanggal Berakhir disimpan sebagai pendingEdit (PRD 27 Okt 2026). */
+/**
+ * Edit program (meeting 30 Okt 2026, ikut desain Hifi Skenario 4–6):
+ * - Draf: semua field, lalu disimpan ke draf atau diajukan.
+ * - Ditolak: semua field kecuali Nama Program, lalu Menunggu Persetujuan lagi.
+ * - Aktif & Selesai (status tersimpan "Aktif"): semua field kecuali Nama Program, langsung berlaku tanpa
+ *   persetujuan Admin. Program Selesai yang diperpanjang otomatis Aktif lagi karena status dihitung dari tanggal.
+ */
 export function updateProgram(id: string, input: ProgramInput, mode: 'draft' | 'submit') {
   setDB((d) => {
     const p = d.programs.find((x) => x.id === id)
     if (!p) return
     if (p.status === 'Aktif') {
-      const edit: ProgramEdit = { description: input.description, image: input.image, target: input.target, endDate: input.endDate }
-      p.pendingEdit = edit
+      Object.assign(p, { target: input.target, endDate: input.endDate, description: input.description, image: input.image })
       return
     }
-    Object.assign(p, input)
+    Object.assign(p, p.status === 'Draf' ? input : { ...input, title: p.title })
     p.rejectReason = undefined
     p.decidedAt = undefined
     p.status = mode === 'draft' ? 'Draf' : 'Menunggu Persetujuan'
@@ -268,11 +273,6 @@ export function approveProgram(id: string) {
   setDB((d) => {
     const p = d.programs.find((x) => x.id === id)
     if (!p || statusOf(p) === 'Selesai') return // K-12: pengajuan yang tanggalnya lewat sudah Selesai
-    if (p.pendingEdit) {
-      Object.assign(p, p.pendingEdit)
-      p.pendingEdit = undefined
-      return
-    }
     if (p.status !== 'Menunggu Persetujuan') return
     p.status = 'Aktif'
     p.decidedAt = now()
@@ -283,12 +283,6 @@ export function rejectProgram(id: string, reason: string) {
   setDB((d) => {
     const p = d.programs.find((x) => x.id === id)
     if (!p || statusOf(p) === 'Selesai') return
-    if (p.pendingEdit) {
-      // PRD 27 Okt 2026: perubahan ditolak, program tetap aktif dengan data lama
-      p.pendingEdit = undefined
-      p.rejectReason = 'Perubahan ditolak: ' + clean(reason)
-      return
-    }
     if (p.status !== 'Menunggu Persetujuan') return
     p.status = 'Ditolak'
     p.rejectReason = clean(reason)

@@ -1,7 +1,7 @@
 import { addDays, todayISO } from './format'
 import type { DB, Fundraiser, Program, Transaction, User } from './types'
 
-export const DB_VERSION = 5
+export const DB_VERSION = 6
 
 const PALETTES: [string, string][] = [
   ['#0E8A7C', '#7FD1C5'],
@@ -165,11 +165,6 @@ export function createSeed(): DB {
   // p06: draf yang baru berisi judul
   programs[5].description = ''
   programs[5].image = ''
-  // p12: program aktif yang perubahannya sedang menunggu persetujuan Admin
-  programs[11].pendingEdit = {
-    description: 'Program ini untuk membantu biaya pendidikan anak yatim dan dhuafa di Bogor, termasuk seragam, buku, dan biaya sekolah selama satu tahun.',
-    image: programs[11].image,
-  }
 
   return { version: DB_VERSION, users, fundraisers, programs, transactions: seedTransactions(programs), emails: [], resetTokens: [], session: null }
 }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-// Info & Clock tidak ada padanannya di Figma (tooltip/alert khusus prototipe), jadi tetap memakai lucide
-import { Info, Clock } from 'lucide-react'
+// Info tidak ada padanannya di Figma (tooltip khusus prototipe), jadi tetap memakai lucide
+import { Info } from 'lucide-react'
 import { StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
 import { ApprovalPanel } from '../components/Approval'
 import { Presence } from '../components/motion'
@@ -17,7 +17,8 @@ const DECIDED: ProgramStatus[] = ['Aktif', 'Selesai', 'Ditolak']
 function hasFunds(p: Program) { return p.status === 'Aktif' }
 function sisaWaktu(p: Program) {
   const s = statusOf(p)
-  if (p.status !== 'Aktif' || s === 'Selesai') return '-'
+  if (s === 'Selesai') return '0 Hari' // desain 30 Okt 2026
+  if (p.status !== 'Aktif') return '-'
   return `${daysLeft(p.endDate)} Hari`
 }
 // Angka bulat tanpa koma, dibulatkan ke bawah: 100% hanya tampil kalau target benar-benar tercapai (QA 28 Okt 2026)
@@ -172,15 +173,6 @@ function ProgramDrawer({ p, isAdmin, verified, fundraiserName, onClose }: { p: P
         <div className="sec-title">Deskripsi Program</div>
         <div className="desc-box">{p.description || <span className="muted">Belum ada deskripsi</span>}</div>
 
-        {p.pendingEdit && (
-          <div className="alert orange">
-            <div className="alert-title"><Clock size={16} /> Perubahan menunggu persetujuan</div>
-            Deskripsi baru: “{p.pendingEdit.description}”
-            {p.pendingEdit.target !== undefined && p.pendingEdit.target !== p.target && <div>Target baru: {rupiah(p.pendingEdit.target)}</div>}
-            {p.pendingEdit.endDate && p.pendingEdit.endDate !== p.endDate && <div>Tanggal Berakhir baru: {tanggal(p.pendingEdit.endDate)}</div>}
-          </div>
-        )}
-
         <div className="sec-title">Informasi Program</div>
         <dl className="kv">
           <dt>Judul Program</dt><dd>{p.title}</dd>
@@ -214,8 +206,8 @@ function ProgramDrawer({ p, isAdmin, verified, fundraiserName, onClose }: { p: P
               statusWord="persetujuan"
               approveConfirm="Program ini akan disetujui dan statusnya diperbarui. Apakah Anda yakin ingin melanjutkan?"
               rejectConfirm="Program ini akan ditolak, dan alasan penolakan akan disimpan sebagai catatan. Apakah Anda yakin ingin melanjutkan?"
-              onApprove={() => { approveProgram(p.id); toast(p.pendingEdit ? 'Perubahan program disetujui' : 'Program disetujui dan tampil ke donatur') }}
-              onReject={(r) => { rejectProgram(p.id, r); toast(p.pendingEdit ? 'Perubahan program ditolak' : 'Program ditolak') }}
+              onApprove={() => { approveProgram(p.id); toast('Program disetujui dan tampil ke donatur') }}
+              onReject={(r) => { rejectProgram(p.id, r); toast('Program ditolak') }}
             />
           </div>
         )}

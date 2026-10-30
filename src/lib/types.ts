@@ -43,13 +43,6 @@ export interface Fundraiser {
   reverify?: boolean
 }
 
-export interface ProgramEdit {
-  description: string
-  image: string
-  target?: number
-  endDate?: string
-}
-
 export interface Program {
   id: string
   fundraiserId: string
@@ -65,8 +58,6 @@ export interface Program {
   // "Tanggal Persetujuan" di desain: tanggal Admin menyetujui/menolak pengajuan
   decidedAt?: string
   rejectReason?: string
-  // Perubahan program Aktif yang menunggu persetujuan Admin (K-13: asumsi)
-  pendingEdit?: ProgramEdit
 }
 
 // Status transaksi mengikuti desain Hifi Transaksi (30 Okt 2026); PRD memakai "Pending" dan "Gagal/expired"

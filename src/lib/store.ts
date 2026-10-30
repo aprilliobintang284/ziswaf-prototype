@@ -10,8 +10,9 @@ function load(): DB {
     const raw = localStorage.getItem(KEY)
     if (raw) {
       const parsed = JSON.parse(raw) as DB
-      if (parsed.version === 3) return migrateV4(migrateV3(parsed))
-      if (parsed.version === 4) return migrateV4(parsed)
+      if (parsed.version === 3) return migrateV5(migrateV4(migrateV3(parsed)))
+      if (parsed.version === 4) return migrateV5(migrateV4(parsed))
+      if (parsed.version === 5) return migrateV5(parsed)
       if (parsed.version === DB_VERSION) return parsed
     }
   } catch {
@@ -34,6 +35,16 @@ function migrateV3(db: DB): DB {
 /** v4 → v5: menu Transaksi (desain Hifi 30 Okt 2026) → tambahkan transaksi dummy. Data & sesi tetap. */
 function migrateV4(db: DB): DB {
   db.transactions = seedTransactions(db.programs)
+  db.version = 5
+  return db
+}
+
+/** v5 → v6: perubahan program Aktif tidak lagi menunggu persetujuan (meeting 30 Okt 2026) → yang tertunda langsung diterapkan. */
+function migrateV5(db: DB): DB {
+  db.programs.forEach((p) => {
+    const old = p as Program & { pendingEdit?: Partial<Program> }
+    if (old.pendingEdit) { Object.assign(p, old.pendingEdit); delete old.pendingEdit }
+  })
   db.version = DB_VERSION
   return db
 }
@@ -104,7 +115,6 @@ export function netOf(p: Program): number {
 const ENDS: ProgramStatus[] = ['Aktif', 'Draf', 'Menunggu Persetujuan']
 
 export function statusOf(p: Program): ProgramStatus {
-  if (p.pendingEdit) return 'Menunggu Persetujuan'
   if (ENDS.includes(p.status) && p.endDate && daysLeft(p.endDate) < 0) return 'Selesai'
   return p.status
 }
