@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-// Info tidak ada padanannya di Figma (tooltip khusus prototipe), jadi tetap memakai lucide
-import { Info } from 'lucide-react'
 import { StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
 import { ApprovalPanel } from '../components/Approval'
 import { Presence } from '../components/motion'
@@ -150,10 +148,6 @@ export function ProgramPage() {
   )
 }
 
-function Tip({ text }: { text: string }) {
-  return <span title={text} style={{ display: 'inline-flex', verticalAlign: '-2px', marginLeft: 4, color: '#b0b0b0', cursor: 'help' }}><Info size={13} /></span>
-}
-
 function ProgramDrawer({ p, isAdmin, verified, fundraiserName, onClose }: { p: Program; isAdmin: boolean; verified: boolean; fundraiserName: string; onClose: () => void }) {
   const toast = useToast()
   const nav = useNavigate()
@@ -179,8 +173,9 @@ function ProgramDrawer({ p, isAdmin, verified, fundraiserName, onClose }: { p: P
           <dt>Fundraiser</dt><dd>{fundraiserName}</dd>
           <dt>Target Terkumpul</dt><dd>{p.target ? rupiah(p.target) : '-'}</dd>
           {live && <>
-            <dt>Total Terkumpul (Gross)<Tip text="Total donasi yang diterima untuk program ini" /></dt><dd>{rupiah(p.gross)}</dd>
-            <dt>Total Terkumpul (Net)<Tip text="Total donasi setelah dipotong fee 3%" /></dt><dd>{rupiah(netOf(p))}</dd>
+            {/* K-15 (31 Okt 2026): ikut desain, tanpa tooltip dan tanpa Total Dana Dicairkan */}
+            <dt>Total Terkumpul (Gross)</dt><dd>{rupiah(p.gross)}</dd>
+            <dt>Total Terkumpul (Net)</dt><dd>{rupiah(netOf(p))}</dd>
             <dt>Total Fee (3%)</dt><dd>{rupiah(feeOf(p))}</dd>
           </>}
           <dt>Persentase Tercapai</dt><dd>{persen(p)}</dd>

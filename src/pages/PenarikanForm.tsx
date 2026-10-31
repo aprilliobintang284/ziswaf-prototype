@@ -98,6 +98,7 @@ export function PenarikanFormPage() {
     note: errs.note,
   }
   const valid = !Object.values(errs).some(Boolean)
+  const empty = !v.program && !v.amount && !v.note.trim()
   const set = (k: Key, val: string) => setV((s) => ({ ...s, [k]: val }))
 
   const onAmountChange = (el: HTMLInputElement) => {
@@ -163,8 +164,8 @@ export function PenarikanFormPage() {
       </div>
 
       <div className="form-actions">
-        {/* Desain: Batal ikut nonaktif saat form kosong; di prototipe Batal selalu bisa dipakai untuk kembali (D-16) */}
-        <button className="btn btn-outline btn-wide" onClick={() => nav('/dashboard/penarikan')}>Batal</button>
+        {/* Desain (D-16, ikut desain 31 Okt 2026): Batal ikut nonaktif saat form kosong; kembali lewat panah di judul */}
+        <button className="btn btn-outline btn-wide" disabled={empty} onClick={() => nav('/dashboard/penarikan')}>Batal</button>
         <button className="btn btn-primary btn-wide" disabled={!valid} onClick={() => setConfirm(true)}>Ajukan Penarikan</button>
       </div>
 
