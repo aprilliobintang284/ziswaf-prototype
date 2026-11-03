@@ -31,6 +31,8 @@ export interface Fundraiser {
   address: string
   bankName: string
   withdrawAccount: string
+  /** Nama Pemilik Rekening Penarikan (field baru di desain Hifi 3 Nov 2026) */
+  accountName: string
   commodityAccount: string
   npwp: string
   doc: DocFile
@@ -39,8 +41,6 @@ export interface Fundraiser {
   verifiedAt?: string
   rejectedAt?: string
   rejectReason?: string
-  /** Menunggu Verifikasi karena fundraiser Terverifikasi mengedit datanya (K-39), bukan pendaftaran baru */
-  reverify?: boolean
 }
 
 export interface Program {
@@ -90,6 +90,7 @@ export interface Withdrawal {
   /** Rekening tujuan saat diajukan (default dari data registrasi fundraiser) */
   bankName: string
   account: string
+  accountName: string
   createdAt: string
   status: WithdrawalStatus
   /** "Tanggal Validasi" di desain: tanggal Admin menyetujui/menolak */

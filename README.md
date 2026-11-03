@@ -49,6 +49,7 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
 - **Pesan error di semua form** (K-36, desainer 30 Okt 2026): field yang dibiarkan kosong baru diberi error setelah ditinggalkan (pindah kolom); isian yang formatnya salah sudah diberi error saat mengetik. Form Program juga mengecek semua field saat tombol diklik. Cek email terdaftar dan nama program ganda baru jalan setelah field ditinggalkan.
 - **Masuk**: tombol nonaktif sampai email valid dan password terisi. Setelah gagal, kedua field merah dan tombol nonaktif sampai isian diubah.
 - **Daftar Akun** (2 langkah):
+  - Ada field **Nama Pemilik Rekening Penarikan** (desain 3 Nov 2026): wajib, huruf dan spasi; isian berangka memunculkan "Format nama tidak valid". Kategori berisi angka/simbol memunculkan "Format kategori salah".
   - "Berikut" aktif hanya jika semua valid, dokumen dipilih, dan pernyataan dicentang.
   - "Daftar" aktif hanya jika password memenuhi kriteria dan konfirmasinya cocok.
 - **Lupa Password / Atur Ulang Password**:
@@ -60,7 +61,12 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
 - **Fundraiser**:
   - Admin melihat daftar, detail, setujui/tolak (dengan alasan), dan Export Excel (.xlsx).
   - Fundraiser melihat data sendiri dengan tombol **Edit** rata kanan (nonaktif saat Menunggu Verifikasi), lalu form **Edit Fundraiser**.
-  - Simpan di Edit Fundraiser memunculkan pop-up **Konfirmasi Perubahan**; setelah "Ya", status kembali Menunggu Verifikasi (juga untuk akun Terverifikasi). Kolom Email tidak bisa diubah. Menambah spasi di awal/akhir saja tidak dihitung sebagai perubahan, jadi Simpan tetap nonaktif.
+  - Edit Fundraiser (desain 3 Nov 2026, judul "← Edit Fundraiser"):
+    - **Terverifikasi**: hanya Nomor Telepon dan Alamat yang bisa diubah; pop-up "Apakah Anda yakin ingin menyimpan perubahan data?" lalu langsung tersimpan, status tetap Terverifikasi (tanpa verifikasi ulang).
+    - **Ditolak**: semua field kecuali Email bisa diubah; pop-up "…mengajukan kembali untuk diverifikasi oleh admin?" lalu status kembali Menunggu Verifikasi.
+    - Kolom Email selalu terkunci. Menambah spasi di awal/akhir saja tidak dihitung sebagai perubahan, jadi Simpan tetap nonaktif.
+  - Detail dan export menampilkan Nama Pemilik Rekening Penarikan.
+  - Tampilan kosong list Admin: "Belum Ada Data Fundraiser" (tanpa Export).
 - **Program**:
   - Kartu Gross/Net/Fee 3% dan tabel status Draf / Menunggu Persetujuan / **Aktif** / Ditolak / **Selesai**.
   - Detail program dengan "Tanggal Persetujuan".
@@ -68,7 +74,7 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
   - Admin bisa menyetujui atau menolak program.
   - Nama program tidak boleh sama dengan program lain (beda huruf besar/kecil dan spasi berlebih tetap dianggap sama).
   - Export Excel (.xlsx) untuk Admin dan Fundraiser.
-- **Topbar**: ikon ☰ untuk menyembunyikan/menampilkan menu samping, dan menu pengguna (peran, nama, email, tombol "Keluar" dengan konfirmasi).
+- **Topbar**: ikon ☰ meringkas menu samping menjadi ikon saja dan melebarkannya lagi (desain 3 Nov 2026), dan menu pengguna (peran, nama, email, tombol "Keluar" dengan konfirmasi).
 - **Transaksi** (desain Hifi 30 Okt 2026):
   - Tabel ID Transaksi, Donatur, Program, Fundraiser, Nominal, Waktu transaksi, Status (Menunggu Pembayaran / Diproses / Berhasil / Gagal), Aksi; urutan terbaru di atas; Export .xlsx.
   - Panel Detail Transaksi berisi ID, Donatur, Email, Nomor Telepon, Program, Fundraiser, Nominal, Waktu, dan Status.
@@ -92,7 +98,9 @@ Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah
 
 - **Aturan umum (31 Okt 2026)**: kalau PRD dan desain Hifi berbeda, prototipe ikut desain karena desain sudah direview PM (Ringkasan Keputusan #29). Contoh: detail program tanpa tooltip dan tanpa Total Dana Dicairkan (K-15). Keputusan PM/QA yang tercatat (K-02, K-32, K-43, K-47) tetap dipakai.
 - **Penarikan (Desain vs PRD, 30 Okt 2026)**: status ikut Validasi PRD dan desain (Diajukan, Diterima, Ditolak), bukan "Menunggu Approval"/"Berhasil" di AC (D-11). Tombol Buat Pengajuan hanya untuk Fundraiser (D-12). Tombol Edit di detail Ditolak hanya untuk Fundraiser pemilik dan mengajukan ulang data yang sama (D-13). Dana yang dapat ditarik = Total Terkumpul (Net) − penarikan Diterima − penarikan yang masih Diajukan; nominal minimal lebih dari Rp0 (D-15). Catatan opsional maksimal 250 karakter, tombol Batal dan Ajukan Penarikan nonaktif saat form kosong (ikut desain), dan ada pop-up "Apakah Anda yakin ingin mengajukan penarikan dana ini?" (D-16).
-- **Label Nama Bank (desain 30 Okt 2026)**: semua halaman memakai "Nama Bank Rekening Penarikan" seperti Daftar Akun dan halaman Fundraiser Terverifikasi di Figma; Edit Fundraiser di Figma masih "Nama Bank" (D-21).
+- **Label Nama Bank**: semua halaman memakai "Nama Bank Rekening Penarikan" (seragam di Figma sejak 3 Nov 2026, D-21).
+- **Nama Pemilik Rekening Penarikan (desain 3 Nov 2026)**: aturan validasi belum diatur PRD (K-51); sementara wajib, huruf dan spasi, maksimal 100 karakter. Data lama diisi dengan Nama Fundraiser.
+- **Tampilan kosong (desain 3 Nov 2026)**: Fundraiser (Admin), Transaksi, dan Penarikan tanpa tabel, kartu, dan Export; Penarikan versi Fundraiser punya tombol Buat Pengajuan. Ilustrasinya sementara ikon lucide sampai bisa disalin dari Figma.
 
 - **Transaksi (Desain vs PRD, 30 Okt 2026)**: status mengikuti desain (Diproses, Gagal), padahal PRD memakai Pending dan Gagal/expired (D-07). Donatur anonim tampil "Anonim", dan Email/Nomor Telepon-nya "-" (D-08). Tampilan Fundraiser memakai desain Admin dengan data milik sendiri (D-09).
 
@@ -106,7 +114,7 @@ Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah
 - **K-13** (terjawab meeting 30 Okt, ikut desain Hifi) Draf bisa mengubah semua field. Ditolak, Aktif, dan Selesai bisa mengubah semua field kecuali Nama Program; form edit hanya punya tombol Batal dan Simpan dengan pop-up "Apakah Anda yakin untuk menyimpan perubahan ini?". Program Ditolak lalu Menunggu Persetujuan. Perubahan program Aktif dan Selesai langsung berlaku tanpa persetujuan Admin, dan program Selesai yang diperpanjang langsung Aktif kembali. Detail program Selesai menampilkan sisa waktu "0 Hari".
   - Draf/pengajuan yang menjadi Selesai karena tanggalnya lewat tidak bisa diedit (asumsi prototipe).
 - **K-16** (terjawab PM 28 Okt) Fee 3% dibulatkan ke atas ke rupiah penuh, dihitung per program (Rp10.001 → fee Rp301, Net Rp9.700); kartu Total Fee = jumlah fee tiap program. Persentase Tercapai tampil angka bulat, dibulatkan ke bawah (keputusan QA 28 Okt).
-- **K-23 & K-43** (terjawab PM 28 Okt) Fundraiser bisa mengedit data saat Ditolak atau Terverifikasi (Menunggu Verifikasi tidak bisa). Kolom Email terkunci di Edit Fundraiser.
+- **K-23 & K-43** (terjawab PM 28 Okt, diperbarui desain 3 Nov) Fundraiser bisa mengedit data saat Ditolak (semua field kecuali Email) atau Terverifikasi (hanya Nomor Telepon dan Alamat); Menunggu Verifikasi tidak bisa. Kolom Email terkunci.
 - **K-21** (terjawab 28 Okt) File export berformat Excel (.xlsx), sama seperti export di payment gateway. Teks disimpan sebagai sel teks, jadi nomor HP, rekening, dan NPWP tidak berubah dan isi yang diawali `=`, `+`, `-`, `@` tidak dibaca sebagai rumus.
 - **K-25** (terjawab PRD & PM 28 Okt) Nomor Izin Usaha maksimal 25 karakter, boleh huruf, angka, dan simbol (termasuk "/" dan "-", contoh 503/123/DPMPTSP/2026). Standar QA: spasi di tengah ditolak dan isian harus berisi huruf atau angka.
 - **K-45** (sebagian terjawab 28 Okt) Nama program tidak boleh sama dengan program lain mana pun, termasuk milik fundraiser lain dan program Selesai (cakupan seluruh platform masih asumsi).
@@ -117,9 +125,9 @@ Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah
   - **K-32** (terjawab 29 Okt) Lupa Password ikut PRD: pesannya selalu "Jika email terdaftar, tautan reset sudah dikirim", baik email terdaftar maupun tidak (desain akan disesuaikan). Login memakai satu pesan umum "Email atau password salah".
   - Kolom "Nama Fundraiser" di tabel Program hanya untuk Admin (AC View List). **K-20** (terjawab 29 Okt): Admin tidak membuat atau mengedit program, jadi tombol Buat Program Baru dan Edit tidak tampil untuk Admin.
 - **Baru (update desain 26 Okt 2026 malam)**:
-  - Ikon ☰ di topbar menyembunyikan/menampilkan sidebar (dikonfirmasi 28 Okt), dan kondisinya tetap sama setelah refresh (29 Okt). Dropdown menu pengguna tertutup dengan klik nama lagi, klik di luar, atau Esc. Kalau klik Keluar saat ada isian form yang belum disimpan (Buat/Edit Program, Edit Fundraiser), pop-up "Keluar" ikut memperingatkan bahwa data akan hilang (K-38, 29 Okt).
+  - Ikon ☰ di topbar meringkas sidebar menjadi ikon saja (desain 3 Nov; sebelumnya disembunyikan), dan kondisinya tetap sama setelah refresh (29 Okt). Dropdown menu pengguna tertutup dengan klik nama lagi, klik di luar, atau Esc. Kalau klik Keluar saat ada isian form yang belum disimpan (Buat/Edit Program, Edit Fundraiser), pop-up "Keluar" ikut memperingatkan bahwa data akan hilang (K-38, 29 Okt).
 - **Baru (update desain 27 Okt 2026)**:
-  - **K-39** (sebagian terjawab PM 28 Okt) Fundraiser Terverifikasi yang mengedit data kembali Menunggu Verifikasi. Programnya tetap tampil dan menerima donasi, dan buat/edit program, Transaksi, serta Penarikan tetap bisa dipakai selama verifikasi ulang. Kalau Admin menolak perubahannya, sementara akun menjadi Ditolak (belum dijawab PM).
+  - **K-39** (terjawab desain 3 Nov) Fundraiser Terverifikasi yang mengedit data tidak lagi diverifikasi ulang: hanya Nomor Telepon dan Alamat yang bisa diubah, jadi rekening tidak bisa diganti dan program, Transaksi, serta Penarikan tidak terpengaruh. Data lama yang masih "verifikasi ulang" otomatis dikembalikan ke Terverifikasi.
   - **K-40** Email status verifikasi dibedakan untuk disetujui dan ditolak (desain 30 Okt, email ditolak berisi alasan); tidak ada email setelah registrasi, mengikuti desain. Tautan cadangan di email reset memakai domain prototipe (di desain contohnya financeadmin.app).
 - **Baru (audit QA v6, 27 Okt 2026)**, belum diatur PRD:
   - Standar QA (tidak perlu konfirmasi PM): email dan semua field teks dibersihkan sebelum divalidasi dan disimpan: spasi/tab/baris baru di awal & akhir dibuang, non-breaking space jadi spasi biasa, karakter tak terlihat (zero-width space) dibuang. Batas minimal/maksimal dihitung setelahnya. Password tidak di-trim; No. HP tetap ikut PRD (spasi di awal/akhir = error).

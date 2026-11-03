@@ -3,7 +3,7 @@ import type { InputHTMLAttributes, ReactNode } from 'react'
 import { Field } from './ui'
 import type { DocFile } from '../lib/types'
 import {
-  validateCategory, validateDigits, validateDoc, validateEmail, validateFundraiserName, validateLetters, validateLicense,
+  validateAccountName, validateCategory, validateDigits, validateDoc, validateEmail, validateFundraiserName, validateLetters, validateLicense,
   validateNpwp, validatePhone, required,
 } from '../lib/validation'
 import { sniffType } from '../lib/export'
@@ -17,8 +17,9 @@ export interface FundraiserForm {
   businessField: string
   address: string
   bankName: string
-  commodityAccount: string
   withdrawAccount: string
+  accountName: string
+  commodityAccount: string
   npwp: string
 }
 
@@ -26,7 +27,7 @@ export type FormErrors = Partial<Record<keyof FundraiserForm | 'doc', string>>
 
 export const EMPTY_FORM: FundraiserForm = {
   email: '', category: '', phone: '', licenseNo: '', name: '', businessField: '', address: '',
-  bankName: '', commodityAccount: '', withdrawAccount: '', npwp: '',
+  bankName: '', withdrawAccount: '', accountName: '', commodityAccount: '', npwp: '',
 }
 
 export function validateFundraiserForm(v: FundraiserForm, doc: DocFile | null, docError: string | undefined): FormErrors {
@@ -41,6 +42,7 @@ export function validateFundraiserForm(v: FundraiserForm, doc: DocFile | null, d
     bankName: validateLetters(v.bankName, 'Nama Bank'),
     commodityAccount: validateDigits(v.commodityAccount, 'Nomor rekening dana komoditi', 'Nomor rekening tidak valid'),
     withdrawAccount: validateDigits(v.withdrawAccount, 'Nomor rekening penarikan', 'Format rekening tidak valid'),
+    accountName: validateAccountName(v.accountName),
     npwp: validateNpwp(v.npwp),
     doc: docError ?? validateDoc(doc),
   }
@@ -65,22 +67,23 @@ interface Props {
   onChange: (key: keyof FundraiserForm, value: string) => void
   onBlur?: (key: keyof FundraiserForm) => void
   emailExtra?: ReactNode
-  /** Edit Fundraiser: Email tidak bisa diganti (K-43, PM 28 Okt 2026) */
+  /** Edit Fundraiser: Email tidak bisa diganti (K-43, PM 28 Okt 2026; ada di desain 3 Nov 2026) */
   emailLocked?: boolean
+  /** Hanya field ini yang bisa diubah; lainnya terkunci (Edit Fundraiser Terverifikasi, desain 3 Nov 2026) */
+  editable?: (keyof FundraiserForm)[]
 }
 
-/** Urutan field mengikuti desain Hifi terbaru (Daftar Akun & Edit Fundraiser). */
-export function FundraiserFields({ values, errors, onChange, onBlur, emailExtra, emailLocked }: Props) {
+/** Urutan field mengikuti desain Hifi terbaru (Daftar Akun & Edit Fundraiser, update 3 Nov 2026). */
+export function FundraiserFields({ values, errors, onChange, onBlur, emailExtra, emailLocked, editable }: Props) {
+  const locked = (key: keyof FundraiserForm) => (key === 'email' && !!emailLocked) || (!!editable && !editable.includes(key))
   const input = (key: keyof FundraiserForm, placeholder: string, extra: Partial<InputHTMLAttributes<HTMLInputElement>> = {}) => (
-    <input className="input" placeholder={placeholder} value={values[key]}
+    <input className="input" placeholder={placeholder} value={values[key]} disabled={locked(key)} readOnly={locked(key)}
       onChange={(e) => onChange(key, e.target.value)} onBlur={() => onBlur?.(key)} {...extra} />
   )
   return (
     <div className="grid-2">
       <Field label="Email" required error={errors.email}>
-        {input('email', 'Contoh: kontak@perusahaan.co.id', emailLocked
-          ? { disabled: true, readOnly: true, title: 'Email tidak bisa diubah' }
-          : { autoComplete: 'email' })}
+        {input('email', 'Contoh: kontak@perusahaan.co.id', emailLocked ? { title: 'Email tidak bisa diubah' } : { autoComplete: 'email' })}
         {emailExtra}
       </Field>
       <Field label="Kategori Fundraiser" required error={errors.category}>{input('category', 'Contoh: Yayasan, Individu, Komunitas')}</Field>
@@ -89,21 +92,22 @@ export function FundraiserFields({ values, errors, onChange, onBlur, emailExtra,
       <Field label="Bidang Usaha" required error={errors.businessField}>{input('businessField', 'Contoh: Lembaga Amil Zakat')}</Field>
       <Field label="Nomor Izin Usaha" required error={errors.licenseNo}>{input('licenseNo', 'Masukkan nomor izin usaha')}</Field>
       <Field label="Alamat" required error={errors.address} className="span-2">{input('address', 'Masukkan alamat resmi fundraiser')}</Field>
-      {/* Desain 30 Okt 2026: label "Nama Bank Rekening Penarikan" (Edit Fundraiser di Figma masih "Nama Bank", D-21) */}
+      {/* Label "Nama Bank Rekening Penarikan" seragam di semua frame sejak desain 3 Nov 2026 (D-21) */}
       <Field label="Nama Bank Rekening Penarikan" required error={errors.bankName}>{input('bankName', 'Contoh: BNI, BRI, BCA')}</Field>
       <Field label="Nomor Rekening Penarikan" required error={errors.withdrawAccount}>{input('withdrawAccount', 'Masukkan nomor rekening penarikan', { inputMode: 'numeric' })}</Field>
+      <Field label="Nama Pemilik Rekening Penarikan" required error={errors.accountName}>{input('accountName', 'Masukkan nama pemilik rekening')}</Field>
       <Field label="Nomor Rekening Dana Komoditi" required error={errors.commodityAccount}>{input('commodityAccount', 'Masukkan nomor rekening Artha Graha', { inputMode: 'numeric' })}</Field>
-      <Field label="Nomor Wajib Pajak (NPWP)" required error={errors.npwp}>{input('npwp', 'Masukkan nomor wajib pajak', { inputMode: 'numeric' })}</Field>
+      <Field label="Nomor Wajib Pajak (NPWP)" required error={errors.npwp} className="span-2">{input('npwp', 'Masukkan nomor wajib pajak', { inputMode: 'numeric' })}</Field>
     </div>
   )
 }
 
-export function DocField({ doc, error, onDoc }: { doc: DocFile | null; error?: string; onDoc: (file: File | null) => void }) {
+export function DocField({ doc, error, onDoc, disabled }: { doc: DocFile | null; error?: string; onDoc: (file: File | null) => void; disabled?: boolean }) {
   const fileRef = useRef<HTMLInputElement>(null)
   return (
     <Field label="Dokumen Izin Usaha" required error={error}>
       <div className="file-input">
-        <button type="button" className="file-btn" onClick={() => fileRef.current?.click()}>Pilih Dokumen</button>
+        <button type="button" className="file-btn" disabled={disabled} onClick={() => fileRef.current?.click()}>Pilih Dokumen</button>
         <span className={'file-name' + (doc ? ' chosen' : '')}>
           {doc ? doc.name : 'Format: PDF, JPG, JPEG, atau PNG (Maks. 5 MB)'}
         </span>

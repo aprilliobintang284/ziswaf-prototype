@@ -66,6 +66,18 @@ export function PasswordCriteria({ value }: { value: string }) {
   )
 }
 
+// ---------------- Tampilan kosong (desain Hifi 3 Nov 2026) ----------------
+export function EmptyState({ art, title, text, children }: { art: ReactNode; title: string; text: string; children?: ReactNode }) {
+  return (
+    <div className="card empty compact">
+      <span className="empty-art" aria-hidden="true">{art}</span>
+      <div className="empty-title">{title}</div>
+      <p className="empty-text">{text}</p>
+      {children}
+    </div>
+  )
+}
+
 // ---------------- Badge ----------------
 type BadgeStatus = FundraiserStatus | ProgramStatus | TransactionStatus | WithdrawalStatus
 

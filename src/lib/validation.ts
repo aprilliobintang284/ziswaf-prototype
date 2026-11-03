@@ -48,7 +48,7 @@ export function validateCategory(raw: string): string | undefined {
   // Spasi diizinkan (standar QA), K-06: teks bebas (PM 27 Okt 2026)
   const v = clean(raw)
   if (!v) return 'Kategori tidak boleh kosong'
-  if (!LETTERS_SPACES.test(v)) return 'Kategori fundraiser hanya boleh berisi huruf'
+  if (!LETTERS_SPACES.test(v)) return 'Format kategori salah' // teks error desain 3 Nov 2026
   if (v.length < 5) return 'Kategori fundraiser minimal 5 karakter'
   if (v.length > 20) return 'Kategori fundraiser maksimal 20 karakter'
   return undefined
@@ -60,6 +60,17 @@ export function validateFundraiserName(raw: string): string | undefined {
   if (!NAME_RE.test(v)) return 'Nama fundraiser hanya boleh berisi huruf, spasi, dan angka'
   if (v.length < 5) return 'Nama fundraiser minimal 5 karakter'
   if (v.length > 100) return 'Nama fundraiser maksimal 100 karakter'
+  return undefined
+}
+
+/**
+ * Nama Pemilik Rekening Penarikan (desain 3 Nov 2026): wajib, error “Format nama tidak valid” untuk angka.
+ * Aturan lain belum diatur PRD (K-51); sementara huruf dan spasi, maksimal 100 karakter seperti Nama Fundraiser.
+ */
+export function validateAccountName(raw: string): string | undefined {
+  const v = clean(raw)
+  if (!v) return 'Nama pemilik rekening wajib diisi'
+  if (!LETTERS_SPACES.test(v) || v.length > 100) return 'Format nama tidak valid'
   return undefined
 }
 

@@ -1,7 +1,7 @@
 import { addDays, todayISO } from './format'
 import type { DB, Fundraiser, Program, Transaction, User, Withdrawal } from './types'
 
-export const DB_VERSION = 7
+export const DB_VERSION = 8
 
 const PALETTES: [string, string][] = [
   ['#0E8A7C', '#7FD1C5'],
@@ -36,6 +36,7 @@ function fr(
   const t = todayISO()
   const base: Fundraiser = {
     id, name, email, category, status,
+    accountName: name,
     phone: '081234567890',
     businessField: 'Pengelolaan Zakat dan Dana Sosial',
     licenseNo: 'IZ2026' + id.replace(/\D/g, '').padStart(6, '0'),
@@ -151,7 +152,7 @@ export function seedWithdrawals(programs: Program[], fundraisers: Fundraiser[]):
     if (!p || !f || p.status !== 'Aktif') return []
     const w: Withdrawal = {
       id: 'WD-' + String(i + 1).padStart(3, '0'), programId: p.id, fundraiserId: f.id, amount, note,
-      bankName: f.bankName, account: f.withdrawAccount, createdAt: addDays(t, -ago) + 'T09:30:00', status,
+      bankName: f.bankName, account: f.withdrawAccount, accountName: f.accountName, createdAt: addDays(t, -ago) + 'T09:30:00', status,
     }
     if (status !== 'Diajukan') w.decidedAt = addDays(t, -ago + 1) + 'T11:00:00'
     if (status === 'Ditolak') w.rejectReason = 'Permintaan penarikan dana terindikasi duplikat'

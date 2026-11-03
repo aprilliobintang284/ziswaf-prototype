@@ -10,7 +10,7 @@ export function Logo({ small = false }: { small?: boolean }) {
   return (
     <span className={'logo' + (small ? ' sm' : '')}>
       <LogoIcon />
-      Ziswaf
+      <span className="logo-text">Ziswaf</span>
     </span>
   )
 }

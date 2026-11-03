@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { DocField, FundraiserFields, checkDocFile, hasErrors, validateFundraiserForm } from '../components/FundraiserFields'
 import type { FormErrors, FundraiserForm } from '../components/FundraiserFields'
-import { ConfirmModal, StatusBadge, useToast } from '../components/ui'
+import { ConfirmModal, useToast } from '../components/ui'
+import { Icon } from '../components/icons'
 import { Presence } from '../components/motion'
 import { useDB } from '../lib/store'
 import { useMarkUnsaved } from '../lib/unsaved'
@@ -10,7 +11,14 @@ import { updateFundraiserData } from '../lib/actions'
 import { clean, shownError } from '../lib/validation'
 import type { DocFile } from '../lib/types'
 
-/** Edit Fundraiser — mengikuti desain Hifi (bisa diakses saat status Terverifikasi atau Ditolak). */
+// Desain 3 Nov 2026 (Skenario 3): fundraiser Terverifikasi hanya bisa mengubah Nomor Telepon dan Alamat
+const VERIFIED_EDITABLE: (keyof FundraiserForm)[] = ['phone', 'address']
+
+/**
+ * Edit Fundraiser — desain Hifi 3 Nov 2026.
+ * - Terverifikasi: hanya Nomor Telepon dan Alamat; langsung tersimpan tanpa verifikasi ulang (status tetap Terverifikasi).
+ * - Ditolak: semua field kecuali Email (K-43); setelah disimpan diajukan ulang dan kembali Menunggu Verifikasi.
+ */
 export function FundraiserEditPage() {
   const db = useDB()
   const nav = useNavigate()
@@ -19,7 +27,8 @@ export function FundraiserEditPage() {
   const f = db.fundraisers.find((x) => x.id === user.fundraiserId)
   const initial = useMemo<FundraiserForm | null>(() => f ? {
     email: f.email, category: f.category, phone: f.phone, licenseNo: f.licenseNo, name: f.name, businessField: f.businessField,
-    address: f.address, bankName: f.bankName, commodityAccount: f.commodityAccount, withdrawAccount: f.withdrawAccount, npwp: f.npwp,
+    address: f.address, bankName: f.bankName, withdrawAccount: f.withdrawAccount, accountName: f.accountName,
+    commodityAccount: f.commodityAccount, npwp: f.npwp,
   } : null, [f])
   const [values, setValues] = useState<FundraiserForm | null>(initial)
   const [doc, setDoc] = useState<DocFile | null>(f?.doc ?? null)
@@ -34,40 +43,41 @@ export function FundraiserEditPage() {
     return <Navigate to="/dashboard/fundraiser" replace />
   }
 
-  // K-36: field yang dikosongkan diberi error setelah ditinggalkan; format salah langsung ditandai saat mengetik
-  const errors = validateFundraiserForm(values, doc, docError)
-  const shown: FormErrors = { doc: errors.doc }
-  for (const k of Object.keys(values) as (keyof FundraiserForm)[]) shown[k] = shownError(errors[k], values[k], touched[k])
+  const verified = f.status === 'Terverifikasi'
+  const keys = verified ? VERIFIED_EDITABLE : (Object.keys(values) as (keyof FundraiserForm)[])
+  // K-36: field yang dikosongkan diberi error setelah ditinggalkan; format salah langsung ditandai saat mengetik.
+  // Akun Terverifikasi hanya dicek di field yang bisa diubah, supaya data lama yang terkunci tidak menghalangi simpan.
+  const all = validateFundraiserForm(values, doc, docError)
+  const errors: FormErrors = verified ? { phone: all.phone, address: all.address } : all
+  const shown: FormErrors = verified ? {} : { doc: all.doc }
+  for (const k of keys) shown[k] = shownError(errors[k], values[k], touched[k])
   // Hanya menambah spasi di awal/akhir tidak dihitung sebagai perubahan (spasi dibuang saat disimpan)
-  const same = (Object.keys(values) as (keyof FundraiserForm)[]).every((k) => clean(values[k]) === clean(initial![k]))
-  const changed = !same || docChanged
+  const same = keys.every((k) => clean(values[k]) === clean(initial![k]))
+  const changed = !same || (!verified && docChanged)
   const canSave = changed && !hasErrors(errors)
 
-  // Desain 27 Okt: setiap simpan perubahan (Ditolak maupun Terverifikasi) diajukan ulang → Menunggu Verifikasi
   const save = () => {
     setConfirm(false)
     updateFundraiserData(f.id, values, doc!)
-    toast('Data berhasil disimpan dan diajukan ulang untuk verifikasi')
+    toast(verified ? 'Perubahan data berhasil disimpan' : 'Data berhasil disimpan dan diajukan ulang untuk verifikasi')
     nav('/dashboard/fundraiser')
   }
 
   return (
     <>
-      <div className="page-head"><h1 className="page-title">Fundraiser</h1></div>
+      <div className="page-head">
+        <h1 className="page-title">
+          <button className="back" onClick={() => nav('/dashboard/fundraiser')} aria-label="Kembali"><Icon name="back-arrow" size={26} tint /></button>
+          Edit Fundraiser
+        </h1>
+      </div>
       <div className="card detail-card">
-        <div className="hero">
-          <div className="hero-row">
-            <div className="hero-title">Edit Fundraiser</div>
-            {/* Badge status hanya tampil saat Ditolak (desain 27 Okt) */}
-            {f.status === 'Ditolak' && <StatusBadge status={f.status} />}
-          </div>
-        </div>
         <div className="sec-title">Informasi Fundraiser</div>
-        <FundraiserFields values={values} errors={shown} emailLocked
+        <FundraiserFields values={values} errors={shown} emailLocked editable={verified ? VERIFIED_EDITABLE : undefined}
           onChange={(k, v) => setValues((s) => s && (k === 'email' ? s : { ...s, [k]: v }))}
           onBlur={(k) => setTouched((t) => (t[k] ? t : { ...t, [k]: true }))} />
         <div className="sec-title" style={{ marginTop: 22 }}>Dokumen Pendukung</div>
-        <DocField doc={doc} error={shown.doc} onDoc={async (file) => {
+        <DocField doc={doc} error={shown.doc} disabled={verified} onDoc={async (file) => {
           if (!file) return
           setDocError(await checkDocFile(file))
           setDoc({ name: file.name, size: file.size, type: file.type })
@@ -79,7 +89,8 @@ export function FundraiserEditPage() {
       </div>
       <Presence show={confirm}>{confirm && (
         <ConfirmModal title="Konfirmasi Perubahan"
-          text="Apakah Anda yakin ingin menyimpan perubahan data dan mengajukan kembali untuk diverifikasi oleh admin?"
+          text={verified ? 'Apakah Anda yakin ingin menyimpan perubahan data?'
+            : 'Apakah Anda yakin ingin menyimpan perubahan data dan mengajukan kembali untuk diverifikasi oleh admin?'}
           onNo={() => setConfirm(false)} onYes={save} />
       )}</Presence>
     </>

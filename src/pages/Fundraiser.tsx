@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
+// Ilustrasi tampilan kosong belum bisa disalin dari Figma (perlu login Figma); sementara memakai lucide
+import { Contact } from 'lucide-react'
+import { EmptyState, StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
 import { Icon } from '../components/icons'
 import { ApprovalPanel } from '../components/Approval'
 import { Presence } from '../components/motion'
@@ -10,14 +12,17 @@ import { fileSize, tanggal } from '../lib/format'
 import { downloadXlsx } from '../lib/xlsx'
 import type { Fundraiser } from '../lib/types'
 
+// Nama file berasal dari isian pendaftar, jadi di-escape supaya tidak bisa menyisipkan HTML/skrip ke halaman pratinjau
+const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
+
 function openDocPreview(f: Fundraiser) {
   const w = window.open('', '_blank')
   if (!w) return
   w.document.title = f.doc.name
   w.document.body.innerHTML = `<div style="font-family:Inter,Arial,sans-serif;padding:40px;color:#333">
-    <h2 style="margin:0 0 8px">${f.doc.name}</h2>
+    <h2 style="margin:0 0 8px">${esc(f.doc.name)}</h2>
     <p style="color:#888;margin:0 0 24px">${fileSize(f.doc.size)} · Pratinjau simulasi (prototipe tidak menyimpan file asli)</p>
-    <div style="border:2px dashed #ccc;border-radius:12px;padding:60px;text-align:center;color:#999">Dokumen izin usaha milik <b>${f.name}</b></div></div>`
+    <div style="border:2px dashed #ccc;border-radius:12px;padding:60px;text-align:center;color:#999">Dokumen izin usaha milik <b>${esc(f.name)}</b></div></div>`
 }
 
 function FundraiserInfo({ f, programCount }: { f: Fundraiser; programCount: number }) {
@@ -40,6 +45,7 @@ function FundraiserInfo({ f, programCount }: { f: Fundraiser; programCount: numb
         <dt>Alamat</dt><dd>{f.address}</dd>
         <dt>Nama Bank Rekening Penarikan</dt><dd>{f.bankName}</dd>
         <dt>Nomor Rekening Penarikan</dt><dd>{f.withdrawAccount}</dd>
+        <dt>Nama Pemilik Rekening Penarikan</dt><dd>{f.accountName}</dd>
         <dt>Nomor Rekening Dana Komoditi</dt><dd>{f.commodityAccount}</dd>
         <dt>Nomor Wajib Pajak (NPWP)</dt><dd>{f.npwp}</dd>
         <dt>Tanggal Daftar</dt><dd>{tanggal(f.registeredAt)}</dd>
@@ -113,10 +119,21 @@ function FundraiserList() {
   // Nomor HP, rekening, dan NPWP tetap teks supaya angka 0 di depan dan digit panjang tidak berubah
   const exportXlsx = () => {
     downloadXlsx('fundraiser.xlsx', 'Fundraiser',
-      ['No', 'Nama', 'Email', 'Kategori', 'Tanggal Daftar', 'Status Verifikasi', 'Jumlah Program', 'Nomor HP', 'Nama Bank Rekening Penarikan', 'Nomor Rekening Penarikan', 'Nomor Rekening Dana Komoditi', 'NPWP'],
+      ['No', 'Nama', 'Email', 'Kategori', 'Tanggal Daftar', 'Status Verifikasi', 'Jumlah Program', 'Nomor HP', 'Nama Bank Rekening Penarikan', 'Nomor Rekening Penarikan', 'Nama Pemilik Rekening Penarikan', 'Nomor Rekening Dana Komoditi', 'NPWP'],
       rows.map((f, i) => [i + 1, f.name, f.email, f.category, tanggal(f.registeredAt), f.status,
-        f.status === 'Terverifikasi' ? counts.get(f.id) ?? 0 : '-', f.phone, f.bankName, f.withdrawAccount, f.commodityAccount, f.npwp]))
+        f.status === 'Terverifikasi' ? counts.get(f.id) ?? 0 : '-', f.phone, f.bankName, f.withdrawAccount, f.accountName, f.commodityAccount, f.npwp]))
     toast('File fundraiser.xlsx diunduh')
+  }
+
+  // Desain 3 Nov 2026 (1004:19892): tampilan kosong tanpa tabel dan tanpa Export
+  if (rows.length === 0) {
+    return (
+      <>
+        <div className="page-head"><h1 className="page-title">Fundraiser</h1></div>
+        <EmptyState art={<Contact size={40} />} title="Belum Ada Data Fundraiser"
+          text="Belum ada data fundraiser yang tersedia. Data yang masuk akan ditampilkan di sini." />
+      </>
+    )
   }
 
   return (
@@ -140,7 +157,6 @@ function FundraiserList() {
                   <td><button className="icon-btn view" aria-label={`Lihat detail ${f.name}`} onClick={() => setParams({ detail: f.id })}><Icon name="action-eye" /></button></td>
                 </tr>
               ))}
-              {rows.length === 0 && <tr><td colSpan={8} className="tbl-empty">Belum ada fundraiser</td></tr>}
             </tbody>
           </table>
         </div>

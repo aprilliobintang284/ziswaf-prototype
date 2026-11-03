@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
+// Ilustrasi tampilan kosong sementara memakai lucide (belum bisa disalin dari Figma)
+import { ReceiptText } from 'lucide-react'
+import { EmptyState, StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
 import { Icon } from '../components/icons'
 import { Presence } from '../components/motion'
 import { fundraiserActive, useDB } from '../lib/store'
@@ -59,6 +61,17 @@ export function TransaksiPage() {
     toast('File transaksi.xlsx diunduh')
   }
 
+  // Desain 3 Nov 2026 (1011:35382): tampilan kosong tanpa tabel dan tanpa Export
+  if (rows.length === 0) {
+    return (
+      <>
+        <div className="page-head"><h1 className="page-title">Transaksi</h1></div>
+        <EmptyState art={<ReceiptText size={40} />} title="Belum Ada Transaksi"
+          text="Belum ada transaksi yang tercatat. Data transaksi akan ditampilkan di sini." />
+      </>
+    )
+  }
+
   return (
     <>
       <div className="page-head"><h1 className="page-title">Transaksi</h1></div>
@@ -80,7 +93,6 @@ export function TransaksiPage() {
                   <td><button className="icon-btn view" aria-label={`Lihat detail ${t.id}`} onClick={() => setParams({ detail: t.id })}><Icon name="action-eye" /></button></td>
                 </tr>
               ))}
-              {rows.length === 0 && <tr><td colSpan={8} className="tbl-empty">Belum ada transaksi</td></tr>}
             </tbody>
           </table>
         </div>

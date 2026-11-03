@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 // Ikon kartu Frekuensi/Total Pencairan belum bisa disalin dari Figma (perlu login Figma); sementara memakai lucide
-import { ArrowLeftRight, Banknote } from 'lucide-react'
-import { StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
+import { ArrowLeftRight, Banknote, Wallet } from 'lucide-react'
+import { EmptyState, StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
 import { ApprovalPanel } from '../components/Approval'
 import { Icon } from '../components/icons'
 import { Presence } from '../components/motion'
@@ -59,18 +59,29 @@ export function PenarikanPage() {
   // Export tidak ada di PRD Withdraw, tetapi ada di desain (Desain vs PRD D-14); format .xlsx seperti modul lain
   const exportXlsx = () => {
     downloadXlsx('penarikan.xlsx', 'Penarikan',
-      ['ID Penarikan', 'Fundraiser', 'Program', 'Nominal', 'Nama Bank', 'Nomor Rekening Penarikan', 'Tanggal Diajukan', 'Status', 'Tanggal Validasi', 'Alasan Penolakan'],
-      rows.map((w) => [w.id, frName(w.fundraiserId), progName(w.programId), w.amount, w.bankName, w.account, tanggal(w.createdAt), w.status, w.decidedAt ? tanggal(w.decidedAt) : '-', w.rejectReason ?? '-']))
+      ['ID Penarikan', 'Fundraiser', 'Program', 'Nominal', 'Nama Bank Rekening Penarikan', 'Nomor Rekening Penarikan', 'Nama Pemilik Rekening Penarikan', 'Tanggal Diajukan', 'Status', 'Tanggal Validasi', 'Alasan Penolakan'],
+      rows.map((w) => [w.id, frName(w.fundraiserId), progName(w.programId), w.amount, w.bankName, w.account, w.accountName, tanggal(w.createdAt), w.status, w.decidedAt ? tanggal(w.decidedAt) : '-', w.rejectReason ?? '-']))
     toast('File penarikan.xlsx diunduh')
   }
 
-  const cols = isAdmin ? 7 : 6
+  const createBtn = !isAdmin && (
+    <button className="btn btn-primary btn-sm" onClick={() => nav('/dashboard/penarikan/ajukan')}>Buat Pengajuan <Icon name="plus" tint /></button>
+  )
+  // Desain 3 Nov 2026 (1011:35530): tampilan kosong tanpa kartu, tabel, dan Export; tombol Buat Pengajuan tetap
+  // hanya untuk Fundraiser (frame tersebut memakai topbar Admin, D-12)
+  if (rows.length === 0) {
+    return (
+      <>
+        <div className="page-head"><h1 className="page-title">Penarikan</h1>{createBtn}</div>
+        <EmptyState art={<Wallet size={40} />} title="Belum Ada Penarikan Dana"
+          text="Belum ada pengajuan penarikan dana. Data pengajuan akan ditampilkan di sini.">{createBtn}</EmptyState>
+      </>
+    )
+  }
+
   return (
     <>
-      <div className="page-head">
-        <h1 className="page-title">Penarikan</h1>
-        {!isAdmin && <button className="btn btn-primary btn-sm" onClick={() => nav('/dashboard/penarikan/ajukan')}>Buat Pengajuan <Icon name="plus" tint /></button>}
-      </div>
+      <div className="page-head"><h1 className="page-title">Penarikan</h1>{createBtn}</div>
       <div className="stats two">
         <div className="stat net"><div className="stat-head"><span className="stat-ic blue"><ArrowLeftRight size={16} /></span>Frekuensi Pencairan</div><div className="stat-value">{done.length.toLocaleString('id-ID')}</div></div>
         <div className="stat fee"><div className="stat-head"><span className="stat-ic green"><Banknote size={16} /></span>Total Pencairan</div><div className="stat-value">{rupiah(total)}</div></div>
@@ -92,7 +103,6 @@ export function PenarikanPage() {
                   <td><button className="icon-btn view" aria-label={`Lihat detail ${w.id}`} onClick={() => setParams({ detail: w.id })}><Icon name="action-eye" /></button></td>
                 </tr>
               ))}
-              {rows.length === 0 && <tr><td colSpan={cols} className="tbl-empty">Belum ada pengajuan penarikan</td></tr>}
             </tbody>
           </table>
         </div>
@@ -121,8 +131,9 @@ function PenarikanDrawer({ w, isAdmin, fundraiserName, programName, onClose }: {
           <dt>Fundraiser</dt><dd>{fundraiserName}</dd>
           <dt>Program</dt><dd>{programName}</dd>
           <dt>Nominal</dt><dd>{rupiah(w.amount)}</dd>
-          <dt>Nama Bank</dt><dd>{w.bankName}</dd>
+          <dt>Nama Bank Rekening Penarikan</dt><dd>{w.bankName}</dd>
           <dt>Nomor Rekening Penarikan</dt><dd>{w.account}</dd>
+          <dt>Nama Pemilik Rekening Penarikan</dt><dd>{w.accountName}</dd>
           <dt>Tanggal Diajukan</dt><dd>{tanggal(w.createdAt)}</dd>
           <dt>Status Penarikan</dt><dd><StatusBadge status={w.status} /></dd>
           {w.decidedAt && <><dt>Tanggal Validasi</dt><dd>{tanggal(w.decidedAt)}</dd></>}

@@ -10,10 +10,11 @@ function load(): DB {
     const raw = localStorage.getItem(KEY)
     if (raw) {
       const parsed = JSON.parse(raw) as DB
-      if (parsed.version === 3) return migrateV6(migrateV5(migrateV4(migrateV3(parsed))))
-      if (parsed.version === 4) return migrateV6(migrateV5(migrateV4(parsed)))
-      if (parsed.version === 5) return migrateV6(migrateV5(parsed))
-      if (parsed.version === 6) return migrateV6(parsed)
+      if (parsed.version === 3) return migrateV7(migrateV6(migrateV5(migrateV4(migrateV3(parsed)))))
+      if (parsed.version === 4) return migrateV7(migrateV6(migrateV5(migrateV4(parsed))))
+      if (parsed.version === 5) return migrateV7(migrateV6(migrateV5(parsed)))
+      if (parsed.version === 6) return migrateV7(migrateV6(parsed))
+      if (parsed.version === 7) return migrateV7(parsed)
       if (parsed.version === DB_VERSION) return parsed
     }
   } catch {
@@ -52,7 +53,29 @@ function migrateV5(db: DB): DB {
 
 /** v6 → v7: menu Penarikan (desain Hifi 30 Okt 2026) → tambahkan penarikan dummy. Data & sesi tetap. */
 function migrateV6(db: DB): DB {
+  db.fundraisers.forEach((f) => { f.accountName ??= f.name })
   db.withdrawals = seedWithdrawals(db.programs, db.fundraisers)
+  db.version = 7
+  return db
+}
+
+/**
+ * v7 → v8 (desain 3 Nov 2026): field Nama Pemilik Rekening Penarikan, dan akun Terverifikasi tidak lagi
+ * diverifikasi ulang setelah mengedit data → akun yang sedang “verifikasi ulang” dikembalikan ke Terverifikasi.
+ */
+function migrateV7(db: DB): DB {
+  db.fundraisers.forEach((f) => {
+    const old = f as Fundraiser & { reverify?: boolean }
+    f.accountName ??= f.name
+    if (old.reverify) {
+      f.status = 'Terverifikasi'
+      f.verifiedAt ??= new Date().toISOString()
+    }
+    delete old.reverify
+  })
+  db.withdrawals.forEach((w) => {
+    w.accountName ??= db.fundraisers.find((f) => f.id === w.fundraiserId)?.accountName ?? ''
+  })
   db.version = DB_VERSION
   return db
 }
@@ -128,11 +151,11 @@ export function statusOf(p: Program): ProgramStatus {
 }
 
 /**
- * Fundraiser boleh memakai fitur program, Transaksi, dan Penarikan: Terverifikasi, atau sedang
- * diverifikasi ulang setelah mengedit data (K-39, PM 28 Okt 2026: fitur tidak dikunci selama menunggu).
+ * Fundraiser boleh memakai fitur program, Transaksi, dan Penarikan hanya saat Terverifikasi. Sejak desain 3 Nov 2026
+ * akun Terverifikasi yang mengedit data (Nomor Telepon/Alamat) tetap Terverifikasi, jadi tidak ada lagi verifikasi ulang.
  */
 export function fundraiserActive(f: Fundraiser | null | undefined): f is Fundraiser {
-  return !!f && (f.status === 'Terverifikasi' || (f.status === 'Menunggu Verifikasi' && !!f.reverify))
+  return !!f && f.status === 'Terverifikasi'
 }
 
 // Desain Hifi terbaru: pensil/Edit hanya nonaktif untuk "Menunggu Persetujuan" (Selesai bisa diedit, PRD 27 Okt 2026)

@@ -149,9 +149,12 @@ a { color: inherit; }
 .nav a.locked { color: #a8a8a8; cursor: not-allowed; }
 .nav a.locked:hover { background: none; }
 .main { min-width: 0; display: flex; flex-direction: column; }
-.dash.side-hidden { grid-template-columns: 0px 1fr; }
-.dash.side-hidden .side { visibility: hidden; opacity: 0; transform: translateX(-24px);
-  transition: opacity .18s var(--ease-in), transform .28s var(--ease-std), visibility 0s linear .28s; }
+/* Desain 3 Nov 2026: ☰ meringkas sidebar menjadi ikon saja */
+.dash.side-collapsed { grid-template-columns: 80px 1fr; }
+.dash.side-collapsed .side { padding: 28px 16px; }
+.dash.side-collapsed .side > * { width: 48px; }
+.dash.side-collapsed .logo-text, .dash.side-collapsed .nav-label { display: none; }
+.dash.side-collapsed .nav a { padding: 0; justify-content: center; }
 .topbar { height: 80px; background: var(--bg); box-shadow: 0 2px 8px rgba(0,0,0,.05); display: flex; align-items: center; justify-content: space-between; padding: 0 28px 0 18px; position: sticky; top: 0; z-index: 20; }
 .menu-toggle { background: none; border: 0; padding: 6px; border-radius: 6px; cursor: pointer; color: var(--text); display: flex; transition: background .15s, transform .12s var(--ease-std); }
 .menu-toggle:hover { background: #eef3f2; }
@@ -396,3 +399,10 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
 .combo-opt { display: block; width: 100%; text-align: left; background: none; border: 0; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 14px; color: var(--text); }
 .combo-opt:hover, .combo-opt[aria-selected="true"] { background: var(--primary-soft); }
 .combo-empty { padding: 8px 10px; color: var(--muted); font-size: 13px; }
+
+/* Tampilan kosong (desain Hifi 3 Nov 2026). Ilustrasi sementara memakai ikon lucide sampai bisa disalin dari Figma. */
+.empty-art { width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center; color: #8a8a8a;
+  background: radial-gradient(circle at 35% 40%, #d7eeec 0 55%, transparent 56%), radial-gradient(circle at 70% 60%, #e3f2f1 0 50%, transparent 51%); }
+.card.empty.compact { min-height: 440px; }
+.acct-bank { display: flex; align-items: center; gap: 6px; }
+.acct-no { font-weight: 700; font-size: 13px; }

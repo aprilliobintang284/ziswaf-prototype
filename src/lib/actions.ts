@@ -70,8 +70,9 @@ export interface RegisterData {
   businessField: string
   address: string
   bankName: string
-  commodityAccount: string
   withdrawAccount: string
+  accountName: string
+  commodityAccount: string
   npwp: string
 }
 
@@ -98,17 +99,25 @@ export function registerFundraiser(raw: RegisterData, doc: DocFile, password: st
   })
 }
 
-/** Edit Fundraiser (desain Hifi baru). Bisa dari status Terverifikasi atau Ditolak. */
+/**
+ * Edit Fundraiser (desain Hifi 3 Nov 2026):
+ * - Terverifikasi: hanya Nomor Telepon dan Alamat yang disimpan; status tetap Terverifikasi (tanpa verifikasi ulang).
+ * - Ditolak: semua field kecuali Email (K-43), lalu diajukan ulang → Menunggu Verifikasi.
+ */
 export function updateFundraiserData(id: string, raw: RegisterData, doc: DocFile) {
   const data = cleanData(raw)
   setDB((d) => {
     const f = d.fundraisers.find((x) => x.id === id)
     if (!f) return
+    if (f.status === 'Terverifikasi') {
+      // Field lain diabaikan walaupun dikirim berbeda (contoh lewat API)
+      f.phone = raw.phone
+      f.address = data.address
+      return
+    }
+    if (f.status !== 'Ditolak') return
     // K-43 (PM 28 Okt 2026): Email tidak bisa diganti, jadi email lama tetap dipakai walau dikirim berbeda
     Object.assign(f, data, { doc, email: f.email })
-    // Desain 27 Okt (pop-up "Konfirmasi Perubahan"): perubahan data selalu diajukan ulang untuk
-    // diverifikasi admin, baik dari status Ditolak maupun Terverifikasi.
-    f.reverify = f.status === 'Terverifikasi'
     f.status = 'Menunggu Verifikasi'
     f.verifiedAt = undefined
     f.rejectedAt = undefined
@@ -187,7 +196,6 @@ export function approveFundraiser(id: string) {
     if (!f || f.status !== 'Menunggu Verifikasi') return
     f.status = 'Terverifikasi'
     f.verifiedAt = now()
-    f.reverify = undefined
     pushEmail(d, statusEmail(f.email, f.name))
   })
 }
@@ -219,9 +227,7 @@ export function rejectFundraiser(id: string, reason: string) {
   setDB((d) => {
     const f = d.fundraisers.find((x) => x.id === id)
     if (!f || f.status !== 'Menunggu Verifikasi') return
-    // K-39: akibat penolakan perubahan data fundraiser Terverifikasi belum dijawab PM; sementara jadi Ditolak
     f.status = 'Ditolak'
-    f.reverify = undefined
     f.rejectedAt = now()
     f.rejectReason = clean(reason)
     pushEmail(d, statusEmail(f.email, f.name, f.rejectReason))
@@ -322,7 +328,10 @@ export function submitWithdrawal(fundraiserId: string, input: WithdrawalInput, e
     const p = d.programs.find((x) => x.id === input.programId)
     if (!f || !p || p.fundraiserId !== fundraiserId) return
     if (input.amount <= 0 || input.amount > withdrawable(d, p.id, editId)) return
-    const data = { programId: p.id, amount: input.amount, note: clean(input.note), bankName: f.bankName, account: f.withdrawAccount, createdAt: now() }
+    const data = {
+      programId: p.id, amount: input.amount, note: clean(input.note),
+      bankName: f.bankName, account: f.withdrawAccount, accountName: f.accountName, createdAt: now(),
+    }
     if (editId) {
       const w = d.withdrawals.find((x) => x.id === editId)
       if (!w || w.fundraiserId !== fundraiserId || w.status !== 'Ditolak') return

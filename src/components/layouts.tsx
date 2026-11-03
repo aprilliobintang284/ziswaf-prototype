@@ -43,13 +43,14 @@ export function DashboardLayout() {
   const [menu, setMenu] = useState(false)
   const [confirmLogout, setConfirmLogout] = useState(false)
   const unsaved = useHasUnsaved()
-  // Ikon ☰ menyembunyikan/menampilkan sidebar (28 Okt 2026); kondisinya tetap sama setelah refresh (29 Okt 2026)
-  const [sideHidden, setSideHidden] = useState(() => {
+  // Desain 3 Nov 2026: ikon ☰ meringkas sidebar menjadi ikon saja (bukan menyembunyikan);
+  // kondisinya tetap sama setelah refresh (29 Okt 2026)
+  const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem(SIDE_KEY) === '1' } catch { return false }
   })
   useEffect(() => {
-    try { localStorage.setItem(SIDE_KEY, sideHidden ? '1' : '0') } catch { /* penyimpanan browser tidak tersedia */ }
-  }, [sideHidden])
+    try { localStorage.setItem(SIDE_KEY, collapsed ? '1' : '0') } catch { /* penyimpanan browser tidak tersedia */ }
+  }, [collapsed])
   const menuRef = useRef<HTMLDivElement>(null)
   // Keluar manual: login berikutnya kembali ke halaman default (Fundraiser), bukan halaman terakhir.
   // "Kembali ke halaman terakhir" (AC Login #5) hanya untuk sesi yang habis karena tidak aktif.
@@ -108,24 +109,24 @@ export function DashboardLayout() {
   ]
 
   return (
-    <div className={'dash' + (sideHidden ? ' side-hidden' : '')}>
+    <div className={'dash' + (collapsed ? ' side-collapsed' : '')}>
       <aside className="side">
         <Logo small />
         <nav className="nav">
-          {/* K-08 (asumsi QA 28 Okt 2026, menunggu desainer): menu terkunci tetap tampil, abu-abu, dan tidak bisa diklik */}
+          {/* K-08 (desainer 30 Okt 2026): menu terkunci tetap tampil, abu-abu, dan tidak bisa diklik */}
           {items.map((it) => (
             <NavLink key={it.to} to={it.to} className={({ isActive }) => (isActive ? 'active' : '') + (it.locked ? ' locked' : '')}
-              title={it.locked ? 'Bisa diakses setelah akun terverifikasi' : undefined}
-              aria-disabled={it.locked || undefined} tabIndex={it.locked ? -1 : undefined}
+              title={it.locked ? 'Bisa diakses setelah akun terverifikasi' : collapsed ? it.label : undefined}
+              aria-label={it.label} aria-disabled={it.locked || undefined} tabIndex={it.locked ? -1 : undefined}
               onClick={(e) => { if (it.locked) e.preventDefault() }}>
-              {it.icon}{it.label}
+              {it.icon}<span className="nav-label">{it.label}</span>
             </NavLink>
           ))}
         </nav>
       </aside>
       <div className="main">
         <header className="topbar">
-          <button className="menu-toggle" aria-label={sideHidden ? 'Tampilkan menu' : 'Sembunyikan menu'} onClick={() => setSideHidden((s) => !s)}>
+          <button className="menu-toggle" aria-label={collapsed ? 'Lebarkan menu' : 'Ringkas menu'} aria-expanded={!collapsed} onClick={() => setCollapsed((s) => !s)}>
             <Icon name="menu" size={18} tint />
           </button>
           <div className="usermenu" ref={menuRef}>

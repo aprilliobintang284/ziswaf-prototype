@@ -80,8 +80,6 @@ export function ProgramPage() {
   return (
     <>
       <div className="page-head"><h1 className="page-title">Program</h1>{createBtn}</div>
-      {/* Fundraiser Terverifikasi yang mengedit data kembali Menunggu Verifikasi (desain 27 Okt).
-          Asumsi K-39: programnya tetap tampil, tetapi buat/edit program dikunci sampai disetujui lagi. */}
       <StatCards programs={programs} blank={!verified && programs.length === 0} />
 
       {!verified && programs.length === 0 ? (
