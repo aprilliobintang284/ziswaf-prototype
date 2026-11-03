@@ -65,6 +65,7 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
     - **Terverifikasi**: hanya Nomor Telepon dan Alamat yang bisa diubah; pop-up "Apakah Anda yakin ingin menyimpan perubahan data?" lalu langsung tersimpan, status tetap Terverifikasi (tanpa verifikasi ulang).
     - **Ditolak**: semua field kecuali Email bisa diubah; pop-up "…mengajukan kembali untuk diverifikasi oleh admin?" lalu status kembali Menunggu Verifikasi.
     - Kolom Email selalu terkunci. Menambah spasi di awal/akhir saja tidak dihitung sebagai perubahan, jadi Simpan tetap nonaktif.
+    - Edit di dua tab (FR-080): yang disimpan hanya field yang diubah di tab itu, jadi simpanan dari tab lain tidak tertimpa data lama.
   - Detail dan export menampilkan Nama Pemilik Rekening Penarikan.
   - Tampilan kosong list Admin: "Belum Ada Data Fundraiser" (tanpa Export).
 - **Program**:

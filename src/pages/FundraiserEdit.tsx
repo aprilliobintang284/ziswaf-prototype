@@ -30,6 +30,8 @@ export function FundraiserEditPage() {
     address: f.address, bankName: f.bankName, withdrawAccount: f.withdrawAccount, accountName: f.accountName,
     commodityAccount: f.commodityAccount, npwp: f.npwp,
   } : null, [f])
+  // Data saat form dibuka. `initial` ikut berubah kalau tab lain menyimpan, jadi perubahan dihitung dari sini (FR-080)
+  const [base] = useState(initial)
   const [values, setValues] = useState<FundraiserForm | null>(initial)
   const [doc, setDoc] = useState<DocFile | null>(f?.doc ?? null)
   const [docError, setDocError] = useState<string>()
@@ -37,7 +39,7 @@ export function FundraiserEditPage() {
   const [touched, setTouched] = useState<Partial<Record<keyof FundraiserForm, boolean>>>({})
   // Dokumen dibandingkan per isi: objek data fundraiser dibuat ulang setiap DB tersimpan (contoh aktivitas sesi)
   const docChanged = JSON.stringify(doc) !== JSON.stringify(f?.doc ?? null)
-  useMarkUnsaved(!!f && !!values && (JSON.stringify(values) !== JSON.stringify(initial) || docChanged))
+  useMarkUnsaved(!!f && !!values && (JSON.stringify(values) !== JSON.stringify(base) || docChanged))
 
   if (!f || !values || f.status === 'Menunggu Verifikasi') {
     return <Navigate to="/dashboard/fundraiser" replace />
@@ -52,13 +54,15 @@ export function FundraiserEditPage() {
   const shown: FormErrors = verified ? {} : { doc: all.doc }
   for (const k of keys) shown[k] = shownError(errors[k], values[k], touched[k])
   // Hanya menambah spasi di awal/akhir tidak dihitung sebagai perubahan (spasi dibuang saat disimpan)
-  const same = keys.every((k) => clean(values[k]) === clean(initial![k]))
-  const changed = !same || (!verified && docChanged)
+  const edited = keys.filter((k) => clean(values[k]) !== clean(base![k]))
+  const changed = edited.length > 0 || (!verified && docChanged)
   const canSave = changed && !hasErrors(errors)
 
   const save = () => {
     setConfirm(false)
-    updateFundraiserData(f.id, values, doc!)
+    // Hanya field yang diubah di tab ini yang dikirim; field lain memakai data terbaru supaya simpanan tab lain tidak tertimpa
+    const merged = { ...initial!, ...Object.fromEntries(edited.map((k) => [k, values[k]])) }
+    updateFundraiserData(f.id, merged, doc!)
     toast(verified ? 'Perubahan data berhasil disimpan' : 'Data berhasil disimpan dan diajukan ulang untuk verifikasi')
     nav('/dashboard/fundraiser')
   }
