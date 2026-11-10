@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-// Ikon bank di kartu Rekening Penarikan sementara memakai lucide (belum bisa disalin dari Figma)
-import { Landmark } from 'lucide-react'
 import { Navigate, useBlocker, useNavigate, useParams } from 'react-router-dom'
 import { ConfirmModal, Field, useToast } from '../components/ui'
 import { Icon } from '../components/icons'
@@ -136,7 +134,7 @@ export function PenarikanFormPage() {
       {/* Desain 3 Nov 2026: bank, nomor rekening (tebal), dan nama pemilik rekening tanpa label */}
       <div className="acct-card">
         <div className="acct-title">Rekening Penarikan</div>
-        <div className="acct-bank"><Landmark size={12} /> {fundraiser!.bankName}</div>
+        <div className="acct-bank"><Icon name="bank" /> {fundraiser!.bankName}</div>
         <div className="acct-no">{fundraiser!.withdrawAccount}</div>
         <div>{fundraiser!.accountName}</div>
       </div>

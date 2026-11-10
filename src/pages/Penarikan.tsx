@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-// Ikon kartu Frekuensi/Total Pencairan belum bisa disalin dari Figma (perlu login Figma); sementara memakai lucide
-import { ArrowLeftRight, Banknote, Wallet } from 'lucide-react'
 import { EmptyState, StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
 import { ApprovalPanel } from '../components/Approval'
 import { Icon } from '../components/icons'
@@ -73,7 +71,7 @@ export function PenarikanPage() {
     return (
       <>
         <div className="page-head"><h1 className="page-title">Penarikan</h1>{createBtn}</div>
-        <EmptyState art={<Wallet size={40} />} title="Belum Ada Penarikan Dana"
+        <EmptyState art={<Icon name="empty-penarikan" />} title="Belum Ada Penarikan Dana"
           text="Belum ada pengajuan penarikan dana. Data pengajuan akan ditampilkan di sini.">{createBtn}</EmptyState>
       </>
     )
@@ -83,8 +81,8 @@ export function PenarikanPage() {
     <>
       <div className="page-head"><h1 className="page-title">Penarikan</h1>{createBtn}</div>
       <div className="stats two">
-        <div className="stat net"><div className="stat-head"><span className="stat-ic blue"><ArrowLeftRight size={16} /></span>Frekuensi Pencairan</div><div className="stat-value">{done.length.toLocaleString('id-ID')}</div></div>
-        <div className="stat fee"><div className="stat-head"><span className="stat-ic green"><Banknote size={16} /></span>Total Pencairan</div><div className="stat-value">{rupiah(total)}</div></div>
+        <div className="stat net"><div className="stat-head"><Icon name="stat-frequency" />Frekuensi Pencairan</div><div className="stat-value">{done.length.toLocaleString('id-ID')}</div></div>
+        <div className="stat fee"><div className="stat-head"><Icon name="stat-total-pencairan" />Total Pencairan</div><div className="stat-value">{rupiah(total)}</div></div>
       </div>
       <div className="card">
         <div className="table-toolbar"><button className="btn btn-outline btn-sm" onClick={exportXlsx}>Export <Icon name="download" /></button></div>

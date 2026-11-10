@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-// Ilustrasi tampilan kosong belum bisa disalin dari Figma (perlu login Figma); sementara memakai lucide
-import { Contact } from 'lucide-react'
 import { EmptyState, StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
 import { Icon } from '../components/icons'
 import { ApprovalPanel } from '../components/Approval'
@@ -130,7 +128,7 @@ function FundraiserList() {
     return (
       <>
         <div className="page-head"><h1 className="page-title">Fundraiser</h1></div>
-        <EmptyState art={<Contact size={40} />} title="Belum Ada Data Fundraiser"
+        <EmptyState art={<Icon name="empty-fundraiser" />} title="Belum Ada Data Fundraiser"
           text="Belum ada data fundraiser yang tersedia. Data yang masuk akan ditampilkan di sini." />
       </>
     )

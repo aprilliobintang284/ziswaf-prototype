@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-// Ilustrasi tampilan kosong sementara memakai lucide (belum bisa disalin dari Figma)
-import { ReceiptText } from 'lucide-react'
 import { EmptyState, StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
 import { Icon } from '../components/icons'
 import { Presence } from '../components/motion'
@@ -66,7 +64,7 @@ export function TransaksiPage() {
     return (
       <>
         <div className="page-head"><h1 className="page-title">Transaksi</h1></div>
-        <EmptyState art={<ReceiptText size={40} />} title="Belum Ada Transaksi"
+        <EmptyState art={<Icon name="empty-transaksi" />} title="Belum Ada Transaksi"
           text="Belum ada transaksi yang tercatat. Data transaksi akan ditampilkan di sini." />
       </>
     )

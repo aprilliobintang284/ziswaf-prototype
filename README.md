@@ -86,12 +86,14 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
   - Admin menyetujui atau menolak pengajuan Diajukan (Tolak wajib alasan) dengan pop-up konfirmasi sesuai desain.
   - Fundraiser membuat pengajuan lewat **Buat Pengajuan**: kartu Rekening Penarikan dari data registrasi, dropdown Nama Program yang bisa dicari, "Total Dana yang Dapat Ditarik" dan batas Maksimal di Nominal, Catatan opsional.
   - Pengajuan Ditolak punya tombol **Edit** untuk mengajukan ulang; pengajuan Diajukan tidak bisa diubah (juga lewat URL).
-  - Ikon kartu Frekuensi/Total Pencairan sementara memakai lucide; akan diganti SVG dari Figma setelah login Figma tersedia.
+  - Ikon kartu Frekuensi/Total Pencairan dan ikon bank di kartu Rekening Penarikan disalin dari Figma (10 Nov 2026).
 - **Animasi**: sidebar (☰), menu pengguna, pop-up, panel detail, date picker, kotak email simulasi, toast, tabel, dan perpindahan halaman memakai transisi singkat (±0,1–0,3 detik). Animasi dimatikan otomatis jika pengaturan "kurangi gerakan" (reduce motion) aktif di perangkat.
 
 ## Aset dari Figma
 
 Logo, ilustrasi kotak donasi, background panel login (`src/assets/bg-auth-panel.svg`), dan semua ikon/ilustrasi empty state (`src/assets/icons/*.svg`) diambil langsung dari Figma lewat klik kanan → Copy as → Copy as SVG, tanpa digambar ulang. Komponen `Icon` (`src/components/icons.tsx`) merender file itu apa adanya; opsi `tint` hanya mengganti warnanya menjadi warna teks (misalnya ikon menu sidebar yang aktif jadi putih).
+
+Update 10 Nov 2026: ilustrasi tampilan kosong Fundraiser, Transaksi, dan Penarikan, ikon kartu Frekuensi/Total Pencairan, dan ikon bank sudah diganti dengan SVG asli dari Figma. Ikon bank dipotong ke kotak 16×16 (aslinya dibungkus kotak 16×60). Frame baru "Empty state fundraiser belum terverifikasi" (1018:36034, Penarikan Dana Belum Bisa Diajukan) belum dibuat karena bertentangan dengan menu abu-abu K-08; ditanyakan di K-52.
 
 Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah/chevron kiri di Figma, dan beberapa ikon khusus prototipe yang tidak ada di desain (kotak masuk simulasi, halaman placeholder) masih memakai lucide.
 
@@ -101,7 +103,7 @@ Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah
 - **Penarikan (Desain vs PRD, 30 Okt 2026)**: status ikut Validasi PRD dan desain (Diajukan, Diterima, Ditolak), bukan "Menunggu Approval"/"Berhasil" di AC (D-11). Tombol Buat Pengajuan hanya untuk Fundraiser (D-12). Tombol Edit di detail Ditolak hanya untuk Fundraiser pemilik dan mengajukan ulang data yang sama (D-13). Dana yang dapat ditarik = Total Terkumpul (Net) − penarikan Diterima − penarikan yang masih Diajukan; nominal minimal lebih dari Rp0 (D-15). Catatan opsional maksimal 250 karakter, tombol Batal dan Ajukan Penarikan nonaktif saat form kosong (ikut desain), dan ada pop-up "Apakah Anda yakin ingin mengajukan penarikan dana ini?" (D-16).
 - **Label Nama Bank**: semua halaman memakai "Nama Bank Rekening Penarikan" (seragam di Figma sejak 3 Nov 2026, D-21).
 - **Nama Pemilik Rekening Penarikan (desain 3 Nov 2026)**: aturan validasi belum diatur PRD (K-51); sementara wajib, huruf dan spasi, maksimal 100 karakter. Data lama diisi dengan Nama Fundraiser.
-- **Tampilan kosong (desain 3 Nov 2026)**: Fundraiser (Admin), Transaksi, dan Penarikan tanpa tabel, kartu, dan Export; Penarikan versi Fundraiser punya tombol Buat Pengajuan. Ilustrasinya sementara ikon lucide sampai bisa disalin dari Figma.
+- **Tampilan kosong (desain 3 Nov 2026)**: Fundraiser (Admin), Transaksi, dan Penarikan tanpa tabel, kartu, dan Export; Penarikan versi Fundraiser punya tombol Buat Pengajuan. Ilustrasinya disalin dari Figma (Copy as SVG, 10 Nov 2026: 1004:19892, 1011:35382, 1011:35530).
 
 - **Transaksi (Desain vs PRD, 30 Okt 2026)**: status mengikuti desain (Diproses, Gagal), padahal PRD memakai Pending dan Gagal/expired (D-07). Donatur anonim tampil "Anonim", dan Email/Nomor Telepon-nya "-" (D-08). Tampilan Fundraiser memakai desain Admin dengan data milik sendiri (D-09).
 

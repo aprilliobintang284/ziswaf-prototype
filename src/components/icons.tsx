@@ -14,7 +14,8 @@ export type IconName =
   | 'chevron-left' | 'chevrons-left' | 'eye' | 'eye-off' | 'alert-circle' | 'check-circle' | 'check-circle-off'
   | 'arrow-left' | 'back-arrow' | 'x-circle' | 'check-circle-outline' | 'file-description' | 'calendar' | 'upload' | 'photo-remove'
   | 'modal-success' | 'modal-mail' | 'modal-expired' | 'modal-warn' | 'modal-logout'
-  | 'empty-blocked' | 'empty-none'
+  | 'empty-blocked' | 'empty-none' | 'empty-fundraiser' | 'empty-transaksi' | 'empty-penarikan'
+  | 'stat-frequency' | 'stat-total-pencairan' | 'bank'
 
 interface IconProps {
   name: IconName
