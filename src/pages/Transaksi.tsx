@@ -16,6 +16,7 @@ const donor = (t: Transaction) => (t.anonymous ? 'Anonim' : t.donorName)
 /**
  * Transaksi — mengikuti desain Hifi (update 30 Okt 2026). Desain baru ada untuk Admin; Fundraiser memakai
  * tampilan yang sama dengan transaksi program miliknya saja (PRD AC View List, Desain vs PRD D-09).
+ * Instruksi 12 Nov 2026: kolom/baris Fundraiser hanya untuk Admin; di tampilan Fundraiser (tabel, detail, export) tidak ada.
  */
 export function TransaksiPage() {
   const db = useDB()
@@ -54,8 +55,8 @@ export function TransaksiPage() {
 
   const exportXlsx = () => {
     downloadXlsx('transaksi.xlsx', 'Transaksi',
-      ['ID Transaksi', 'Donatur', 'Program', 'Fundraiser', 'Nominal', 'Waktu Transaksi', 'Status'],
-      rows.map((t) => [t.id, donor(t), programs.get(t.programId)?.title ?? '-', frName(t.programId), t.amount, waktu(t.createdAt), t.status]))
+      ['ID Transaksi', 'Donatur', 'Program', ...(isAdmin ? ['Fundraiser'] : []), 'Nominal', 'Waktu Transaksi', 'Status'],
+      rows.map((t) => [t.id, donor(t), programs.get(t.programId)?.title ?? '-', ...(isAdmin ? [frName(t.programId)] : []), t.amount, waktu(t.createdAt), t.status]))
     toast('File transaksi.xlsx diunduh')
   }
 
@@ -77,14 +78,14 @@ export function TransaksiPage() {
         <div className="table-toolbar"><button className="btn btn-outline btn-sm" onClick={exportXlsx}>Export <Icon name="download" /></button></div>
         <div className="table-wrap">
           <table className="tbl nowrap">
-            <thead><tr><th>ID Transaksi</th><th>Donatur</th><th>Program</th><th>Fundraiser</th><th>Nominal</th><th>Waktu transaksi</th><th>Status</th><th>Aksi</th></tr></thead>
+            <thead><tr><th>ID Transaksi</th><th>Donatur</th><th>Program</th>{isAdmin && <th>Fundraiser</th>}<th>Nominal</th><th>Waktu transaksi</th><th>Status</th><th>Aksi</th></tr></thead>
             <tbody className="rows-in" key={`${paged.page}-${paged.size}`}>
               {paged.slice.map((t) => (
                 <tr key={t.id}>
                   <td>{t.id}</td>
                   <td>{donor(t)}</td>
                   <td>{programs.get(t.programId)?.title ?? '-'}</td>
-                  <td>{frName(t.programId)}</td>
+                  {isAdmin && <td>{frName(t.programId)}</td>}
                   <td className="num">{rupiah(t.amount)}</td>
                   <td className="num">{waktu(t.createdAt)}</td>
                   <td><StatusBadge status={t.status} /></td>
@@ -110,7 +111,7 @@ export function TransaksiPage() {
               <dt>Email</dt><dd>{detail.anonymous || !detail.email ? '-' : detail.email}</dd>
               <dt>Nomor Telepon</dt><dd>{detail.anonymous || !detail.phone ? '-' : detail.phone}</dd>
               <dt>Program</dt><dd>{programs.get(detail.programId)?.title ?? '-'}</dd>
-              <dt>Fundraiser</dt><dd>{frName(detail.programId)}</dd>
+              {isAdmin && <><dt>Fundraiser</dt><dd>{frName(detail.programId)}</dd></>}
               <dt>Nominal</dt><dd>{rupiah(detail.amount)}</dd>
               <dt>Waktu Transaksi</dt><dd>{waktu(detail.createdAt)}</dd>
               <dt>Status</dt><dd><StatusBadge status={detail.status} /></dd>

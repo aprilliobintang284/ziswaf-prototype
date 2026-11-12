@@ -79,7 +79,7 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
 - **Transaksi** (desain Hifi 30 Okt 2026):
   - Tabel ID Transaksi, Donatur, Program, Fundraiser, Nominal, Waktu transaksi, Status (Menunggu Pembayaran / Diproses / Berhasil / Gagal), Aksi; urutan terbaru di atas; Export .xlsx.
   - Panel Detail Transaksi berisi ID, Donatur, Email, Nomor Telepon, Program, Fundraiser, Nominal, Waktu, dan Status.
-  - Admin melihat semua transaksi; Fundraiser hanya transaksi program miliknya. Akun yang belum terverifikasi tidak bisa membuka menu ini.
+  - Admin melihat semua transaksi; Fundraiser hanya transaksi program miliknya. Kolom/baris Fundraiser hanya untuk Admin: di tampilan Fundraiser tidak ada di tabel, panel detail, dan file export (instruksi QA 12 Nov 2026; berlaku juga di Penarikan). Akun yang belum terverifikasi tidak bisa membuka menu ini.
   - Data dummy: jumlah transaksi Berhasil per program sama persis dengan Total Terkumpul (Gross), dan banyaknya sama dengan Jumlah Donatur.
 - **Penarikan** (desain Hifi 30 Okt 2026):
   - Kartu Frekuensi Pencairan dan Total Pencairan (hanya penarikan Diterima), tabel ID Penarikan, Fundraiser (khusus Admin), Program, Nominal, Tanggal Diajukan, Status (Diajukan / Diterima / Ditolak), Aksi; Export .xlsx.

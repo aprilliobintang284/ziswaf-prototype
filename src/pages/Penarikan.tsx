@@ -13,7 +13,7 @@ import type { Withdrawal } from '../lib/types'
 
 /**
  * Penarikan — mengikuti desain Hifi (update 30 Okt 2026, section Penarikan 860:*).
- * Admin melihat semua pengajuan dan menyetujui/menolak; Fundraiser melihat miliknya (tanpa kolom Fundraiser)
+ * Admin melihat semua pengajuan dan menyetujui/menolak; Fundraiser melihat miliknya (tanpa kolom/baris Fundraiser di tabel, detail, dan export; 12 Nov 2026)
  * dan membuat pengajuan. Tombol "Buat Pengajuan" di frame Admin dianggap salah tampil (Desain vs PRD D-12).
  */
 export function PenarikanPage() {
@@ -57,8 +57,8 @@ export function PenarikanPage() {
   // Export tidak ada di PRD Withdraw, tetapi ada di desain (Desain vs PRD D-14); format .xlsx seperti modul lain
   const exportXlsx = () => {
     downloadXlsx('penarikan.xlsx', 'Penarikan',
-      ['ID Penarikan', 'Fundraiser', 'Program', 'Nominal', 'Nama Bank Rekening Penarikan', 'Nomor Rekening Penarikan', 'Nama Pemilik Rekening Penarikan', 'Tanggal Diajukan', 'Status', 'Tanggal Validasi', 'Alasan Penolakan'],
-      rows.map((w) => [w.id, frName(w.fundraiserId), progName(w.programId), w.amount, w.bankName, w.account, w.accountName, tanggal(w.createdAt), w.status, w.decidedAt ? tanggal(w.decidedAt) : '-', w.rejectReason ?? '-']))
+      ['ID Penarikan', ...(isAdmin ? ['Fundraiser'] : []), 'Program', 'Nominal', 'Nama Bank Rekening Penarikan', 'Nomor Rekening Penarikan', 'Nama Pemilik Rekening Penarikan', 'Tanggal Diajukan', 'Status', 'Tanggal Validasi', 'Alasan Penolakan'],
+      rows.map((w) => [w.id, ...(isAdmin ? [frName(w.fundraiserId)] : []), progName(w.programId), w.amount, w.bankName, w.account, w.accountName, tanggal(w.createdAt), w.status, w.decidedAt ? tanggal(w.decidedAt) : '-', w.rejectReason ?? '-']))
     toast('File penarikan.xlsx diunduh')
   }
 
@@ -126,7 +126,7 @@ function PenarikanDrawer({ w, isAdmin, fundraiserName, programName, onClose }: {
         </div>
         <dl className="kv">
           <dt>ID Penarikan</dt><dd>{w.id}</dd>
-          <dt>Fundraiser</dt><dd>{fundraiserName}</dd>
+          {isAdmin && <><dt>Fundraiser</dt><dd>{fundraiserName}</dd></>}
           <dt>Program</dt><dd>{programName}</dd>
           <dt>Nominal</dt><dd>{rupiah(w.amount)}</dd>
           <dt>Nama Bank Rekening Penarikan</dt><dd>{w.bankName}</dd>
