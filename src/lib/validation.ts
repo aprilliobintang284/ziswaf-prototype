@@ -114,13 +114,14 @@ export function validateNpwp(raw: string): string | undefined {
   return undefined
 }
 
-export const DOC_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
-export const DOC_EXT = /\.(pdf|jpe?g|png)$/i
+// 14 Nov 2026: dokumen izin usaha hanya PDF (PRD Validasi 12 Nov 2026, komentar Figma #69)
+export const DOC_TYPES = ['application/pdf']
+export const DOC_EXT = /\.pdf$/i
 export const DOC_MAX = 5 * 1024 * 1024
 
 export function validateDoc(file: { name: string; size: number; type: string } | null): string | undefined {
   if (!file) return 'Dokumen izin usaha wajib diupload'
-  if (!DOC_EXT.test(file.name) || (file.type && !DOC_TYPES.includes(file.type))) return 'Format dokumen harus PDF, JPG, JPEG, atau PNG'
+  if (!DOC_EXT.test(file.name) || (file.type && !DOC_TYPES.includes(file.type))) return 'Format dokumen harus PDF'
   if (file.size === 0) return 'File tidak valid atau rusak'
   if (file.size > DOC_MAX) return 'Ukuran file melebihi 5 MB'
   return undefined

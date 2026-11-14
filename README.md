@@ -51,6 +51,7 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
 - **Daftar Akun** (2 langkah):
   - Ada field **Nama Pemilik Rekening Penarikan** (desain 3 Nov 2026): wajib, huruf dan spasi; isian berangka memunculkan "Format nama tidak valid". Kategori berisi angka/simbol memunculkan "Format kategori salah".
   - "Berikut" aktif hanya jika semua valid, dokumen dipilih, dan pernyataan dicentang.
+  - **Dokumen Izin Usaha hanya PDF**, maksimal 5 MB (PRD Validasi 12 Nov 2026 dan komentar Figma #69; AC PRD masih menulis PDF/JPG/JPEG/PNG, desain belum dicek, K-54). Isi file dicek (file bukan PDF yang diganti nama ditolak). Foto program tetap JPG/JPEG/PNG maks 2 MB.
   - "Daftar" aktif hanya jika password memenuhi kriteria dan konfirmasinya cocok.
 - **Lupa Password / Atur Ulang Password**:
   - "Kirim Tautan" aktif hanya jika format email benar.
@@ -60,7 +61,7 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
   - Setelah berhasil muncul modal "Password Berhasil Diubah".
 - **Fundraiser**:
   - Admin melihat daftar, detail, setujui/tolak (dengan alasan), dan Export Excel (.xlsx).
-  - Fundraiser melihat data sendiri dengan tombol **Edit** rata kanan (nonaktif saat Menunggu Verifikasi), lalu form **Edit Fundraiser**.
+  - Fundraiser melihat data sendiri dengan tombol **Edit** di kanan atas, sejajar judul halaman (komentar Figma #72, 14 Nov 2026; nonaktif saat Menunggu Verifikasi), lalu form **Edit Fundraiser**.
   - Edit Fundraiser (desain 3 Nov 2026, judul "← Edit Fundraiser"):
     - **Terverifikasi**: hanya Nomor Telepon dan Alamat yang bisa diubah; pop-up "Apakah Anda yakin ingin menyimpan perubahan data?" lalu langsung tersimpan, status tetap Terverifikasi (tanpa verifikasi ulang).
     - **Ditolak**: semua field kecuali Email bisa diubah; pop-up "…mengajukan kembali untuk diverifikasi oleh admin?" lalu status kembali Menunggu Verifikasi.

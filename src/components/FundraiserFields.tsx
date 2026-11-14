@@ -56,8 +56,7 @@ export async function checkDocFile(file: File): Promise<string | undefined> {
   if (basic) return basic
   const kind = await sniffType(file)
   const ext = file.name.split('.').pop()!.toLowerCase()
-  const expected = ext === 'pdf' ? 'pdf' : ext === 'png' ? 'png' : 'jpg'
-  if (kind !== expected) return 'File tidak valid atau rusak'
+  if (kind !== 'pdf' || ext !== 'pdf') return 'File tidak valid atau rusak'
   return undefined
 }
 
@@ -109,9 +108,9 @@ export function DocField({ doc, error, onDoc, disabled }: { doc: DocFile | null;
       <div className="file-input">
         <button type="button" className="file-btn" disabled={disabled} onClick={() => fileRef.current?.click()}>Pilih Dokumen</button>
         <span className={'file-name' + (doc ? ' chosen' : '')}>
-          {doc ? doc.name : 'Format: PDF, JPG, JPEG, atau PNG (Maks. 5 MB)'}
+          {doc ? doc.name : 'Format: PDF (Maks. 5 MB)'}
         </span>
-        <input ref={fileRef} type="file" hidden accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => { onDoc(e.target.files?.[0] ?? null); e.target.value = '' }} />
+        <input ref={fileRef} type="file" hidden accept=".pdf" onChange={(e) => { onDoc(e.target.files?.[0] ?? null); e.target.value = '' }} />
       </div>
     </Field>
   )

@@ -75,17 +75,18 @@ function OwnFundraiser() {
   const user = db.users.find((u) => u.id === db.session?.userId)!
   const f = db.fundraisers.find((x) => x.id === user.fundraiserId)!
   const count = db.programs.filter((p) => p.fundraiserId === f.id).length
-  // Desain: Edit nonaktif selama Menunggu Verifikasi (tombol Batal sudah dihapus di update desain 27 Okt)
+  // Desain: Edit nonaktif selama Menunggu Verifikasi (tombol Batal sudah dihapus di update desain 27 Okt).
+  // 14 Nov 2026 (komentar Figma #72): tombol Edit di atas, sejajar judul halaman, supaya tidak hilang saat konten panjang.
   const locked = f.status === 'Menunggu Verifikasi'
   return (
     <>
-      <div className="page-head"><h1 className="page-title">Fundraiser</h1></div>
-      <div className="card detail-card">
-        <FundraiserInfo f={f} programCount={count} />
-      </div>
-      <div className="form-actions">
+      <div className="page-head">
+        <h1 className="page-title">Fundraiser</h1>
         <button className="btn btn-primary btn-wide" disabled={locked} title={locked ? 'Data bisa diedit setelah proses verifikasi selesai' : undefined}
           onClick={() => nav('/dashboard/fundraiser/edit')}>Edit</button>
+      </div>
+      <div className="card detail-card">
+        <FundraiserInfo f={f} programCount={count} />
       </div>
     </>
   )
