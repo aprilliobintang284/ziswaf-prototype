@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { EmptyState, StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
 import { Icon } from '../components/icons'
 import { Presence } from '../components/motion'
-import { fundraiserActive, useDB } from '../lib/store'
+import { fundraiserActive, ownerName, useDB } from '../lib/store'
 import { rupiah, waktu } from '../lib/format'
 import { downloadXlsx } from '../lib/xlsx'
 import { PlaceholderPage } from './Placeholder'
@@ -30,7 +30,7 @@ export function TransaksiPage() {
   const programs = useMemo(() => new Map(db.programs.map((p) => [p.id, p])), [db.programs])
   const frName = (programId: string) => {
     const fid = programs.get(programId)?.fundraiserId
-    return db.fundraisers.find((f) => f.id === fid)?.name ?? '-'
+    return fid ? ownerName(db, fid) : '-'
   }
   // PRD: urutan default waktu terbaru
   const rows = useMemo(() => db.transactions

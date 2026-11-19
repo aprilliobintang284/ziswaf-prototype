@@ -158,6 +158,11 @@ export function fundraiserActive(f: Fundraiser | null | undefined): f is Fundrai
   return !!f && f.status === 'Terverifikasi'
 }
 
+/** Nama pemilik program: fundraiser, atau Admin untuk program buatan Admin (keputusan 19 Nov 2026: Admin = Super Admin). */
+export function ownerName(db: DB, ownerId: string): string {
+  return db.fundraisers.find((f) => f.id === ownerId)?.name ?? db.users.find((u) => u.id === ownerId && u.role === 'admin')?.name ?? '-'
+}
+
 // Desain Hifi terbaru: pensil/Edit hanya nonaktif untuk "Menunggu Persetujuan" (Selesai bisa diedit, PRD 27 Okt 2026)
 export const EDITABLE: ProgramStatus[] = ['Draf', 'Ditolak', 'Aktif', 'Selesai']
 

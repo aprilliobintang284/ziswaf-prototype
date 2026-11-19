@@ -39,6 +39,7 @@ const router = createBrowserRouter([
           { index: true, element: <Navigate to="fundraiser" replace /> },
           { path: 'fundraiser', element: <FundraiserPage /> },
           { path: 'fundraiser/edit', element: <FundraiserEditPage /> },
+          { path: 'fundraiser/:id/edit', element: <FundraiserEditPage /> },
           { path: 'program', element: <ProgramPage /> },
           { path: 'program/buat', element: <ProgramFormPage mode="create" /> },
           { path: 'program/:id/edit', element: <ProgramFormPage mode="edit" /> },

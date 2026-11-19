@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { EmptyState, StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
+import { ConfirmModal, EmptyState, StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
 import { Icon } from '../components/icons'
 import { ApprovalPanel } from '../components/Approval'
 import { Presence } from '../components/motion'
 import { useDB } from '../lib/store'
-import { approveFundraiser, rejectFundraiser } from '../lib/actions'
+import { approveFundraiser, deleteFundraiser, rejectFundraiser } from '../lib/actions'
 import { fileSize, tanggal } from '../lib/format'
 import { downloadXlsx } from '../lib/xlsx'
 import type { Fundraiser } from '../lib/types'
@@ -103,6 +103,8 @@ function FundraiserList() {
     db.programs.forEach((p) => m.set(p.fundraiserId, (m.get(p.fundraiserId) ?? 0) + 1))
     return m
   }, [db.programs])
+  const nav = useNavigate()
+  const [askDelete, setAskDelete] = useState(false)
   const detailId = params.get('detail')
   const detail = detailId ? rows.find((f) => f.id === detailId) : undefined
 
@@ -167,6 +169,11 @@ function FundraiserList() {
           <div className="drawer-body">
             <div className="drawer-head"><button onClick={() => setParams({})} aria-label="Kembali"><Icon name="back-arrow" size={20} /></button>Detail Fundraiser</div>
             <FundraiserInfo f={detail} programCount={counts.get(detail.id) ?? 0} />
+            {/* Keputusan 19 Nov 2026: Admin = Super Admin, boleh mengedit dan menghapus data fundraiser (tanpa desain khusus) */}
+            <div className="form-actions">
+              <button className="btn btn-danger" onClick={() => setAskDelete(true)}>Hapus</button>
+              <button className="btn btn-primary" onClick={() => nav(`/dashboard/fundraiser/${detail.id}/edit`)}>Edit</button>
+            </div>
             {detail.status === 'Menunggu Verifikasi' && (
               <div className="mt-16">
                 <ApprovalPanel
@@ -182,6 +189,12 @@ function FundraiserList() {
             )}
           </div>
         </div>
+      )}</Presence>
+      <Presence show={askDelete}>{askDelete && detail && (
+        <ConfirmModal title="Hapus Fundraiser"
+          text="Apakah Anda yakin ingin menghapus fundraiser ini? Akun beserta program, transaksi, dan penarikannya ikut terhapus dan tidak bisa dikembalikan."
+          onNo={() => setAskDelete(false)}
+          onYes={() => { deleteFundraiser(detail.id); setAskDelete(false); setParams({}); toast('Fundraiser berhasil dihapus') }} />
       )}</Presence>
     </>
   )

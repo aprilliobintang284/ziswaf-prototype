@@ -27,10 +27,11 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
   const program = mode === 'edit' ? db.programs.find((p) => p.id === id) : undefined
 
   const guard = useMemo(() => {
-    if (user.role !== 'fundraiser') return 'Admin tidak dapat membuat atau mengedit program'
-    if (!fundraiserActive(fundraiser)) return 'Program bisa dibuat setelah akun Anda terverifikasi'
+    // Keputusan 19 Nov 2026: Admin = Super Admin, boleh membuat program (milik Admin) dan mengedit semua program
+    const isAdmin = user.role === 'admin'
+    if (!isAdmin && !fundraiserActive(fundraiser)) return 'Program bisa dibuat setelah akun Anda terverifikasi'
     if (mode === 'edit') {
-      if (!program || program.fundraiserId !== fundraiser.id) return 'Data program tidak ditemukan'
+      if (!program || (!isAdmin && program.fundraiserId !== fundraiser?.id)) return 'Data program tidak ditemukan'
       if (!canEditProgram(program)) {
         return statusOf(program) === 'Selesai' ? 'Program yang sudah Selesai tidak bisa diedit' : 'Program yang menunggu persetujuan tidak bisa diedit'
       }
@@ -147,7 +148,7 @@ export function ProgramFormPage({ mode }: { mode: Mode }) {
   const run = () => {
     const kind = pending!
     const input = { title: clean(v.title), target: Number(v.target || 0), endDate: v.endDate, description: clean(v.description), image: v.image }
-    if (mode === 'create') createProgram(fundraiser!.id, input, kind === 'draft')
+    if (mode === 'create') createProgram(user.role === 'admin' ? user.id : fundraiser!.id, input, kind === 'draft')
     else updateProgram(program!.id, input, kind === 'draft' ? 'draft' : 'submit')
     skipBlock.current = true
     setPending(null)

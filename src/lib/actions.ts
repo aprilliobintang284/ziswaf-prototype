@@ -127,6 +127,36 @@ export function updateFundraiserData(id: string, raw: RegisterData, doc: DocFile
   })
 }
 
+/**
+ * Admin = Super Admin (keputusan 19 Nov 2026): mengubah data fundraiser tanpa mengubah status verifikasi.
+ * Asumsi prototipe (K-57): semua field boleh diubah kecuali Email (identitas login); tanpa verifikasi ulang.
+ */
+export function adminUpdateFundraiser(id: string, raw: RegisterData, doc: DocFile) {
+  const data = cleanData(raw)
+  setDB((d) => {
+    const f = d.fundraisers.find((x) => x.id === id)
+    if (!f) return
+    Object.assign(f, data, { doc, email: f.email, phone: raw.phone })
+    const u = d.users.find((x) => x.fundraiserId === id)
+    if (u) u.name = data.name
+  })
+}
+
+/**
+ * Admin menghapus fundraiser (keputusan 19 Nov 2026). Asumsi prototipe (K-59): akun login, program, transaksi,
+ * dan penarikan milik fundraiser itu ikut terhapus.
+ */
+export function deleteFundraiser(id: string) {
+  setDB((d) => {
+    const programIds = new Set(d.programs.filter((p) => p.fundraiserId === id).map((p) => p.id))
+    d.fundraisers = d.fundraisers.filter((f) => f.id !== id)
+    d.users = d.users.filter((u) => u.fundraiserId !== id)
+    d.programs = d.programs.filter((p) => p.fundraiserId !== id)
+    d.transactions = d.transactions.filter((t) => !programIds.has(t.programId))
+    d.withdrawals = d.withdrawals.filter((w) => w.fundraiserId !== id && !programIds.has(w.programId))
+  })
+}
+
 // ---------------- Lupa password ----------------
 /** false jika email tidak terdaftar (tidak ada email terkirim); tampilan ke pengguna tetap sama (K-32). */
 export function requestReset(email: string): boolean {
@@ -250,6 +280,7 @@ export function titleTaken(title: string, exceptId?: string): boolean {
   return getDB().programs.some((p) => p.id !== exceptId && key(p.title) === k)
 }
 
+/** ownerId = id fundraiser, atau id user Admin untuk program milik Admin (keputusan 19 Nov 2026). */
 export function createProgram(fundraiserId: string, input: ProgramInput, asDraft: boolean): string {
   const id = uid('p')
   setDB((d) => {

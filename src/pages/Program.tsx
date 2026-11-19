@@ -4,7 +4,7 @@ import { StatusBadge, TableFooter, usePaged, useToast } from '../components/ui'
 import { ApprovalPanel } from '../components/Approval'
 import { Presence } from '../components/motion'
 import { Icon } from '../components/icons'
-import { canEditProgram, feeOf, fundraiserActive, netOf, statusOf, useDB } from '../lib/store'
+import { canEditProgram, feeOf, fundraiserActive, netOf, ownerName, statusOf, useDB } from '../lib/store'
 import { approveProgram, rejectProgram } from '../lib/actions'
 import { daysLeft, rupiah, tanggal } from '../lib/format'
 import { downloadXlsx } from '../lib/xlsx'
@@ -49,7 +49,7 @@ export function ProgramPage() {
     () => db.programs.filter((p) => isAdmin || p.fundraiserId === user.fundraiserId),
     [db.programs, isAdmin, user.fundraiserId],
   )
-  const frName = (id: string) => db.fundraisers.find((f) => f.id === id)?.name ?? '-'
+  const frName = (id: string) => ownerName(db, id)
   const paged = usePaged(programs)
   const detailId = params.get('detail')
   const detail = detailId ? programs.find((p) => p.id === detailId) : undefined
@@ -71,7 +71,8 @@ export function ProgramPage() {
     toast('File program.xlsx diunduh')
   }
 
-  const createBtn = !isAdmin && (
+  // Keputusan 19 Nov 2026: Admin = Super Admin, boleh membuat program (milik Admin sendiri) dan mengedit program
+  const createBtn = (
     <button className="btn btn-primary btn-sm" disabled={!verified} onClick={() => nav('/dashboard/program/buat')}>
       Buat Program Baru <Icon name="plus" tint />
     </button>
@@ -93,7 +94,7 @@ export function ProgramPage() {
           <Icon name="empty-none" />
           <div className="empty-title">Belum Ada Program</div>
           <p className="empty-text">Anda belum memiliki program. Mulai buat program pertama Anda untuk menggalang dana.</p>
-          {!isAdmin && <button className="btn btn-primary btn-sm" onClick={() => nav('/dashboard/program/buat')}>Buat Program Baru <Icon name="plus" tint /></button>}
+          <button className="btn btn-primary btn-sm" onClick={() => nav('/dashboard/program/buat')}>Buat Program Baru <Icon name="plus" tint /></button>
         </div>
       ) : (
         <div className="card">
@@ -110,7 +111,7 @@ export function ProgramPage() {
               <tbody className="rows-in" key={`${paged.page}-${paged.size}`}>
                 {paged.slice.map((p, i) => {
                   const s = statusOf(p)
-                  const canEdit = !isAdmin && verified && canEditProgram(p)
+                  const canEdit = verified && canEditProgram(p)
                   return (
                     <tr key={p.id}>
                       <td>{paged.offset + i + 1}</td>
@@ -124,7 +125,7 @@ export function ProgramPage() {
                       <td><StatusBadge status={s} /></td>
                       <td className="num">
                         <button className="icon-btn view" aria-label={`Lihat ${p.title}`} onClick={() => setParams({ detail: p.id })}><Icon name="action-eye" /></button>
-                        {!isAdmin && (
+                        {(
                           <button className="icon-btn edit" aria-label={`Edit ${p.title}`} disabled={!canEdit} title={canEdit ? undefined : s === 'Selesai' ? 'Program yang sudah Selesai tidak bisa diedit' : 'Program yang menunggu persetujuan tidak bisa diedit'}
                             onClick={() => nav(`/dashboard/program/${p.id}/edit`)}><Icon name={canEdit ? 'action-pencil' : 'action-pencil-disabled'} /></button>
                         )}
@@ -185,7 +186,7 @@ function ProgramDrawer({ p, isAdmin, verified, fundraiserName, onClose }: { p: P
           {p.rejectReason && <><dt>Alasan Penolakan</dt><dd>{p.rejectReason}</dd></>}
         </dl>
 
-        {!isAdmin && (
+        {(
           <button className="btn btn-primary btn-block mt-16" disabled={!verified || !canEditProgram(p)}
             title={!verified ? 'Program bisa diedit setelah akun terverifikasi lagi' : canEditProgram(p) ? undefined
               : s === 'Selesai' ? 'Program yang sudah Selesai tidak bisa diedit' : 'Program yang menunggu persetujuan tidak bisa diedit'}

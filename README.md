@@ -60,7 +60,7 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
   - Tautan berlaku 60 menit dan hanya sekali pakai.
   - Setelah berhasil muncul modal "Password Berhasil Diubah".
 - **Fundraiser**:
-  - Admin melihat daftar, detail, setujui/tolak (dengan alasan), dan Export Excel (.xlsx).
+  - Admin melihat daftar, detail, setujui/tolak (dengan alasan), dan Export Excel (.xlsx). **Admin = Super Admin** (keputusan 19 Nov 2026): di detail fundraiser ada tombol **Edit** (semua field kecuali Email, tanpa verifikasi ulang, status tidak berubah; asumsi K-57) dan **Hapus** (akun, program, transaksi, dan penarikan fundraiser itu ikut terhapus; asumsi K-59).
   - Fundraiser melihat data sendiri dengan tombol **Edit** di kanan atas, sejajar judul halaman (komentar Figma #72, 14 Nov 2026; nonaktif saat Menunggu Verifikasi), lalu form **Edit Fundraiser**.
   - Edit Fundraiser (desain 3 Nov 2026, judul "← Edit Fundraiser"):
     - **Terverifikasi**: hanya Nomor Telepon dan Alamat yang bisa diubah; pop-up "Apakah Anda yakin ingin menyimpan perubahan data?" lalu langsung tersimpan, status tetap Terverifikasi (tanpa verifikasi ulang).
@@ -73,7 +73,7 @@ Ada juga di halaman Masuk, panel **"Akun demo (khusus prototipe)"** (klik email 
   - Kartu Gross/Net/Fee 3% dan tabel status Draf / Menunggu Persetujuan / **Aktif** / Ditolak / **Selesai**.
   - Detail program dengan "Tanggal Persetujuan".
   - Buat/Edit program dengan date picker, upload foto (ikon X di pojok foto untuk menghapus), dan peringatan keluar halaman.
-  - Admin bisa menyetujui atau menolak program.
+  - Admin bisa menyetujui atau menolak program, dan juga **membuat serta mengedit program** (keputusan 19 Nov 2026): program buatan Admin tercatat milik Admin (kolom Nama Fundraiser menampilkan nama Admin), alurnya sama dengan fundraiser (Draf/Ajukan lalu Menunggu Persetujuan; asumsi K-58), dan aturan edit per status sama. Admin juga bisa mengedit program fundraiser lain. Layar Buat/Edit Program sama dengan fundraiser (tanpa desain khusus). Transaksi dan Penarikan: Admin hanya melihat, menyetujui/menolak, dan export di UI; buat/edit/hapus transaksi dan penarikan hanya di level API (belum ada layar).
   - Nama program tidak boleh sama dengan program lain (beda huruf besar/kecil dan spasi berlebih tetap dianggap sama).
   - Export Excel (.xlsx) untuk Admin dan Fundraiser.
 - **Topbar**: ikon ☰ meringkas menu samping menjadi ikon saja dan melebarkannya lagi (desain 3 Nov 2026), dan menu pengguna (peran, nama, email, tombol "Keluar" dengan konfirmasi).
@@ -127,7 +127,7 @@ Pengecualian: ikon panah kanan dan chevron kanan memakai versi cermin dari panah
 - **Baru (update desain 26 Okt 2026)**:
   - Program **Selesai** bisa diedit, mengikuti desain (pensil & tombol Edit aktif) dan PRD (lihat K-13).
   - **K-32** (terjawab 29 Okt) Lupa Password ikut PRD: pesannya selalu "Jika email terdaftar, tautan reset sudah dikirim", baik email terdaftar maupun tidak (desain akan disesuaikan). Login memakai satu pesan umum "Email atau password salah".
-  - Kolom "Nama Fundraiser" di tabel Program hanya untuk Admin (AC View List). **K-20** (terjawab 29 Okt): Admin tidak membuat atau mengedit program, jadi tombol Buat Program Baru dan Edit tidak tampil untuk Admin.
+  - Kolom "Nama Fundraiser" di tabel Program hanya untuk Admin (AC View List). **K-20** (terjawab 29 Okt, DIBALIK 19 Nov 2026): sebelumnya Admin tidak membuat atau mengedit program; sekarang Admin = Super Admin dan tombol Buat Program Baru dan Edit tampil untuk Admin.
 - **Baru (update desain 26 Okt 2026 malam)**:
   - Ikon ☰ di topbar meringkas sidebar menjadi ikon saja (desain 3 Nov; sebelumnya disembunyikan), dan kondisinya tetap sama setelah refresh (29 Okt). Dropdown menu pengguna tertutup dengan klik nama lagi, klik di luar, atau Esc. Kalau klik Keluar saat ada isian form yang belum disimpan (Buat/Edit Program, Edit Fundraiser), pop-up "Keluar" ikut memperingatkan bahwa data akan hilang (K-38, 29 Okt).
 - **Baru (update desain 27 Okt 2026)**:
