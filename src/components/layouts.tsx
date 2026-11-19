@@ -38,7 +38,8 @@ export function DashboardLayout() {
   const db = useDB()
   const loc = useLocation()
   const nav = useNavigate()
-  const user = db.session ? db.users.find((u) => u.id === db.session!.userId) : null
+  const found = db.session ? db.users.find((u) => u.id === db.session!.userId) : null
+  const user = found && !found.disabled ? found : null // akun yang dinonaktifkan Admin tidak bisa memakai sesi lama (K-59)
   const fundraiser = user?.fundraiserId ? db.fundraisers.find((f) => f.id === user.fundraiserId) : null
   const [menu, setMenu] = useState(false)
   const [confirmLogout, setConfirmLogout] = useState(false)

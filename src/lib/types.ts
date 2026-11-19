@@ -12,6 +12,8 @@ export interface User {
   role: Role
   name: string
   fundraiserId?: string
+  /** Akun dinonaktifkan (soft delete oleh Admin, K-59): tidak bisa login, riwayat tetap tersimpan */
+  disabled?: boolean
 }
 
 export interface DocFile {
@@ -41,6 +43,8 @@ export interface Fundraiser {
   verifiedAt?: string
   rejectedAt?: string
   rejectReason?: string
+  /** Tanggal akun dihapus Admin (soft delete, K-59): hilang dari list Fundraiser, riwayat tetap ada */
+  deletedAt?: string
 }
 
 export interface Program {

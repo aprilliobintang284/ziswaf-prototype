@@ -15,7 +15,8 @@ const now = () => new Date().toISOString()
 export function currentUser(): User | null {
   const db = getDB()
   if (!db.session) return null
-  return db.users.find((u) => u.id === db.session!.userId) ?? null
+  const u = db.users.find((x) => x.id === db.session!.userId)
+  return u && !u.disabled ? u : null
 }
 
 export function currentFundraiser(): Fundraiser | null {
@@ -46,7 +47,7 @@ export function touchSession() {
 export function login(email: string, password: string): { ok: true; user: User } | { ok: false; error: string } {
   // Standar QA: email dibersihkan, password dibandingkan apa adanya (tidak di-trim)
   const user = getDB().users.find((u) => u.email.toLowerCase() === clean(email).toLowerCase())
-  if (!user || user.password !== password) return { ok: false, error: 'Email atau password salah' }
+  if (!user || user.disabled || user.password !== password) return { ok: false, error: 'Email atau password salah' }
   setDB((d) => { d.session = { userId: user.id, lastActive: now() } })
   return { ok: true, user }
 }
@@ -143,25 +144,36 @@ export function adminUpdateFundraiser(id: string, raw: RegisterData, doc: DocFil
 }
 
 /**
- * Admin menghapus fundraiser (keputusan 19 Nov 2026). Asumsi prototipe (K-59): akun login, program, transaksi,
- * dan penarikan milik fundraiser itu ikut terhapus.
+ * Admin menghapus fundraiser (keputusan 19 Nov 2026). Asumsi standar QA (K-59, 19 Nov 2026):
+ * - ditolak dengan pesan jelas kalau masih punya program Aktif, transaksi yang belum selesai (Menunggu Pembayaran
+ *   atau Diproses), atau penarikan Diajukan;
+ * - kalau tidak, akun dinonaktifkan (soft delete): tidak bisa login, hilang dari list Fundraiser, sedangkan riwayat
+ *   program, transaksi, dan penarikan tetap tersimpan dan terbaca di dashboard Admin.
+ * Mengembalikan pesan error, atau null kalau berhasil.
  */
-export function deleteFundraiser(id: string) {
+export function deleteFundraiser(id: string): string | null {
+  const d0 = getDB()
+  const programs = d0.programs.filter((p) => p.fundraiserId === id)
+  const ids = new Set(programs.map((p) => p.id))
+  if (programs.some((p) => statusOf(p) === 'Aktif')) return 'Fundraiser tidak bisa dihapus karena masih punya program Aktif'
+  if (d0.transactions.some((t) => ids.has(t.programId) && (t.status === 'Menunggu Pembayaran' || t.status === 'Diproses'))) return 'Fundraiser tidak bisa dihapus karena masih ada transaksi yang belum selesai'
+  if (d0.withdrawals.some((w) => w.fundraiserId === id && w.status === 'Diajukan')) return 'Fundraiser tidak bisa dihapus karena masih ada penarikan yang diajukan'
   setDB((d) => {
-    const programIds = new Set(d.programs.filter((p) => p.fundraiserId === id).map((p) => p.id))
-    d.fundraisers = d.fundraisers.filter((f) => f.id !== id)
-    d.users = d.users.filter((u) => u.fundraiserId !== id)
-    d.programs = d.programs.filter((p) => p.fundraiserId !== id)
-    d.transactions = d.transactions.filter((t) => !programIds.has(t.programId))
-    d.withdrawals = d.withdrawals.filter((w) => w.fundraiserId !== id && !programIds.has(w.programId))
+    const f = d.fundraisers.find((x) => x.id === id)
+    if (!f || f.deletedAt) return
+    f.deletedAt = now()
+    const u = d.users.find((x) => x.fundraiserId === id)
+    if (u) u.disabled = true
+    if (u && d.session?.userId === u.id) d.session = null
   })
+  return null
 }
 
 // ---------------- Lupa password ----------------
 /** false jika email tidak terdaftar (tidak ada email terkirim); tampilan ke pengguna tetap sama (K-32). */
 export function requestReset(email: string): boolean {
   const user = getDB().users.find((u) => u.email.toLowerCase() === clean(email).toLowerCase())
-  if (!user) return false
+  if (!user || user.disabled) return false
   const token = uid('rst')
   setDB((d) => {
     // Standar keamanan: tautan lama dibatalkan saat meminta tautan baru

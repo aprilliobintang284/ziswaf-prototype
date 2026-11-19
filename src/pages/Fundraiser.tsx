@@ -96,7 +96,7 @@ function FundraiserList() {
   const db = useDB()
   const toast = useToast()
   const [params, setParams] = useSearchParams()
-  const rows = db.fundraisers
+  const rows = useMemo(() => db.fundraisers.filter((f) => !f.deletedAt), [db.fundraisers])
   const paged = usePaged(rows)
   const counts = useMemo(() => {
     const m = new Map<string, number>()
@@ -192,9 +192,15 @@ function FundraiserList() {
       )}</Presence>
       <Presence show={askDelete}>{askDelete && detail && (
         <ConfirmModal title="Hapus Fundraiser"
-          text="Apakah Anda yakin ingin menghapus fundraiser ini? Akun beserta program, transaksi, dan penarikannya ikut terhapus dan tidak bisa dikembalikan."
+          text="Apakah Anda yakin ingin menghapus fundraiser ini? Akun dinonaktifkan dan tidak bisa login; riwayat program, transaksi, dan penarikannya tetap tersimpan."
           onNo={() => setAskDelete(false)}
-          onYes={() => { deleteFundraiser(detail.id); setAskDelete(false); setParams({}); toast('Fundraiser berhasil dihapus') }} />
+          onYes={() => {
+            const err = deleteFundraiser(detail.id)
+            setAskDelete(false)
+            if (err) { toast(err, 'err'); return }
+            setParams({})
+            toast('Fundraiser berhasil dihapus')
+          }} />
       )}</Presence>
     </>
   )
